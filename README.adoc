@@ -4,6 +4,8 @@ A monorepo filled with goodies.
 
 == Index of Tools
 
-link::ffind[] - Fast Regex Find, faster common Find searches using the power of Golang’s Regex engine.
+link:ffind[] - Fast Regex Find, faster common Find searches using the power of Golang’s Regex engine.
 
-link::grepp[] - An improved version of the most common combinations of grep, find and sed/perl, in a single script.
+link:grepp[] - An improved version of the most common combinations of grep, find and sed/perl, in a single script.
+
+link:cssh[] - cssh & cscp: ssh and scp wrappers to connect to multiple servers.

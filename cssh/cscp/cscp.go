@@ -16,7 +16,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/DavidGamba/cssh/common"
+	"github.com/DavidGamba/dgtools/cssh/common"
 	"github.com/DavidGamba/gexpect"
 	// "github.com/shavac/gexpect"
 	"github.com/DavidGamba/go-getoptions"

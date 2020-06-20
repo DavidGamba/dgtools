@@ -1,4 +1,4 @@
-module github.com/DavidGamba/cssh
+module github.com/DavidGamba/dgtools/cssh
 
 go 1.13
 
