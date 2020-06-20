@@ -1,0 +1,10 @@
+github.com/BurntSushi/toml v0.3.1 h1:WXkYYl6Yr3qBf1K79EBnL4mak0OimBfB0XUf9Vl28OQ=
+github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
+github.com/DavidGamba/ffind v0.6.1 h1:zTnRNeATA+6udPqLSl/x8dboBfaGJTtVKRAlk8nbQfs=
+github.com/DavidGamba/ffind v0.6.1/go.mod h1:A5dhZphT19ADX2vepuwgN0RbJlAVQ+walvrIsglf2Gs=
+github.com/DavidGamba/go-getoptions v0.14.1 h1:Y0j4nOwLimhL9mQoQd2Z/UZJKRdAMZ2Xx0A7zRgtGog=
+github.com/DavidGamba/go-getoptions v0.14.1/go.mod h1:wYjd1McJbGzBFD61+lahGR+5A8QGA1aBnRZmfkBLy5A=
+github.com/mattn/go-runewidth v0.0.4 h1:2BvfKmzob6Bmd4YsL0zygOqfdFnK7GR4QL06Do4/p7Y=
+github.com/mattn/go-runewidth v0.0.4/go.mod h1:LwmH8dsx7+W8Uxz3IHJYH5QSwggIsqBzpuz5H//U1FU=
+github.com/nsf/termbox-go v0.0.0-20190817171036-93860e161317 h1:hhGN4SFXgXo61Q4Sjj/X9sBjyeSa2kdpaOzCO+8EVQw=
+github.com/nsf/termbox-go v0.0.0-20190817171036-93860e161317/go.mod h1:IuKpRQcYE1Tfu+oAQqaLisqDeXgjyyltCfsaoYN18NQ=
