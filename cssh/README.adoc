@@ -1,0 +1,60 @@
+= cssh & cscp: ssh and scp wrappers to connect to dev servers
+
+The scripts read your `.ssh/config` to get the password used to connect to a server.
+They additionally read your ssh keys from the same file.
+
+Normally, for passwordless ssh you would have the following in your `.ssh/config` file:
+
+[source, conf]
+----
+Host server
+  Hostname server.domain.com
+  User ec2-user
+  IdentityFile ~/.ssh/aws-keys/server.domain.com.pem
+----
+
+And you would connect with `ssh server`.
+
+However, lets say, you are using QA/Development servers and setting up a host entry takes a lot of time.
+You could do:
+
+[source, conf]
+----
+# DefaultIdentityFile ~/.ssh/aws-keys/dev.key.pem
+# DefaultIdentityFile ~/.ssh/aws-keys/qa.key.pem
+----
+
+And connect using the IP:
+
+`cssh ec2-user@12.34.56.78 --key 0`
+
+The script will read all the available keys and use the first one (index 0).
+
+For local servers, you might not have an ssh key setup but a default password:
+
+[source, conf]
+----
+Host qa1 # qaPassword
+  Hostname qa1.domain.com
+  User root
+
+Host * # devPassword
+    User root
+----
+
+The script can be run as:
+
+`cssh qa1`
+
+And it will automatically read the password from the `.ssh/config` file entry.
+Additionally, for every other server, it will try to use the `devPassword` password.
+
+== License
+
+This file is part of cssh.
+
+Copyright (C) 2016-2018  David Gamba Rios
+
+This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at http://mozilla.org/MPL/2.0/.

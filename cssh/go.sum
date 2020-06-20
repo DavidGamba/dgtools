@@ -1,0 +1,6 @@
+github.com/DavidGamba/gexpect v0.0.0-20160318125041-a1c1112065e0 h1:PfhbPRjPHQ8qmT9F42ZIvvslelz1wTzqGJjbzlDAUUY=
+github.com/DavidGamba/gexpect v0.0.0-20160318125041-a1c1112065e0/go.mod h1:28SZdodiEBVlrkAs4krGHXQmL4xWvo1rqpIvVBoqVdc=
+github.com/DavidGamba/go-getoptions v0.17.0 h1:dSP8GsjVj/bGrKS753YvcHXYy5Uq1VQUzk4cQIRmF5k=
+github.com/DavidGamba/go-getoptions v0.17.0/go.mod h1:wYjd1McJbGzBFD61+lahGR+5A8QGA1aBnRZmfkBLy5A=
+github.com/shavac/gexpect v0.0.0-20180514151559-ecdc92667239 h1:Xvw/V1j4RpjLs6CwmuGcJmLr9cFQxn8lz5r2OKXR8Ms=
+github.com/shavac/gexpect v0.0.0-20180514151559-ecdc92667239/go.mod h1:M3Fq3xHwPSYTCyK5SAAMqBAdFPH5GIuENOjEmn+NqvY=
