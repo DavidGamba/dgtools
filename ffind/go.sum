@@ -1,0 +1,5 @@
+github.com/DavidGamba/go-getoptions v0.13.0 h1:U0WJnUrZNte79t5R2YQnkXgxOAjTT3Pf8w3LQhpmww8=
+github.com/DavidGamba/go-getoptions v0.13.0/go.mod h1:UEgfaj/deEBBzpPW+rmdTWTMxkAKSAttGUqAU4T7HLs=
+github.com/DavidGamba/go-getoptions v0.14.0/go.mod h1:wYjd1McJbGzBFD61+lahGR+5A8QGA1aBnRZmfkBLy5A=
+github.com/DavidGamba/go-getoptions v0.14.1 h1:Y0j4nOwLimhL9mQoQd2Z/UZJKRdAMZ2Xx0A7zRgtGog=
+github.com/DavidGamba/go-getoptions v0.14.1/go.mod h1:wYjd1McJbGzBFD61+lahGR+5A8QGA1aBnRZmfkBLy5A=

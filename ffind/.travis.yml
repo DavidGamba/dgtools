@@ -1,0 +1,36 @@
+language: go
+
+go:
+  - 1.8
+
+rvm:
+  - 2.2
+
+before_install:
+  - gem install asciidoctor
+  # Get rpmbuild
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq rpm
+
+script:
+  - make debug
+  - make deps
+  - make test
+  - make build
+  - make man
+
+after_success:
+  - make rpm
+  - make debug
+  # Delete build artifacts that are not deployed
+  - rm ffind ffind.1
+
+deploy:
+  provider: releases
+  api_key:
+    secure: AFBvmaOEWXTKjqrBIGSJmV3pwxs06AgL6TKlxyqV72cFJeNi/nQ+C4EQHBCD5KxIWK1V/S2cZOUiDHgFQD5UFdHDAe/MdV+sORJacA+4zJzb9K2LtrK8j1NQG+49XCjqkXvUID2JGDU/2nLXARrioj8DhbS2ex/guco9irZCxlI=
+  file: ./RPMS/ffind-0.5.0-1.x86_64.rpm
+  skip_cleanup: true
+  on:
+    repo: DavidGamba/ffind
+    branch: master

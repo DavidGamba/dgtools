@@ -1,0 +1,180 @@
+= ffind(1)
+David Gamba, DavidGamba at gmail.com
+:doctype: manpage
+
+== NAME
+
+ffind - Fast Regex Find, faster common Find searches using the power of Golang’s Regex engine
+
+== SYNOPSIS
+
+ # List all files under current dir::
+*ffind* ['OPTIONS'...]
+
+ # List file_pattern matching files under current dir::
+ # <file_pattern> can't end in /::
+*ffind* 'file_pattern' ['OPTIONS'...]
+
+ # List file pattern matching files under given dir::
+*ffind* 'file_pattern' 'dir' ['OPTIONS'...]
+
+ # List all files under given dir::
+*ffind* 'dir/' ['OPTIONS'...]
+
+ # List file pattern matching files under given dir::
+*ffind* 'dir/' 'file_pattern' ['OPTIONS'...]
+
+ # OPTIONS::
+[*-c*|*--case*]
++
+[*-t*|*--type* 'f|d|filetype']...
++
+[*-T*|*--no-type* 'filetype']...
++
+[*-e*|*--extension* 'extensionToMatch']...
++
+[*-E*|*--no-extension* 'extensionToIgnore']...
++
+[*--no-follow*]
++
+[*--abs*|*--abs-path*]
++
+[*--num-sort*]
++
+[*--hidden*]
++
+[*--vcs*] # Sets --hidden when set
++
+[*--verbose*]
+
+ # Show type list::
+*ffind* *--type-list*|*--typelist*
+
+ # Show version number::
+*ffind* *--version*
+
+ # Show short help::
+*ffind* *-h*|*-?*|*--help*
+
+
+=== TODO
+
+[*--color* 'never'|'auto'|'always']
+
+
+== DESCRIPTION
+
+This command focuses on the most common find searches.
+They are optimized for typing speed as not to interrupt your thought process.
+
+Instead of typing "find . -iname \'\*pattern*\'" or "find -regextype some_type -regex \'^.\*?pattern.*$'" you can simply type "ffind pattern".
+
+More obscure searches are probably better suited to find, but you have to deal with that syntax so...
+
+This command is also only intended to search for files, once you find them, pipe the output if you want to execute a command on them.
+
+== OPTIONS
+
+'dir'::
+Directory to search from.
+Defaults to current working directory.
+
+'file_pattern'::
+Pattern to search for (In regex syntax).
+Use single quotes to avoid shell expansion.
+
+*-c*|*--case*::
+Match case sensitive.
+Default is to match case insensitive.
+
+*-t*|*--type* 'f'|'d'|'filetype'::
+Show only results of given type.
+'f' for file and 'd' for dir or any of the *--type-list* types.
+
+*-T*|*--no-type* filetype'::
+Skip results of given type from any of the *--type-list* types.
+
+*-e*|*--extension* 'extensionToMatch'::
+Include file results that end in the given 'extension'.
+
+*-E*|*--no-extension* 'extensionToIgnore'::
+Exclude file results that end in the given 'extension'.
+
+*--no-follow*::
+Do not follow symlinks.
+Avoid infinite recursion.
+
+*--abs*|*--abs-path*::
+Print absolute path to file.
+Defaults to printing relative path.
+
+*--num-sort*::
+When there are directories that fully match a number, sort them numerically.
+
+*--hidden*::
+Show hidden files (starting with dot ".").
+
+*--vcs*::
+Do not ignore git, subversion or mercurial directories.
+
+*--verbose*::
+Show options in effect.
+
+*--type-list*|*--typelist*::
+Show type list keys and matching patterns.
+
+*--version*::
+Show version.
+
+*-h*|*-?*|*--help*::
+Show short help.
+
+=== TODO
+
+*--color* 'never'|'auto'|'always'::
+Select color use: 'never', 'auto' (default), 'always'.
+
+
+== EXAMPLES
+
+Search for a file or directory with the word info in its name::
+ffind info
+
+Search for a file with the word info in its filename::
+ffind info -t f
+
+Search for a directory with the word info in its dirname::
+ffind info -t d
+
+Search in your home dir for a file or directory with the word info in its name::
+ffind info +'~'+
+
+== ROADMAP
+
+Limit depth option::
+Might need to add this for large projects.
+
+Parallel execution::
+Will not return sorted results but will speed up response.
+
+Version Sort::
+Only numerical sort is implemented (the whole filename is a number).
+Look into providing version sort for filenames.
+
+== VERSION
+
+0.5.0
+
+== SOURCE CODE
+
+github: https://github.com/DavidGamba/ffind
+
+== LICENSE
+
+This file is part of ffind.
+
+Copyright (C) 2017  David Gamba Rios
+
+This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at http://mozilla.org/MPL/2.0/.
