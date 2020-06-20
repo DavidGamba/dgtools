@@ -1,3 +1,7 @@
-module github.com/DavidGamba/ffind
+module github.com/DavidGamba/dgtools/ffind
 
-require github.com/DavidGamba/go-getoptions v0.14.1
+go 1.14
+
+require (
+	github.com/DavidGamba/go-getoptions v0.14.1
+)

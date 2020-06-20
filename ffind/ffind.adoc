@@ -167,7 +167,7 @@ Look into providing version sort for filenames.
 
 == SOURCE CODE
 
-github: https://github.com/DavidGamba/ffind
+github: https://github.com/DavidGamba/dgtools/ffind
 
 == LICENSE
 

@@ -48,8 +48,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/DavidGamba/ffind/lib/ffind"
-	"github.com/DavidGamba/ffind/semver"
+	"github.com/DavidGamba/dgtools/ffind/lib/ffind"
+	"github.com/DavidGamba/dgtools/ffind/semver"
 	"github.com/DavidGamba/go-getoptions"
 )
 
