@@ -63,9 +63,9 @@ The script above can be obtained from: https://raw.githubusercontent.com/DavidGa
 
 Using GOLANG:
 
-`go install github.com/DavidGamba/cli-bookmarks`
+`go install github.com/DavidGamba/dgtools/cli-bookmarks`
 
-Or grab one of the generated artifacts from the https://github.com/DavidGamba/cli-bookmarks/releases[Releases] page.
+Or grab one of the generated artifacts from the https://github.com/DavidGamba/dgtools/cli-bookmarks/releases[Releases] page.
 
 == Configuration file
 
@@ -126,7 +126,7 @@ alias/tutorials/
 
 == SOURCE CODE
 
-github: https://github.com/DavidGamba/cli-bookmarks
+github: https://github.com/DavidGamba/dgtools/cli-bookmarks
 
 == LICENSE
 

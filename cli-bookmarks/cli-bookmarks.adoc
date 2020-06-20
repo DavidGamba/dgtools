@@ -53,7 +53,7 @@ The script above can be obtained from: https://raw.githubusercontent.com/DavidGa
 
 == SOURCE CODE
 
-github: https://github.com/DavidGamba/cli-bookmarks
+github: https://github.com/DavidGamba/dgtools/cli-bookmarks
 
 == LICENSE
 

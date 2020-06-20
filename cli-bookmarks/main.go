@@ -18,10 +18,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/DavidGamba/cli-bookmarks/completion"
-	"github.com/DavidGamba/cli-bookmarks/config"
-	"github.com/DavidGamba/cli-bookmarks/gui"
-	"github.com/DavidGamba/cli-bookmarks/semver"
+	"github.com/DavidGamba/dgtools/cli-bookmarks/completion"
+	"github.com/DavidGamba/dgtools/cli-bookmarks/config"
+	"github.com/DavidGamba/dgtools/cli-bookmarks/gui"
+	"github.com/DavidGamba/dgtools/cli-bookmarks/semver"
 	"github.com/DavidGamba/go-getoptions"
 )
 

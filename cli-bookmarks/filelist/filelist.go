@@ -14,7 +14,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/DavidGamba/ffind/lib/ffind"
+	"github.com/DavidGamba/dgtools/ffind/lib/ffind"
 )
 
 // listFiles - return a one level list of files under given dir

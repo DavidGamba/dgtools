@@ -15,7 +15,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/DavidGamba/cli-bookmarks/filelist"
+	"github.com/DavidGamba/dgtools/cli-bookmarks/filelist"
 )
 
 // fileListCompletion - Given an alias for a dir, a dir and a user

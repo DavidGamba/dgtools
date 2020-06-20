@@ -1,3 +1,3 @@
-module github.com/DavidGamba/cli-bookmarks/test_files
+module github.com/DavidGamba/dgtools/cli-bookmarks/test_files
 
 go 1.12
