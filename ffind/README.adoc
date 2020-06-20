@@ -168,7 +168,7 @@ Look into providing version sort for filenames.
 
 == VERSION
 
-0.5.0
+0.6.2
 
 == SOURCE CODE
 
