@@ -1,7 +1,7 @@
 package main
 
 import (
-	l "github.com/DavidGamba/grepp/logging"
+	l "github.com/DavidGamba/dgtools/grepp/logging"
 	"io/ioutil"
 	"os"
 	"testing"

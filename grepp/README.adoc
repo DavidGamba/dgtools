@@ -86,7 +86,7 @@ TODO: images here
 
 == Source code
 
-github: <https://github.com/DavidGamba/grepp>
+github: <https://github.com/DavidGamba/dgtools/grepp>
 
 == License
 

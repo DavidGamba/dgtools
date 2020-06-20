@@ -24,10 +24,10 @@ import (
 
 	"github.com/DavidGamba/ffind/lib/ffind"
 	"github.com/DavidGamba/go-getoptions"
-	greppLib "github.com/DavidGamba/grepp/lib/grepp"
-	l "github.com/DavidGamba/grepp/logging"
-	"github.com/DavidGamba/grepp/runInPager"
-	"github.com/DavidGamba/grepp/semver"
+	greppLib "github.com/DavidGamba/dgtools/grepp/lib/grepp"
+	l "github.com/DavidGamba/dgtools/grepp/logging"
+	"github.com/DavidGamba/dgtools/grepp/runInPager"
+	"github.com/DavidGamba/dgtools/grepp/semver"
 	"github.com/mgutz/ansi"
 )
 
