@@ -22,12 +22,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/DavidGamba/ffind/lib/ffind"
-	"github.com/DavidGamba/go-getoptions"
 	greppLib "github.com/DavidGamba/dgtools/grepp/lib/grepp"
 	l "github.com/DavidGamba/dgtools/grepp/logging"
 	"github.com/DavidGamba/dgtools/grepp/runInPager"
 	"github.com/DavidGamba/dgtools/grepp/semver"
+	"github.com/DavidGamba/ffind/lib/ffind"
+	"github.com/DavidGamba/go-getoptions"
 	"github.com/mgutz/ansi"
 )
 
@@ -422,14 +422,14 @@ func main() {
 	g := grepp{}
 	// TODO: Read from ~/.grepprc
 	g.ignoreExtensionList = []string{
-		".un~", // vim
-		".swp", // vim
-		".svg", // image
-		".png", // image
-		".PNG", // image
-		".jpg", // image
-		".ttf", // font
-		".pdf", // pdf
+		".un~",     // vim
+		".swp",     // vim
+		".svg",     // image
+		".png",     // image
+		".PNG",     // image
+		".jpg",     // image
+		".ttf",     // font
+		".pdf",     // pdf
 		".tfstate", // terraform state
 	}
 	opt := getoptions.New()
@@ -466,7 +466,7 @@ func main() {
 	}
 
 	if opt.Called("version") {
-		version := semver.Version{Major: 0, Minor: 9, Patch: 0, PreReleaseLabel: "dev"}
+		version := semver.Version{Major: 0, Minor: 1, Patch: 0, PreReleaseLabel: "dev"}
 		fmt.Println(version)
 		os.Exit(1)
 	}
