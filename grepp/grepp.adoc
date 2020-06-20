@@ -1,0 +1,99 @@
+= grepp(1)
+
+== Name
+
+grepp - An improved version of the most common combinations of grep, find and sed/perl, in a single script.
+
+== Synopsys
+
+*grepp* _pattern_ [_location_]
+      [*--if* | *--ignore-file* _file_pattern_] [*--spacing*]
+      [*--context*|*-C* _NUM_ ] [-'NUM'] [*--number*|*-n*]
+      [*--debug* _level_]
+
+*grepp* [*-h* |*-?*] # Short help
+
+*grepp* [*--help*] # Extended help
+
+*command* | *grepp* [options] 'pattern' # pipe usage
+
+== Description
+
+greps 'pattern' recursively from current dir or 'location' in every file except for file patterns given by the cmdline option `--ignore-file`.
+
+It is inspired in grep, but unlike grep it doesn't print a *:* divider right after the file name since that makes it annoying to double click to select, it adds a space before and after the *:* divider.
+
+As it is expected, the color only shows when the ouput is not being piped. See *--color* for more details.
+
+It automatically pipes the output to your environment *PAGER* or to +less -R+ if no environment value is set.
+
+== Options
+
+'pattern'::
+
+// Fixme: Add what regex engine we use.
+Pattern to grep for (In regex syntax).
+
+'location'::
+
+Location to search in. By default it will use the current directory.
+
+*-c* | *--case*:: Do not ignore case.
+
+*-l*:: Print file name only.
+
+*-I*:: Do not ignore binary files.
+
+*TODO* *--name* | *--iname* 'file_pattern'::
+
+filter result to match only things that match 'file_pattern'. *iname* does
+case insensitive matching.
+
+*TODO* *--if* | *--ignore-file* 'file_pattern'::
+
+Ignore files matching 'file_pattern' regex. Can be used more than once.
+Case insensitive.
+
+*TODO* *--fullpath*::
+
+Print full paths for matching files.
+
+*--spacing*::
+
+Print original spacing. By default initial spacing is ignored.
+
+*-C* 'NUM', -'NUM', *--context*='NUM'::
+
+Print 'NUM' lines of output context. Places a line containing a group
+separator (--) between contiguous groups of matches.  With the -o or
+--only-matching option, this has no effect and a warning is given.
+
+*--color* 'never'|'auto'|'always'::
+
+Select color use: never, auto (default), always.
+
+== Why grep's ouptut sucks
+
+grep prints a colon +:+ divider after the file name since that makes it
+annoying to double click to select.
+
+TODO: images here
+
+== Roadmap
+
+* Use Git ignore file.
+
+== Source code
+
+github: <https://github.com/DavidGamba/grepp>
+
+== License
+
+Copyright (C) 2012-2015 David Gamba
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
