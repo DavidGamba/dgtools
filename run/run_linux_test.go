@@ -9,6 +9,8 @@
 package run
 
 import (
+	"errors"
+	"os/exec"
 	"strings"
 	"testing"
 )
@@ -19,6 +21,31 @@ func TestRun(t *testing.T) {
 		t.Errorf("Unexpected error: %s\n", err)
 	}
 	if string(out) != "hello world\n" {
+		t.Errorf("wrong output: %s\n", out)
+	}
+
+	out, err = CMD("echo", "hello", "world").STDOutOutput()
+	if err != nil {
+		t.Errorf("Unexpected error: %s\n", err)
+	}
+	if string(out) != "hello world\n" {
+		t.Errorf("wrong output: %s\n", out)
+	}
+
+	out, err = CMD("ls", "x").STDOutOutput()
+	if err == nil {
+		t.Errorf("Unexpected pass: %s\n", err)
+	}
+	var exitErr *exec.ExitError
+	if errors.As(err, &exitErr) {
+		if string(exitErr.Stderr) != "" {
+			t.Errorf("wrong output: %s\n", out)
+		}
+		if exitErr.ExitCode() != 2 {
+			t.Errorf("wrong exit code: %d\n", exitErr.ExitCode())
+		}
+	}
+	if string(out) != "" {
 		t.Errorf("wrong output: %s\n", out)
 	}
 

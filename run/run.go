@@ -50,16 +50,19 @@ func (r *RunInfo) Stdin() *RunInfo {
 	return r
 }
 
+// Env - Add key=value pairs to the environment of the process.
 func (r *RunInfo) Env(env ...string) *RunInfo {
 	r.env = append(r.env, env...)
 	return r
 }
 
+// Dir - specifies the working directory of the command.
 func (r *RunInfo) Dir(dir string) *RunInfo {
 	r.dir = dir
 	return r
 }
 
+// CombinedOutput - Runs given CMD and returns STDOut and STDErr combined.
 func (r *RunInfo) CombinedOutput() ([]byte, error) {
 	var b bytes.Buffer
 	r.stdout = &b
@@ -68,6 +71,24 @@ func (r *RunInfo) CombinedOutput() ([]byte, error) {
 	return b.Bytes(), err
 }
 
+// STDOutOutput - Runs given CMD and returns STDOut only.
+func (r *RunInfo) STDOutOutput() ([]byte, error) {
+	var b bytes.Buffer
+	r.stdout = &b
+	r.stderr = nil
+	err := r.Run()
+	return b.Bytes(), err
+}
+
+// Run - wrapper around os/exec CMD.Run()
+//
+// Run starts the specified command and waits for it to complete.
+//
+// The returned error is nil if the command runs, has no problems copying
+// stdin, stdout, and stderr, and exits with a zero exit status.
+//
+// If the command starts but does not complete successfully, the error is of
+// type *ExitError. Other error types may be returned for other situations.
 func (r *RunInfo) Run() error {
 	if r.debug {
 		msg := fmt.Sprintf("run %v", r.cmd)
