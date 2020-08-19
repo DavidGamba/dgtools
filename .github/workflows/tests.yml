@@ -34,6 +34,14 @@ jobs:
       run: go test -coverprofile=coverage.txt -covermode=atomic ./...
       working-directory: ${{ matrix.tool }}
 
+    - name: Upload
+      uses: actions/upload-artifact@v2
+      # Workaround to filter out subdirectories, actions don't have a basename function.
+      if: ${{ ! contains(matrix.tool, '/') }}
+      with:
+        name: ${{ matrix.tool }}
+        path: ${{ matrix.tool }}/${{ matrix.tool }}
+
   # Support last two releases of Go
   libs:
     name: Lib
