@@ -3,6 +3,8 @@ github.com/DavidGamba/ffind v0.6.1/go.mod h1:A5dhZphT19ADX2vepuwgN0RbJlAVQ+walvr
 github.com/DavidGamba/go-getoptions v0.14.1/go.mod h1:wYjd1McJbGzBFD61+lahGR+5A8QGA1aBnRZmfkBLy5A=
 github.com/DavidGamba/go-getoptions v0.17.0 h1:dSP8GsjVj/bGrKS753YvcHXYy5Uq1VQUzk4cQIRmF5k=
 github.com/DavidGamba/go-getoptions v0.17.0/go.mod h1:wYjd1McJbGzBFD61+lahGR+5A8QGA1aBnRZmfkBLy5A=
+github.com/DavidGamba/go-getoptions v0.20.2 h1:EZFCa4ckN3vG9yAGWWBMtwaLsl4DB7fPgtVfoauhHeg=
+github.com/DavidGamba/go-getoptions v0.20.2/go.mod h1:wYjd1McJbGzBFD61+lahGR+5A8QGA1aBnRZmfkBLy5A=
 github.com/mattn/go-colorable v0.1.6 h1:6Su7aK7lXmJ/U79bYtBjLNaha4Fs1Rg9plHpcH+vvnE=
 github.com/mattn/go-colorable v0.1.6/go.mod h1:u6P/XSegPjTcexA+o6vUJrdnUu04hMope9wVRipJSqc=
 github.com/mattn/go-isatty v0.0.12 h1:wuysRhFDzyxgEmMf5xjvJ2M9dZoWAXNNr5LSBS7uHXY=

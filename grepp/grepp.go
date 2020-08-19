@@ -13,6 +13,7 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -44,7 +45,7 @@ type LineError struct {
 }
 
 func ReadLineByLine(filename string, bufferSize int) <-chan LineError {
-	l.Debug.Printf("[readLineByLine] %s : %d\n", filename)
+	l.Debug.Printf("[readLineByLine] %s : %d\n", filename, bufferSize)
 	c := make(chan LineError)
 	go func() {
 		fh, err := os.Open(filename)
@@ -61,7 +62,7 @@ func ReadLineByLine(filename string, bufferSize int) <-chan LineError {
 			n++
 			line, isPrefix, err := reader.ReadLine()
 			if isPrefix {
-				err := fmt.Errorf("%s: %s\n", filename, errorBufferSizeTooSmall)
+				err := fmt.Errorf("%s: %w\n", filename, errorBufferSizeTooSmall)
 				c <- LineError{Error: err}
 				break
 			}
@@ -314,15 +315,14 @@ func (g grepp) Run() {
 		if g.filenameOnly {
 			ok, err := checkPatternInFile(filename, g.pattern, !g.caseSensitive)
 			if err != nil {
-				switch err {
-				case errorBufferSizeTooSmall:
+				if errors.Is(err, errorBufferSizeTooSmall) {
 					if g.showBufferSizeErrors {
 						g.printMinorWarning(fmt.Sprintf("%s : %s\n", filename, err.Error()))
 					} else {
 						g.bufferSizeErrorsC++
 					}
-				default:
-					fmt.Fprintf(g.Stderr, "%s", err)
+				} else {
+					fmt.Fprintf(g.Stderr, "%s\n", err)
 				}
 			} else if ok {
 				fmt.Fprintf(g.Stdout, "%s%s\n", color(ansi.Magenta, filename, g.useColor), colorReset(g.useColor))
@@ -330,15 +330,14 @@ func (g grepp) Run() {
 		} else {
 			ok, err := checkPatternInFile(filename, g.pattern, !g.caseSensitive)
 			if err != nil {
-				switch err {
-				case errorBufferSizeTooSmall:
+				if errors.Is(err, errorBufferSizeTooSmall) {
 					if g.showBufferSizeErrors {
 						g.printMinorWarning(fmt.Sprintf("%s : %s\n", filename, err.Error()))
 					} else {
 						g.bufferSizeErrorsC++
 					}
-				default:
-					fmt.Fprintf(g.Stderr, "%s", err)
+				} else {
+					fmt.Fprintf(g.Stderr, "%s\n", err)
 				}
 			} else if ok {
 				var tmpFile *os.File
@@ -424,6 +423,10 @@ func main() {
 	g.ignoreExtensionList = []string{
 		".un~",     // vim
 		".swp",     // vim
+		".a",       // c
+		".so",      // c
+		".db",      // Database file
+		".base64",  // encoded_data
 		".svg",     // image
 		".png",     // image
 		".PNG",     // image
@@ -443,7 +446,7 @@ func main() {
 	opt.StringVar(&g.replace, "r", "")
 	opt.BoolVar(&g.force, "f", false)
 	opt.IntVar(&g.context, "C", 0)
-	opt.IntVar(&bufferSize, "buffer", 2048)
+	opt.IntVar(&bufferSize, "buffer", 16384)
 	opt.BoolVar(&g.showBufferSizeErrors, "show-buffer-errors", false, opt.Alias("sbe"))
 	opt.BoolVar(&noPager, "no-pager", false)
 	opt.BoolVar(&debug, "debug", false) // debug logging
