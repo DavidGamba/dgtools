@@ -82,11 +82,12 @@ func program() int {
 
 func help(opt *getoptions.GetOpt) {
 	fmt.Fprintln(os.Stderr, opt.Help(getoptions.HelpName))
-	fmt.Fprintln(os.Stderr, `SYNOPSIS:
+	fmt.Fprintf(os.Stderr, `SYNOPSIS:
 	# Pipe output from another command
 	<command_output> | joinlines [<separator>]
 
 	joinlines [--help]
+
 `)
 	fmt.Fprintln(os.Stderr, opt.Help(getoptions.HelpOptionList))
 }
