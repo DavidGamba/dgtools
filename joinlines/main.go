@@ -84,7 +84,7 @@ func help(opt *getoptions.GetOpt) {
 	fmt.Fprintln(os.Stderr, opt.Help(getoptions.HelpName))
 	fmt.Fprintln(os.Stderr, `SYNOPSIS:
 	# Pipe output from another command
-	<command_output> | joinlines <separator>
+	<command_output> | joinlines [<separator>]
 
 	joinlines [--help]
 `)
