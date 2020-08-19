@@ -1,0 +1,56 @@
+= joinlines
+
+Simple utility to join lines from a command output.
+
+----
+$ printf 'a\nb\nc\n'
+a
+b
+c
+
+$ printf 'a\nb\nc\n' | joinlines
+a b c
+
+$ printf 'a\nb\nc\n' | joinlines ,
+a,b,c
+
+$ printf 'a\nb\nc\n' | joinlines :
+a:b:c
+
+$ printf 'a\nb\nc\n' | joinlines ' , '
+a , b , c
+----
+
+Simpler than `paste`, and allows for separators that span multiple characters (e.g. `' , '`):
+
+----
+$ printf 'a\nb\nc\n' | paste -sd,
+a,b,c
+
+$ printf 'a\nb\nc\n' | paste -sd' , '
+a b,c
+
+$ printf 'a\nb\nc\n' | joinlines ,
+a,b,c
+
+$ printf 'a\nb\nc\n' | joinlines ' , '
+a , b , c
+----
+
+== SYNOPSIS
+
+_command_ | *joinlines* [_separator_]
+
+== SOURCE CODE
+
+github: https://github.com/DavidGamba/joinlines
+
+== LICENSE
+
+This file is part of joinlines.
+
+Copyright (C) 2017  David Gamba Rios
+
+This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at http://mozilla.org/MPL/2.0/.
