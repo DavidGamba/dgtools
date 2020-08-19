@@ -1,6 +1,6 @@
 // This file is part of joinlines.
 //
-// Copyright (C) 2017  David Gamba Rios
+// Copyright (C) 2017-2020  David Gamba Rios
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -21,31 +21,38 @@ import (
 	"github.com/DavidGamba/go-getoptions"
 )
 
-func synopsis() {
-	synopsis := `<command_output> | joinlines <separator>
+var logger = log.New(ioutil.Discard, "", log.LstdFlags)
 
-joinlines [--help]`
-	fmt.Fprintln(os.Stderr, synopsis)
-}
+var version = "0.2.0"
 
 func main() {
-	log.SetOutput(ioutil.Discard)
+	os.Exit(program())
+}
+
+func program() int {
 	opt := getoptions.New()
-	opt.Bool("help", false)
+	opt.Bool("help", false, opt.Alias("?"))
 	opt.Bool("debug", false)
+	opt.Bool("version", false, opt.Alias("V"))
+	opt.Self("", "Simple utility to join lines from a command output.")
 	remaining, err := opt.Parse(os.Args[1:])
+	if opt.Called("help") {
+		help(opt)
+		return 1
+	}
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
-		os.Exit(1)
+		return 1
 	}
-	if opt.Called("help") {
-		synopsis()
-		os.Exit(1)
+	if opt.Called("version") {
+		fmt.Println(version)
+		return 0
 	}
 	if opt.Called("debug") {
-		log.SetOutput(os.Stderr)
+		logger.SetOutput(os.Stderr)
 	}
-	log.Println(remaining)
+	logger.Println(remaining)
+
 	separator := " "
 	if len(remaining) >= 1 {
 		separator = remaining[0]
@@ -58,15 +65,28 @@ func main() {
 	if !stdinIsDevice {
 		bytes, err := ioutil.ReadAll(os.Stdin)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error: %s\n", err)
-			os.Exit(1)
+			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
+			return 1
 		}
 		str := string(bytes)
 		str = strings.TrimSuffix(str, "\n")
-		log.Println(str)
+		logger.Println(str)
 		fmt.Printf("%s\n", strings.Join(strings.Split(str, "\n"), separator))
 	} else {
-		synopsis()
-		os.Exit(1)
+		help(opt)
+		return 1
 	}
+
+	return 0
+}
+
+func help(opt *getoptions.GetOpt) {
+	fmt.Fprintln(os.Stderr, opt.Help(getoptions.HelpName))
+	fmt.Fprintln(os.Stderr, `SYNOPSIS:
+	# Pipe output from another command
+	<command_output> | joinlines <separator>
+
+	joinlines [--help]
+`)
+	fmt.Fprintln(os.Stderr, opt.Help(getoptions.HelpOptionList))
 }

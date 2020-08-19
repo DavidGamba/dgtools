@@ -43,13 +43,13 @@ _command_ | *joinlines* [_separator_]
 
 == SOURCE CODE
 
-github: https://github.com/DavidGamba/joinlines
+github: https://github.com/DavidGamba/dgtools/tree/master/joinlines
 
 == LICENSE
 
 This file is part of joinlines.
 
-Copyright (C) 2017  David Gamba Rios
+Copyright (C) 2017-2020  David Gamba Rios
 
 This Source Code Form is subject to the terms of the Mozilla Public
 License, v. 2.0. If a copy of the MPL was not distributed with this
