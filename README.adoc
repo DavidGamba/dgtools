@@ -1,5 +1,7 @@
 = David Gamba's Toolbox
 
+image:https://github.com/DavidGamba/dgtools/workflows/Tests/badge.svg[link="https://github.com/DavidGamba/dgtools/actions"]
+
 A monorepo filled with goodies.
 
 == Index of Tools
