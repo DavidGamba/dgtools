@@ -64,4 +64,12 @@ func TestRun(t *testing.T) {
 	if !strings.Contains(string(out), "run.go") {
 		t.Errorf("wrong output: %s\n", out)
 	}
+
+	out, err = CMD("cat").In([]byte("hello world")).CombinedOutput()
+	if err != nil {
+		t.Errorf("Unexpected error: %s\n", err)
+	}
+	if !strings.Contains(string(out), "hello world") {
+		t.Errorf("wrong output: %s\n", out)
+	}
 }

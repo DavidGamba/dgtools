@@ -45,8 +45,16 @@ func (r *RunInfo) Log() *RunInfo {
 	return r
 }
 
+// Stdin - connect caller's os.Stdin to command stdin.
 func (r *RunInfo) Stdin() *RunInfo {
 	r.stdin = os.Stdin
+	return r
+}
+
+// In - Pass input to stdin.
+func (r *RunInfo) In(input []byte) *RunInfo {
+	reader := bytes.NewReader(input)
+	r.stdin = reader
 	return r
 }
 
