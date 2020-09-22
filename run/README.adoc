@@ -1,0 +1,60 @@
+= Run
+
+Provides a wrapper around os/exec with method chaining for modifying behaviour.
+
+== Examples
+
+.Run command and only return Stdout
+[source, go]
+----
+	out, err := run.CMD("./command", "arg1", "arg2").STDOutOutput()
+----
+
+.Run command and combine Stderr and Stdout
+[source, go]
+----
+	out, err := run.CMD("./command", "arg1", "arg2").CombinedOutput()
+----
+
+.Run command and change Working Directory
+[source, go]
+----
+	out, err := run.CMD("./command", "arg1", "arg2").Dir("..").CombinedOutput()
+----
+
+.Run command and set environment variables
+[source, go]
+----
+	out, err := run.CMD("./command", "arg1", "arg2").Dir("..").Env("DEBUG=true").CombinedOutput()
+----
+
+.Run command and log the command that is going to be executed to os.Stderr
+[source, go]
+----
+	out, err := run.CMD("./command", "arg1", "arg2").Dir("..").Env("DEBUG=true").Log().CombinedOutput()
+----
+
+.Run command and override the default Logger
+[source, go]
+----
+	run.Logger = log.New(os.Stderr, "", log.LstdFlags)
+	out, err := run.CMD("./command", "arg1", "arg2").Dir("..").Env("DEBUG=true").Log().CombinedOutput()
+----
+
+.Run command without trapping its output
+[source, go]
+----
+	err := run.CMD("./command", "arg1", "arg2").Dir("..").Env("DEBUG=true").Log().Run()
+----
+
+.Run command interactively by tying Stdin
+[source, go]
+----
+	err := run.CMD("./command", "arg1", "arg2").Dir("..").Env("DEBUG=true").Log().Stdin().Run()
+----
+
+.Pass data ([]byte) directly to the Stdin of the command
+[source, go]
+----
+	err := run.CMD("./command", "arg1", "arg2").Dir("..").Env("DEBUG=true").Log().In(data).CombinedOutput()
+----

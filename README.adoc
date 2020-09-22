@@ -14,6 +14,8 @@ link:grepp[] - An improved version of the most common combinations of grep, find
 
 link:cssh[] - cssh & cscp: ssh and scp wrappers to connect to multiple servers.
 
-link:run[] - Provides a wrapper around os/exec with method chaining for modifying behaviour.
-
 link:joinlines[] - Simple utility to join lines from a command output.
+
+== Index of Libraries
+
+link:run[] - Provides a wrapper around os/exec with method chaining for modifying behaviour.
