@@ -62,3 +62,4 @@ jobs:
         upload_url: ${{ needs.create_release.outputs.upload_url }}
         asset_path: ${{ matrix.tool }}/${{ matrix.tool }}
         asset_name: ${{ matrix.tool }}
+        asset_content_type: application/octet-stream
