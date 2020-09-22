@@ -10,20 +10,19 @@ jobs:
     name: Create Release
     runs-on: ubuntu-latest
     steps:
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
 
-    - name: Check out code into the Go module directory
-      uses: actions/checkout@v2
-
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
-        draft: false
-        prerelease: false
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
 
@@ -37,29 +36,28 @@ jobs:
       matrix:
         tool: [cli-bookmarks, cssh/cscp, cssh/cssh, ffind, grepp, joinlines]
     steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.15
+        id: go
 
-    - name: Set up Go 1.x
-      uses: actions/setup-go@v2
-      with:
-        go-version: 1.15
-      id: go
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
 
-    - name: Check out code into the Go module directory
-      uses: actions/checkout@v2
+      - name: Build
+        run: go build -v .
+        working-directory: ${{ matrix.tool }}
 
-    - name: Build
-      run: go build -v .
-      working-directory: ${{ matrix.tool }}
-
-    - name: Upload Release Asset
-      id: upload-release-asset 
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      # Workaround to filter out subdirectories, actions don't have a basename function.
-      if: ${{ ! contains(matrix.tool, '/') }}
-      with:
-        upload_url: ${{ needs.create_release.outputs.upload_url }}
-        asset_path: ${{ matrix.tool }}/${{ matrix.tool }}
-        asset_name: ${{ matrix.tool }}
-        asset_content_type: application/octet-stream
+      - name: Upload Release Asset
+        id: upload-release-asset 
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # Workaround to filter out subdirectories, actions don't have a basename function.
+        if: ${{ ! contains(matrix.tool, '/') }}
+        with:
+          upload_url: ${{ needs.create_release.outputs.upload_url }}
+          asset_path: ${{ matrix.tool }}/${{ matrix.tool }}
+          asset_name: ${{ matrix.tool }}
+          asset_content_type: application/octet-stream
