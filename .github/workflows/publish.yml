@@ -55,7 +55,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         # Workaround to filter out subdirectories, actions don't have a basename function.
-        if: ${{ ! contains(matrix.tool, '/') }}
+        # Ensure only tools matching the tag are released
+        if: ${{ ! contains(matrix.tool, '/') && contains(github.ref, matrix.tool) }}
         with:
           upload_url: ${{ needs.create_release.outputs.upload_url }}
           asset_path: ${{ matrix.tool }}/${{ matrix.tool }}
