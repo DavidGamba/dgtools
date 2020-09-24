@@ -16,11 +16,13 @@ link:cssh[] - cssh & cscp: ssh and scp wrappers to connect to multiple servers.
 
 link:joinlines[] - Simple utility to join lines from a command output.
 
+link:yaml-parse[] - Parse and extract data from YAML files.
+
 == Index of Libraries
 
 link:run[] - Provides a wrapper around os/exec with method chaining for modifying behaviour.
 
-== Index of Libraries under private
+== Libraries under private
 
 [IMPORTANT]
 ----

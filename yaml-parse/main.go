@@ -14,7 +14,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/DavidGamba/go-utils/yamlutils"
+	"github.com/DavidGamba/dgtools/private/yamlutils"
 
 	"github.com/DavidGamba/go-getoptions"
 )
