@@ -1,5 +1,7 @@
-module github.com/DavidGamba/csvtable
+module github.com/DavidGamba/dgtools/csvtable
 
-go 1.12
+go 1.14
 
-require github.com/DavidGamba/go-getoptions v0.19.0
+require (
+	github.com/DavidGamba/go-getoptions v0.19.0
+)
