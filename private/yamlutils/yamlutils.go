@@ -18,16 +18,21 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
-
-	// "reflect"
 	"strconv"
 	"strings"
 
+	"github.com/DavidGamba/dgtools/private/trees"
 	"gopkg.in/yaml.v2"
 )
 
 // Logger - Custom lib logger
 var Logger = log.New(ioutil.Discard, "yamlutils ", log.LstdFlags)
+
+// ErrInvalidParentType - The parent type is invalid.
+var ErrInvalidParentType = fmt.Errorf("invalid parent type, must be list or key/value")
+
+// ErrInvalidChildTypeKeyValue - The child type is invalid.
+var ErrInvalidChildTypeKeyValue = fmt.Errorf("invalid child type, must be 'key: value'")
 
 // YML object
 type YML struct {
@@ -79,7 +84,7 @@ func NewFromString(str string) (*YML, error) {
 // For example: "level1/level2/3/level4"
 func (y *YML) GetString(include bool, keys []string) (string, error) {
 	path := strings.Join(keys, ",")
-	target, _, errPath := NavigateTree(include, y.Tree, keys)
+	target, _, errPath := trees.NavigateTree(include, y.Tree, keys)
 	// Check if response is a single element
 	switch o := target.(type) {
 	case string, int, uint, float32, float64, bool:
@@ -128,63 +133,6 @@ func (y *YML) AddString(keys []string, input string) (string, error) {
 	Logger.Printf("%s", out)
 	return string(out), nil
 }
-
-// ErrExtraElementsInPath - Indicates when there is a final match and there are remaining path elements.
-var ErrExtraElementsInPath = fmt.Errorf("extra elements in path")
-
-// ErrMapKeyNotFound - Key not in config.
-var ErrMapKeyNotFound = fmt.Errorf("map key not found")
-
-// ErrNotAnIndex - The given path is not a numerical index and the element is of type slice/array.
-var ErrNotAnIndex = fmt.Errorf("not an index")
-
-// ErrInvalidIndex - The given index is invalid.
-var ErrInvalidIndex = fmt.Errorf("invalid index")
-
-// NavigateTree allows you to define a path string to traverse a tree composed of maps and arrays.
-// To navigate through slices/arrays use a numerical index, for example: [path to array 1]
-// When include is true, the returned map will have the key as part of it.
-func NavigateTree(include bool, m interface{}, p []string) (interface{}, []string, error) {
-	// Logger.Printf("type: %v, path: %v\n", reflect.TypeOf(m), p)
-	path := strings.Join(p, "/")
-	Logger.Printf("NavigateTree: Self: %v, Input path: '%s'", include, path)
-	if len(p) <= 0 {
-		return m, p, nil
-	}
-	switch m.(type) {
-	case map[interface{}]interface{}:
-		Logger.Printf("NavigateTree: map type")
-		t, ok := m.(map[interface{}]interface{})[p[0]]
-		if !ok {
-			return m, p, fmt.Errorf("%w: %s", ErrMapKeyNotFound, p[0])
-		}
-		if include && len(p) == 1 {
-			Logger.Printf("NavigateTree: self return")
-			return map[interface{}]interface{}{p[0]: m.(map[interface{}]interface{})[p[0]]}, p[1:], nil
-		}
-		return NavigateTree(include, t, p[1:])
-	case []interface{}:
-		Logger.Printf("NavigateTree: slice/array type")
-
-		index, err := strconv.Atoi(p[0])
-		if err != nil {
-			return m, p, fmt.Errorf("%w: %s", ErrNotAnIndex, p[0])
-		}
-		if index < 0 || len(m.([]interface{})) <= index {
-			return m, p, fmt.Errorf("%w: %s", ErrInvalidIndex, p[0])
-		}
-		return NavigateTree(include, m.([]interface{})[index], p[1:])
-	default:
-		Logger.Printf("NavigateTree: single element type")
-		return m, p, fmt.Errorf("%w: %s", ErrExtraElementsInPath, strings.Join(p, "/"))
-	}
-}
-
-// ErrInvalidParentType - The parent type is invalid.
-var ErrInvalidParentType = fmt.Errorf("invalid parent type, must be list or key/value")
-
-// ErrInvalidChildTypeKeyValue - The child type is invalid.
-var ErrInvalidChildTypeKeyValue = fmt.Errorf("invalid child type, must be 'key: value'")
 
 func AddChild(m *interface{}, child string) error {
 	Logger.Printf("AddChild: %v", *m)
@@ -236,7 +184,7 @@ func AddChildToTree(parent *interface{}, current *interface{}, p []string, child
 		Logger.Printf("AddChildToTree: map type")
 		e, ok := t[p[0]]
 		if !ok {
-			return fmt.Errorf("%w: %s", ErrMapKeyNotFound, p[0])
+			return fmt.Errorf("%w: %s", trees.ErrMapKeyNotFound, p[0])
 		}
 		err := AddChildToTree(current, &e, p[1:], child)
 		if err != nil {
@@ -248,10 +196,10 @@ func AddChildToTree(parent *interface{}, current *interface{}, p []string, child
 		Logger.Printf("AddChildToTree: slice/array type")
 		index, err := strconv.Atoi(p[0])
 		if err != nil {
-			return fmt.Errorf("%w: %s", ErrNotAnIndex, p[0])
+			return fmt.Errorf("%w: %s", trees.ErrNotAnIndex, p[0])
 		}
 		if index < 0 || len(t) <= index {
-			return fmt.Errorf("%w: %s", ErrInvalidIndex, p[0])
+			return fmt.Errorf("%w: %s", trees.ErrInvalidIndex, p[0])
 		}
 		err = AddChildToTree(current, &t[index], p[1:], child)
 		if err != nil {
@@ -261,6 +209,6 @@ func AddChildToTree(parent *interface{}, current *interface{}, p []string, child
 		return nil
 	default:
 		Logger.Printf("AddChildToTree: single element type")
-		return fmt.Errorf("%w: %s", ErrExtraElementsInPath, strings.Join(p, "/"))
+		return fmt.Errorf("%w: %s", trees.ErrExtraElementsInPath, strings.Join(p, "/"))
 	}
 }

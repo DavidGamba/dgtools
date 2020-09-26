@@ -12,6 +12,8 @@ import (
 	"errors"
 	"reflect"
 	"testing"
+
+	"github.com/DavidGamba/dgtools/private/trees"
 )
 
 func TestGetString(t *testing.T) {
@@ -24,9 +26,9 @@ func TestGetString(t *testing.T) {
 		err      error
 	}{
 		{"simple", false, []string{}, "hello", "hello", nil},
-		{"extra elements in path", false, []string{"hello"}, "hello", "hello", ErrExtraElementsInPath},
+		{"extra elements in path", false, []string{"hello"}, "hello", "hello", trees.ErrExtraElementsInPath},
 		{"simple", false, []string{"hello"}, "hello: world", "world", nil},
-		{"simple", false, []string{"x"}, "hello: world", "hello: world\n", ErrMapKeyNotFound},
+		{"simple", false, []string{"x"}, "hello: world", "hello: world\n", trees.ErrMapKeyNotFound},
 		{"simple", false, []string{"hello", "1"}, `hello:
   - one
   - two
@@ -34,11 +36,11 @@ func TestGetString(t *testing.T) {
 		{"simple", false, []string{"hello", "3"}, `hello:
   - one
   - two
-  - three`, "- one\n- two\n- three\n", ErrInvalidIndex},
+  - three`, "- one\n- two\n- three\n", trees.ErrInvalidIndex},
 		{"simple", false, []string{"hello", "-1"}, `hello:
   - one
   - two
-  - three`, "- one\n- two\n- three\n", ErrInvalidIndex},
+  - three`, "- one\n- two\n- three\n", trees.ErrInvalidIndex},
 		{"simple", false, []string{"hello", "1", "world"}, `hello:
   - one
   - world: hola
@@ -80,62 +82,6 @@ func TestGetString(t *testing.T) {
 		})
 	}
 
-}
-
-func TestNavigateTree(t *testing.T) {
-	tests := []struct {
-		name         string
-		include      bool
-		path         []string
-		input        interface{}
-		expected     interface{}
-		expectedPath []string
-		err          error
-	}{
-		{"string config, no path", false,
-			[]string{}, "hola", "hola", []string{}, nil},
-		{"string config, bad path", false,
-			[]string{"extra", "elements"}, "hola", "hola", []string{"extra", "elements"}, ErrExtraElementsInPath},
-		{"array config, no path", false,
-			[]string{}, []interface{}{"one", "two", "three"}, []interface{}{"one", "two", "three"}, []string{}, nil},
-		{"array config, path", false,
-			[]string{"1"}, []interface{}{"one", "two", "three"}, "two", []string{}, nil},
-		{"array config, bad path", false,
-			[]string{"[1]"}, []interface{}{"one", "two", "three"}, []interface{}{"one", "two", "three"}, []string{"[1]"}, ErrNotAnIndex},
-		{"map config, no path", false,
-			[]string{},
-			map[interface{}]interface{}{"map": []string{"one", "two", "three"}},
-			map[interface{}]interface{}{"map": []string{"one", "two", "three"}},
-			[]string{}, nil},
-		{"map config, path", false,
-			[]string{"map"},
-			map[interface{}]interface{}{"map": []string{"one", "two", "three"}, "another": []string{"four", "five", "six"}},
-			[]string{"one", "two", "three"},
-			[]string{}, nil},
-		{"map config, path", true,
-			[]string{"map"},
-			map[interface{}]interface{}{"map": []string{"one", "two", "three"}, "another": []string{"four", "five", "six"}},
-			map[interface{}]interface{}{"map": []string{"one", "two", "three"}},
-			[]string{}, nil},
-	}
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			s := ""
-			buf := bytes.NewBufferString(s)
-			Logger.SetOutput(buf)
-			output, path, err := NavigateTree(test.include, test.input, test.path)
-			if !errors.Is(err, test.err) {
-				t.Errorf("Unexpected error: %s\n", err)
-			}
-			if !reflect.DeepEqual(path, test.expectedPath) {
-				t.Errorf("Expected:\n%#v\nGot:\n%#v\n", test.expectedPath, path)
-			}
-			if !reflect.DeepEqual(output, test.expected) {
-				t.Errorf("Expected:\n%#v\nGot:\n%#v\n", test.expected, output)
-			}
-			t.Log(buf.String())
-		})
-	}
 }
 
 func TestAddChild(t *testing.T) {
