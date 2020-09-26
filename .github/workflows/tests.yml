@@ -14,7 +14,15 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        tool: [cli-bookmarks, cssh/cscp, cssh/cssh, ffind, grepp, joinlines, yaml-parse]
+        tool:
+          - cli-bookmarks
+          - cssh/cscp
+          - cssh/cssh
+          - csvtable
+          - ffind
+          - grepp
+          - joinlines
+          - yaml-parse
     steps:
       - name: Set up Go 1.x
         uses: actions/setup-go@v2
