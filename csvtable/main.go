@@ -24,7 +24,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/DavidGamba/dgtools/csvtable/lib/csvtable"
+	"github.com/DavidGamba/dgtools/private/csvtable"
 	"github.com/DavidGamba/go-getoptions"
 )
 
