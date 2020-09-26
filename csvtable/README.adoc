@@ -1,0 +1,11 @@
+= CSVTable
+
+Pretty print CSV files as tables on the command line.
+
+== Library
+
+image:https://godoc.org/github.com/DavidGamba/csvtable?status.svg[link="http://godoc.org/github.com/DavidGamba/csvtable"]
+
+Also provided as a library:
+
+  import "github.com/DavidGamba/csvtable/lib/csvtable"
