@@ -1,0 +1,5 @@
+= password-cache
+
+Cache credentials using the Linux keyring in Go
+
+See: https://www.davids-blog.gamba.ca/posts/caching-credentials-linux-keyring-golang/

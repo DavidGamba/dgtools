@@ -16,6 +16,8 @@ link:cssh[] - cssh & cscp: ssh and scp wrappers to connect to multiple servers.
 
 link:joinlines[] - Simple utility to join lines from a command output.
 
+link:password-cache[] - Cache credentials using the Linux keyring in Go.
+
 link:yaml-parse[] - Parse and extract data from YAML files.
 
 == Index of Libraries
