@@ -9,27 +9,65 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 )
 
+// Logger instance
 var Logger = log.New(ioutil.Discard, "", log.LstdFlags)
 
+// GetURLToFileOptions - Internal options store
+type GetURLToFileOptions struct {
+	cacheDuration time.Duration
+	headers       map[string]string
+	ignoreSSL     bool
+}
+
+// GetURLToFileOptionFn - Options type
+type GetURLToFileOptionFn func(*GetURLToFileOptions)
+
+// Headers - Set request headers
+func Headers(headers map[string]string) GetURLToFileOptionFn {
+	return func(options *GetURLToFileOptions) {
+		options.headers = headers
+	}
+}
+
+// CacheDuration - If the file exists and is older than the cacheDuration then re-download the file, otherwise re-use it.
+func CacheDuration(duration time.Duration) GetURLToFileOptionFn {
+	return func(options *GetURLToFileOptions) {
+		options.cacheDuration = duration
+	}
+}
+
+// InsecureSkipVerify - Skips SSL verification
+func InsecureSkipVerify() GetURLToFileOptionFn {
+	return func(options *GetURLToFileOptions) {
+		options.ignoreSSL = true
+	}
+}
+
 // GetURLToFile - Gets the contents of an URL into a file.
-// If the file exists and the overwrite flag is not set, it exits.
-// TODO: Set file cache timeout, if file is older than timeout re-download file.
-// It would replace the overwrite flag and instead we can pass a timeout of 0.
-func GetURLToFile(url, fpath string, headers map[string]string, overwrite bool) error {
+// If the file exists and the file is older than timeout re-download file.
+// Set the timeout to 0 to always download the file.
+// NOTE: This function ignores SSL verification errors
+func GetURLToFile(url, fpath string, fns ...GetURLToFileOptionFn) error {
 	Logger.Printf("Downloading %s\n", url)
 
+	params := GetURLToFileOptions{}
+	for _, fn := range fns {
+		fn(&params)
+	}
+
 	// Check if file exist
-	_, err := os.Stat(fpath)
+	fileInfo, err := os.Stat(fpath)
 	if err != nil {
 		if !os.IsNotExist(err) {
 			return err
 		}
 	}
-	if err == nil {
-		if !overwrite {
-			Logger.Printf("File already exists: %s\n", fpath)
+	if params.cacheDuration != 0 {
+		if fileInfo.ModTime().After(time.Now().Add(-params.cacheDuration)) {
+			Logger.Printf("File already exists and is up to date: %s\n", fpath)
 			return nil
 		}
 	}
@@ -37,9 +75,9 @@ func GetURLToFile(url, fpath string, headers map[string]string, overwrite bool) 
 	// Create dir structure
 	_ = os.MkdirAll(filepath.Dir(fpath), os.ModePerm)
 
-	// Ignore SSL cert errors
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	tr := &http.Transport{}
+	if params.ignoreSSL {
+		tr.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	}
 	client := &http.Client{Transport: tr}
 
@@ -48,7 +86,7 @@ func GetURLToFile(url, fpath string, headers map[string]string, overwrite bool) 
 	if err != nil {
 		return err
 	}
-	for k, v := range headers {
+	for k, v := range params.headers {
 		req.Header.Set(k, v)
 	}
 	resp, err := client.Do(req)
