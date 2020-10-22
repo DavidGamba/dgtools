@@ -53,7 +53,11 @@ func InsecureSkipVerify() GetURLToFileOptionFn {
 func GetURLToFile(url, fpath string, fns ...GetURLToFileOptionFn) error {
 	Logger.Printf("Downloading %s\n", url)
 
-	params := GetURLToFileOptions{}
+	params := GetURLToFileOptions{
+		headers:       make(map[string]string),
+		ignoreSSL:     false,
+		cacheDuration: 0,
+	}
 	for _, fn := range fns {
 		fn(&params)
 	}
@@ -64,8 +68,9 @@ func GetURLToFile(url, fpath string, fns ...GetURLToFileOptionFn) error {
 		if !os.IsNotExist(err) {
 			return err
 		}
+		fileInfo = nil
 	}
-	if params.cacheDuration != 0 {
+	if fileInfo != nil && params.cacheDuration != 0 {
 		if fileInfo.ModTime().After(time.Now().Add(-params.cacheDuration)) {
 			Logger.Printf("File already exists and is up to date: %s\n", fpath)
 			return nil
