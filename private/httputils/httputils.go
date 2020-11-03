@@ -70,8 +70,13 @@ func GetURLToFile(url, fpath string, fns ...GetURLToFileOptionFn) error {
 		}
 		fileInfo = nil
 	}
-	if fileInfo != nil && params.cacheDuration != 0 {
-		if fileInfo.ModTime().After(time.Now().Add(-params.cacheDuration)) {
+	if fileInfo != nil {
+		if params.cacheDuration != 0 {
+			if fileInfo.ModTime().After(time.Now().Add(-params.cacheDuration)) {
+				Logger.Printf("File already exists and is up to date: %s\n", fpath)
+				return nil
+			}
+		} else {
 			Logger.Printf("File already exists and is up to date: %s\n", fpath)
 			return nil
 		}
