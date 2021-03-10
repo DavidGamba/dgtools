@@ -31,3 +31,5 @@ link:run[] - Provides a wrapper around os/exec with method chaining for modifyin
 Libraries under private will not be tagged or maintained for public consumption (at least initially).
 They are not internal because I still reserve the right to import them in other personal projects.
 ----
+
+link:private/hclutils[] - Package hclutils provides utilities to work with custom DSLs based on HCL.
