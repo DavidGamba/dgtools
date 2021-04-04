@@ -6,6 +6,8 @@ For a detailed blogpost see: https://www.davids-blog.gamba.ca/posts/caching-cred
 
 == Library
 
+image:https://pkg.go.dev/badge/github.com/DavidGamba/dgtools/password-cache.svg[Go Reference, link="https://pkg.go.dev/github.com/DavidGamba/dgtools/password-cache"]
+
 Import:
 
 [source, go]
@@ -17,6 +19,7 @@ import (
 
 Simplest use:
 
+[source, go]
 ----
 	data, err := passwordcache.GetAndCacheSecret("ActiveDirectoryPassword", "", uint(timeout))
 	if err != nil {
