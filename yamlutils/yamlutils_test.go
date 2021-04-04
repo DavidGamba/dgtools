@@ -13,7 +13,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/DavidGamba/dgtools/private/trees"
+	"github.com/DavidGamba/dgtools/trees"
 )
 
 func TestGetString(t *testing.T) {

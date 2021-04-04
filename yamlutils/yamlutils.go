@@ -21,7 +21,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/DavidGamba/dgtools/private/trees"
+	"github.com/DavidGamba/dgtools/trees"
 	"gopkg.in/yaml.v2"
 )
 
