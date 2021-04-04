@@ -24,7 +24,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/DavidGamba/dgtools/private/csvtable"
+	"github.com/DavidGamba/dgtools/csvtable"
 	"github.com/DavidGamba/go-getoptions"
 )
 
@@ -55,7 +55,7 @@ func main() {
 	opt.HelpSynopsisArgs("<csv_filename>")
 	remaining, err := opt.Parse(os.Args[1:])
 	if opt.Called("help") {
-		fmt.Fprintf(os.Stderr, opt.Help())
+		fmt.Fprint(os.Stderr, opt.Help())
 		examples()
 		os.Exit(1)
 	}
@@ -80,7 +80,7 @@ func main() {
 		stdinIsDevice := (statStdin.Mode() & os.ModeDevice) != 0
 
 		if stdinIsDevice {
-			fmt.Fprintf(os.Stderr, opt.Help())
+			fmt.Fprint(os.Stderr, opt.Help())
 			examples()
 			os.Exit(1)
 		}
