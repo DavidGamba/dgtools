@@ -1,10 +1,11 @@
+---
 name: Tests
 
 on:
   push:
-    branches: [ master ]
+    branches: [master, actions]
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
 
@@ -15,27 +16,36 @@ jobs:
     strategy:
       matrix:
         tool:
+          - cathtml
           - cli-bookmarks
           - cssh/cscp
           - cssh/cssh
-          - csvtable
+          - csvtable/cmd/csvtable
           - ffind
           - grepp
           - joinlines
+          - password-cache/cmd/password-cache
+          - webserve
           - yaml-parse
     steps:
       - name: Set up Go 1.x
         uses: actions/setup-go@v2
         with:
-          go-version: 1.15
-        id: go
+          go-version: 1.16
 
       - name: Check out code into the Go module directory
         uses: actions/checkout@v2
 
-      - name: Build
-        run: go build -v .
+      - id: build
+        name: Build
+        run: |
+          go build -v .
+          dir=$(basename $PWD)
+          echo "dir: $dir"
+          echo "::set-output name=binary::$dir"
         working-directory: ${{ matrix.tool }}
+        shell: bash
+
 
       - name: Test
         run: go test -coverprofile=coverage.txt -covermode=atomic ./...
@@ -43,11 +53,9 @@ jobs:
 
       - name: Upload
         uses: actions/upload-artifact@v2
-        # Workaround to filter out subdirectories, actions don't have a basename function.
-        if: ${{ ! contains(matrix.tool, '/') }}
         with:
-          name: ${{ matrix.tool }}
-          path: ${{ matrix.tool }}/${{ matrix.tool }}
+          path: ${{ matrix.tool }}/${{ steps.build.outputs.binary }}
+          name: ${{ steps.build.outputs.binary }}
 
   # Support last two releases of Go
   libs:
@@ -55,7 +63,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go : [1.14, 1.15]
+        go: [1.15, 1.16]
         tool: [run]
     steps:
       - name: Set up Go 1.x
