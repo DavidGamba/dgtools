@@ -27,6 +27,6 @@ link:yaml-parse[] - Parse and extract data from YAML files.
 
 == Index of Libraries
 
-link:run[] - Provides a wrapper around os/exec with method chaining for modifying behaviour.
+link:run[] - Provides a wrapper around os/exec with method chaining for modifying behaviour. image:https://pkg.go.dev/badge/github.com/DavidGamba/dgtools/run.svg[Go Reference, link="https://pkg.go.dev/github.com/DavidGamba/dgtools/run"]
 
-link:password-cache[] - Cache credentials using the Linux keyring in Go.
+link:password-cache[] - Cache credentials using the Linux keyring in Go. image:https://pkg.go.dev/badge/github.com/DavidGamba/dgtools/password-cache.svg[Go Reference, link="https://pkg.go.dev/github.com/DavidGamba/dgtools/password-cache"]
