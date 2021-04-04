@@ -4,17 +4,22 @@ image:https://github.com/DavidGamba/dgtools/workflows/Tests/badge.svg[link="http
 
 A monorepo filled with goodies.
 
+[IMPORTANT]
+----
+Untagged tools/libs will not be maintained for public consumption (at least initially).
+----
+
 == Index of Tools
 
 link:cli-bookmarks[] - yet another tool to bookmark filesystem locations and access them in a fast and easy way.
 
 link:ffind[] - Fast Regex Find, faster common Find searches using the power of Golang’s Regex engine.
 
-link:grepp[] - An improved version of the most common combinations of grep, find and sed/perl, in a single script.
+link:grepp[] - An improved version of the most common combinations of grep, find and sed/perl, in a single tool.
 
 link:cssh[] - cssh & cscp: ssh and scp wrappers to connect to multiple servers.
 
-link:joinlines[] - Simple utility to join lines from a command output.
+link:joinlines[] - Simple utility to join lines from a cli command output.
 
 link:password-cache[] - Cache credentials using the Linux keyring in Go.
 
@@ -24,10 +29,4 @@ link:yaml-parse[] - Parse and extract data from YAML files.
 
 link:run[] - Provides a wrapper around os/exec with method chaining for modifying behaviour.
 
-== Libraries under private
-
-[IMPORTANT]
-----
-Libraries under private will not be tagged or maintained for public consumption (at least initially).
-They are not internal because I still reserve the right to import them in other personal projects.
-----
+link:password-cache[] - Cache credentials using the Linux keyring in Go.
