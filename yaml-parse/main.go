@@ -14,7 +14,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/DavidGamba/dgtools/private/yamlutils"
+	"github.com/DavidGamba/dgtools/yamlutils"
 
 	"github.com/DavidGamba/go-getoptions"
 )
@@ -108,7 +108,7 @@ Indexes are positive integers.`))
 		if opt.Called("n") {
 			str = strings.TrimSpace(str)
 		}
-		fmt.Printf(str)
+		fmt.Print(str)
 		return
 	}
 
@@ -123,5 +123,5 @@ Indexes are positive integers.`))
 	if opt.Called("n") {
 		str = strings.TrimSpace(str)
 	}
-	fmt.Printf(str)
+	fmt.Print(str)
 }
