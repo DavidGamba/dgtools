@@ -2,4 +2,25 @@
 
 Cache credentials using the Linux keyring in Go
 
-See: https://www.davids-blog.gamba.ca/posts/caching-credentials-linux-keyring-golang/
+For a detailed blogpost see: https://www.davids-blog.gamba.ca/posts/caching-credentials-linux-keyring-golang/
+
+== Library
+
+Import:
+
+[source, go]
+----
+import (
+	passwordcache "github.com/DavidGamba/dgtools/password-cache"
+)
+----
+
+Simplest use:
+
+----
+	data, err := passwordcache.GetAndCacheSecret("ActiveDirectoryPassword", "", uint(timeout))
+	if err != nil {
+		return err
+	}
+	fmt.Printf("%s", data)
+----
