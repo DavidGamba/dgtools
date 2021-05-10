@@ -13,6 +13,7 @@ package run
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"log"
@@ -30,6 +31,7 @@ type RunInfo struct {
 	stdout io.Writer
 	stderr io.Writer
 	stdin  io.Reader
+	ctx    context.Context
 }
 
 func CMD(cmd ...string) *RunInfo {
@@ -37,6 +39,7 @@ func CMD(cmd ...string) *RunInfo {
 	r.env = os.Environ()
 	r.stdout = os.Stdout
 	r.stderr = os.Stderr
+	r.ctx = context.Background()
 	return r
 }
 
@@ -67,6 +70,12 @@ func (r *RunInfo) Env(env ...string) *RunInfo {
 // Dir - specifies the working directory of the command.
 func (r *RunInfo) Dir(dir string) *RunInfo {
 	r.dir = dir
+	return r
+}
+
+// Ctx - specifies the context of the command to allow for timeouts.
+func (r *RunInfo) Ctx(ctx context.Context) *RunInfo {
+	r.ctx = ctx
 	return r
 }
 
@@ -105,7 +114,7 @@ func (r *RunInfo) Run() error {
 		}
 		Logger.Println(msg)
 	}
-	c := exec.Command(r.cmd[0], r.cmd[1:]...)
+	c := exec.CommandContext(r.ctx, r.cmd[0], r.cmd[1:]...)
 	c.Dir = r.dir
 	c.Env = r.env
 	c.Stdout = r.stdout

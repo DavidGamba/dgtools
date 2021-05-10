@@ -9,10 +9,12 @@
 package run
 
 import (
+	"context"
 	"errors"
 	"os/exec"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestRun(t *testing.T) {
@@ -71,5 +73,12 @@ func TestRun(t *testing.T) {
 	}
 	if !strings.Contains(string(out), "hello world") {
 		t.Errorf("wrong output: %s\n", out)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
+	defer cancel()
+	_, err = CMD("sleep", "1").Ctx(ctx).CombinedOutput()
+	if err == nil {
+		t.Errorf("Unexpected pass: %s\n", err)
 	}
 }

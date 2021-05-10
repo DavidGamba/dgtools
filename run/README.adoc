@@ -62,3 +62,11 @@ Import: `github.com/DavidGamba/dgtools/run`
 ----
 	err := run.CMD("./command", "arg1", "arg2").Dir("..").Env("DEBUG=true").Log().In(data).CombinedOutput()
 ----
+
+.Run a command with a cancelation context
+[source, go]
+----
+	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
+	defer cancel()
+	out, err := run.CMD("./command", "arg1", "arg2").Ctx(ctx).CombinedOutput()
+----
