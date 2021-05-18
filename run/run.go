@@ -106,7 +106,13 @@ func (r *RunInfo) STDOutOutput() ([]byte, error) {
 //
 // If the command starts but does not complete successfully, the error is of
 // type *ExitError. Other error types may be returned for other situations.
-func (r *RunInfo) Run() error {
+//
+// Examples:
+//
+//   Run()            // Output goes to os.Stdout and os.Stderr
+//   Run(out)         // Sets the command's os.Stdout and os.Stderr to out.
+//   Run(out, outErr) // Sets the command's os.Stdout to out and os.Stderr to outErr.
+func (r *RunInfo) Run(w ...io.Writer) error {
 	if r.debug {
 		msg := fmt.Sprintf("run %v", r.cmd)
 		if r.dir != "" {
@@ -117,8 +123,16 @@ func (r *RunInfo) Run() error {
 	c := exec.CommandContext(r.ctx, r.cmd[0], r.cmd[1:]...)
 	c.Dir = r.dir
 	c.Env = r.env
-	c.Stdout = r.stdout
-	c.Stderr = r.stderr
+	if len(w) == 0 {
+		c.Stdout = r.stdout
+		c.Stderr = r.stderr
+	} else if len(w) == 1 {
+		c.Stdout = w[0]
+		c.Stderr = w[0]
+	} else if len(w) > 1 {
+		c.Stdout = w[0]
+		c.Stderr = w[1]
+	}
 	c.Stdin = r.stdin
 	return c.Run()
 }
