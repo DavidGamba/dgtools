@@ -1,6 +1,6 @@
-// This file is part of go-utils.
+// This file is part of dgtools.
 //
-// Copyright (C) 2016-2019  David Gamba Rios
+// Copyright (C) 2016-2021  David Gamba Rios
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -164,7 +164,6 @@ func AddChild(m *interface{}, child string) error {
 		Logger.Printf("AddChild: single element type")
 		return fmt.Errorf("%w", ErrInvalidParentType)
 	}
-	return nil
 }
 
 func AddChildToTree(parent *interface{}, current *interface{}, p []string, child string) error {

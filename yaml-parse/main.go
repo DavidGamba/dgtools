@@ -1,6 +1,6 @@
-// This file is part of go-utils.
+// This file is part of dgtools.
 //
-// Copyright (C) 2019  David Gamba Rios
+// Copyright (C) 2019-2021  David Gamba Rios
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -15,7 +15,6 @@ import (
 	"strings"
 
 	"github.com/DavidGamba/dgtools/yamlutils"
-
 	"github.com/DavidGamba/go-getoptions"
 )
 
@@ -24,70 +23,85 @@ var BuildMetadata = "dev"
 
 const semVersion = "0.5.0"
 
-var logger = log.New(ioutil.Discard, "", log.LstdFlags)
+var Logger = log.New(ioutil.Discard, "", log.LstdFlags)
 
 func main() {
-	var file string
-	var include bool
-	var add string
-	var keys []string
+	os.Exit(program(os.Args))
+}
+
+func program(args []string) int {
 	opt := getoptions.New()
 	opt.Self("", `Parses YAML input passed from file or piped to STDIN and filters it by key or index.
 
-    Source: https://github.com/DavidGamba/go-utils`)
+    Source: https://github.com/DavidGamba/dgtools`)
 	opt.Bool("help", false, opt.Alias("?"))
 	opt.Bool("debug", false)
 	opt.Bool("version", false, opt.Alias("V"))
 	opt.Bool("n", false, opt.Description("Remove trailing spaces."))
 	opt.Bool("silent", false, opt.Description("Don't print full context errors."))
-	opt.BoolVar(&include, "include", false, opt.Description("Include parent key if it is a map key."))
-	opt.StringVar(&file, "file", "", opt.Alias("f"), opt.ArgName("file"), opt.Description("YAML file to read."))
-	opt.StringVar(&add, "add", "", opt.ArgName("yaml/json input"), opt.Description("Child input to add at the current location."))
-	opt.StringSliceVar(&keys, "key", 1, 99, opt.Alias("k"), opt.ArgName("key/index"),
+	opt.Bool("include", false, opt.Description("Include parent key if it is a map key."))
+	opt.String("file", "", opt.Alias("f"), opt.ArgName("file"), opt.Description("YAML file to read."))
+	opt.String("add", "", opt.ArgName("yaml/json input"), opt.Description("Child input to add at the current location."))
+	opt.StringSlice("key", 1, 99, opt.Alias("k"), opt.ArgName("key/index"),
 		opt.Description(`Key or index to descend to.
 Multiple keys allow to descend further.
 Indexes are positive integers.`))
 	_, err := opt.Parse(os.Args[1:])
 	if opt.Called("help") {
-		fmt.Fprintln(os.Stderr, opt.Help())
-		os.Exit(1)
+		fmt.Println(opt.Help())
+		return 1
 	}
 	if opt.Called("version") {
 		fmt.Printf("Version: %s+%s\n", semVersion, BuildMetadata)
-		os.Exit(0)
+		return 0
 	}
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
-		os.Exit(1)
+		return 1
 	}
 	if opt.Called("debug") {
-		logger.SetOutput(os.Stderr)
+		Logger.SetOutput(os.Stderr)
 		yamlutils.Logger.SetOutput(os.Stderr)
 	}
+
+	err = realMain(opt)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
+		return 1
+	}
+	return 0
+}
+
+func realMain(opt *getoptions.GetOpt) error {
+	file := opt.Value("file").(string)
+	include := opt.Value("include").(bool)
+	add := opt.Value("add").(string)
+	keys := opt.Value("key").([]string)
+
 	var xpath []string
 	for _, k := range keys {
+		k = strings.TrimLeft(k, "/")
 		xpath = append(xpath, strings.Split(k, "/")...)
 	}
-	logger.Printf("path: '%s'\n", strings.Join(xpath, ","))
+	Logger.Printf("path: '%s'\n", strings.Join(xpath, ","))
 
 	// Check if stdin is pipe p or device D
 	statStdin, _ := os.Stdin.Stat()
 	stdinIsDevice := (statStdin.Mode() & os.ModeDevice) != 0
 
+	var err error
 	var yml *yamlutils.YML
 	if !stdinIsDevice && !opt.Called("file") {
-		logger.Printf("Reading from stdin\n")
+		Logger.Printf("Reading from stdin\n")
 		reader := os.Stdin
 		yml, err = yamlutils.NewFromReader(reader)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "ERROR: reading yaml from STDIN: %s\n", err)
-			os.Exit(1)
+			return fmt.Errorf("reading yaml from STDIN: %w", err)
 		}
 	} else {
-		logger.Printf("Reading from file: %s\n", file)
+		Logger.Printf("Reading from file: %s\n", file)
 		if !opt.Called("file") {
-			fmt.Fprintf(os.Stderr, "ERROR: missing argument '--file <file>'\n")
-			os.Exit(1)
+			return fmt.Errorf("missing argument '--file <file>'")
 		}
 		yml, err = yamlutils.NewFromFile(file)
 		if err != nil {
@@ -109,7 +123,7 @@ Indexes are positive integers.`))
 			str = strings.TrimSpace(str)
 		}
 		fmt.Print(str)
-		return
+		return nil
 	}
 
 	str, err := yml.GetString(include, xpath)
@@ -124,4 +138,5 @@ Indexes are positive integers.`))
 		str = strings.TrimSpace(str)
 	}
 	fmt.Print(str)
+	return nil
 }
