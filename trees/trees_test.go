@@ -42,6 +42,11 @@ func TestNavigateTree(t *testing.T) {
 			map[interface{}]interface{}{"map": []string{"one", "two", "three"}, "another": []string{"four", "five", "six"}},
 			map[interface{}]interface{}{"map": []string{"one", "two", "three"}},
 			[]string{}, nil},
+		{"map config, path", true,
+			[]string{"map"},
+			map[string]interface{}{"map": []string{"one", "two", "three"}, "another": []string{"four", "five", "six"}},
+			map[string]interface{}{"map": []string{"one", "two", "three"}},
+			[]string{}, nil},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
