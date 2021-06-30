@@ -32,27 +32,27 @@ func NavigateTree(include bool, m interface{}, p []string) (interface{}, []strin
 	if len(p) <= 0 {
 		return m, p, nil
 	}
-	switch m.(type) {
+	switch m := m.(type) {
 	case map[interface{}]interface{}:
 		Logger.Printf("NavigateTree: map type")
-		t, ok := m.(map[interface{}]interface{})[p[0]]
+		t, ok := m[p[0]]
 		if !ok {
 			return m, p, fmt.Errorf("%w: %s", ErrMapKeyNotFound, p[0])
 		}
 		if include && len(p) == 1 {
 			Logger.Printf("NavigateTree: self return")
-			return map[interface{}]interface{}{p[0]: m.(map[interface{}]interface{})[p[0]]}, p[1:], nil
+			return map[interface{}]interface{}{p[0]: m[p[0]]}, p[1:], nil
 		}
 		return NavigateTree(include, t, p[1:])
 	case map[string]interface{}:
-		Logger.Printf("NavigateTree: map type")
-		t, ok := m.(map[string]interface{})[p[0]]
+		Logger.Printf("NavigateTree: map[string] type")
+		t, ok := m[p[0]]
 		if !ok {
 			return m, p, fmt.Errorf("%w: %s", ErrMapKeyNotFound, p[0])
 		}
 		if include && len(p) == 1 {
 			Logger.Printf("NavigateTree: self return")
-			return map[interface{}]interface{}{p[0]: m.(map[string]interface{})[p[0]]}, p[1:], nil
+			return map[string]interface{}{p[0]: m[p[0]]}, p[1:], nil
 		}
 		return NavigateTree(include, t, p[1:])
 	case []interface{}:
@@ -62,13 +62,12 @@ func NavigateTree(include bool, m interface{}, p []string) (interface{}, []strin
 		if err != nil {
 			return m, p, fmt.Errorf("%w: %s", ErrNotAnIndex, p[0])
 		}
-		if index < 0 || len(m.([]interface{})) <= index {
+		if index < 0 || len(m) <= index {
 			return m, p, fmt.Errorf("%w: %s", ErrInvalidIndex, p[0])
 		}
-		return NavigateTree(include, m.([]interface{})[index], p[1:])
+		return NavigateTree(include, m[index], p[1:])
 	default:
 		Logger.Printf("NavigateTree: single element type")
 		return m, p, fmt.Errorf("%w: %s", ErrExtraElementsInPath, strings.Join(p, "/"))
 	}
 }
-
