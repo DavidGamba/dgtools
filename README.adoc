@@ -9,6 +9,16 @@ A monorepo filled with goodies.
 Untagged tools/libs will not be maintained for public consumption (at least initially).
 ----
 
+== Index of Libraries
+
+image:https://pkg.go.dev/badge/github.com/DavidGamba/dgtools/buildutils.svg[Go Reference, link="https://pkg.go.dev/github.com/DavidGamba/dgtools/buildutils"] link:buildutils[] - Provides functions used when writing build automation.
+
+image:https://pkg.go.dev/badge/github.com/DavidGamba/dgtools/fsmodtime.svg[Go Reference, link="https://pkg.go.dev/github.com/DavidGamba/dgtools/fsmodtime"] link:fsmodtime[] - Provides functions to determine if you want to build targets from sources based on modification time.
+
+image:https://pkg.go.dev/badge/github.com/DavidGamba/dgtools/run.svg[Go Reference, link="https://pkg.go.dev/github.com/DavidGamba/dgtools/run"] link:run[] - Provides a wrapper around os/exec with method chaining for modifying behaviour.
+
+image:https://pkg.go.dev/badge/github.com/DavidGamba/dgtools/password-cache.svg[Go Reference, link="https://pkg.go.dev/github.com/DavidGamba/dgtools/password-cache"] link:password-cache[] - Cache credentials using the Linux keyring in Go.
+
 == Index of Tools
 
 link:cli-bookmarks[] - yet another tool to bookmark filesystem locations and access them in a fast and easy way.
@@ -24,9 +34,3 @@ link:joinlines[] - Simple utility to join lines from a cli command output.
 link:password-cache[] - Cache credentials using the Linux keyring in Go.
 
 link:yaml-parse[] - Parse and extract data from YAML files.
-
-== Index of Libraries
-
-link:run[] - Provides a wrapper around os/exec with method chaining for modifying behaviour. image:https://pkg.go.dev/badge/github.com/DavidGamba/dgtools/run.svg[Go Reference, link="https://pkg.go.dev/github.com/DavidGamba/dgtools/run"]
-
-link:password-cache[] - Cache credentials using the Linux keyring in Go. image:https://pkg.go.dev/badge/github.com/DavidGamba/dgtools/password-cache.svg[Go Reference, link="https://pkg.go.dev/github.com/DavidGamba/dgtools/password-cache"]
