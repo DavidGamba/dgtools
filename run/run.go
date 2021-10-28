@@ -1,6 +1,6 @@
 // This file is part of run.
 //
-// Copyright (C) 2020  David Gamba Rios
+// Copyright (C) 2020-2021  David Gamba Rios
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -23,22 +23,27 @@ import (
 
 var Logger = log.New(os.Stderr, "", log.LstdFlags)
 
+var osStdout io.Writer = os.Stdout
+var osStderr io.Writer = os.Stderr
+
 type RunInfo struct {
-	cmd    []string
-	debug  bool
-	env    []string
-	dir    string
-	stdout io.Writer
-	stderr io.Writer
-	stdin  io.Reader
-	ctx    context.Context
+	cmd      []string
+	debug    bool
+	env      []string
+	dir      string
+	stdout   io.Writer
+	stderr   io.Writer
+	stdin    io.Reader
+	saveErr  bool
+	printErr bool
+	ctx      context.Context
 }
 
 func CMD(cmd ...string) *RunInfo {
 	r := &RunInfo{cmd: cmd}
 	r.env = os.Environ()
-	r.stdout = os.Stdout
-	r.stderr = os.Stderr
+	r.stdout = nil
+	r.stderr = nil
 	r.ctx = context.Background()
 	return r
 }
@@ -79,6 +84,27 @@ func (r *RunInfo) Ctx(ctx context.Context) *RunInfo {
 	return r
 }
 
+// SaveErr - If the command starts but does not complete successfully, the error is of
+// type *ExitError. In this case, save the error output into *ExitError.Stderr for retrieval.
+//
+// Retrieval can be done as shown below:
+//
+//   err := run.CMD("./command", "arg").SaveErr().Run() // or .STDOutOutput() or .CombinedOutput()
+//   if err != nil {
+//     var exitErr *exec.ExitError
+//     if errors.As(err, &exitErr) {
+//       errOutput := exitErr.Stderr
+func (r *RunInfo) SaveErr() *RunInfo {
+	r.saveErr = true
+	return r
+}
+
+// PrintErr - Regardless of operation mode, print errors to os.Stderr as they occur.
+func (r *RunInfo) PrintErr() *RunInfo {
+	r.printErr = true
+	return r
+}
+
 // CombinedOutput - Runs given CMD and returns STDOut and STDErr combined.
 func (r *RunInfo) CombinedOutput() ([]byte, error) {
 	var b bytes.Buffer
@@ -89,10 +115,11 @@ func (r *RunInfo) CombinedOutput() ([]byte, error) {
 }
 
 // STDOutOutput - Runs given CMD and returns STDOut only.
+//
+// Stderr output is discarded unless a call to SaveErr() or PrintErr() was made.
 func (r *RunInfo) STDOutOutput() ([]byte, error) {
 	var b bytes.Buffer
 	r.stdout = &b
-	r.stderr = nil
 	err := r.Run()
 	return b.Bytes(), err
 }
@@ -124,6 +151,9 @@ func (r *RunInfo) Run(w ...io.Writer) error {
 	c.Dir = r.dir
 	c.Env = r.env
 	if len(w) == 0 {
+		if r.stdout == nil {
+			r.stdout = osStdout
+		}
 		c.Stdout = r.stdout
 		c.Stderr = r.stderr
 	} else if len(w) == 1 {
@@ -133,6 +163,27 @@ func (r *RunInfo) Run(w ...io.Writer) error {
 		c.Stdout = w[0]
 		c.Stderr = w[1]
 	}
+	if r.printErr {
+		if c.Stderr == nil {
+			c.Stderr = osStderr
+		} else if c.Stderr != osStderr {
+			c.Stderr = io.MultiWriter(c.Stderr, osStderr)
+		}
+	}
+	var b bytes.Buffer
+	if r.saveErr {
+		if c.Stderr == nil {
+			c.Stderr = &b
+		} else {
+			c.Stderr = io.MultiWriter(c.Stderr, &b)
+		}
+	}
 	c.Stdin = r.stdin
-	return c.Run()
+	err := c.Run()
+	if err != nil && r.saveErr {
+		if exitErr, ok := err.(*exec.ExitError); ok {
+			exitErr.Stderr = b.Bytes()
+		}
+	}
+	return err
 }

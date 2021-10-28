@@ -71,6 +71,36 @@ Import: `github.com/DavidGamba/dgtools/run`
 	out, err := run.CMD("./command", "arg1", "arg2").Ctx(ctx).CombinedOutput()
 ----
 
+.Run a command and pass a custom io.Writer to run:
+[source, go]
+----
+	// Defaults to os.Stdout and os.Stderr
+	err := run.CMD("./command", "arg1", "arg2").Run()
+
+	// Combined output to myCombinedWriter
+	err := run.CMD("./command", "arg1", "arg2").Run(myCombinedWriter)
+
+	// Separate streams
+	err := run.CMD("./command", "arg1", "arg2").Run(myStdoutWriter, myStderrWriter)
+----
+
+.Run command and only return Stdout but print Stderr to os.Stderr as it happends
+[source, go]
+----
+	out, err := run.CMD("./command", "arg1", "arg2").PrintErr().STDOutOutput()
+----
+
+.Run command and only return Stdout but save Stderr output to the error object if there was an error
+[source, go]
+----
+	out, err := run.CMD("./command", "arg1", "arg2").SaveErr().STDOutOutput()
+	if err != nil {
+		var exitErr *exec.ExitError
+		if errors.As(err, &exitErr) {
+			errOutput := exitErr.Stderr
+			log.Printf("Failed with exit code: %d, full error output: %s\n", exitErr.ExitCode(), string(errOutput))
+----
+
 == LICENSE
 
 This file is part of run.
