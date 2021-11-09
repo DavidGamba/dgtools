@@ -7,6 +7,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 //go:build linux || darwin
+// +build linux darwin
 
 package run
 
