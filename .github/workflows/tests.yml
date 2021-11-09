@@ -1,11 +1,9 @@
 ---
-name: Tests
+name: Test
 
 on:
-  push:
-    branches: [master, actions]
-  pull_request:
-    branches: [master]
+  - push
+  - pull_request
 
 jobs:
 
