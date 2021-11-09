@@ -76,3 +76,25 @@ jobs:
       - name: Test
         run: go test -coverprofile=coverage.txt -covermode=atomic ./...
         working-directory: ${{ matrix.tool }}
+
+  # fs introduced in go 1.17
+  libs-current:
+    name: Lib
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go: [1.17]
+        tool: [fsmodtime]
+    steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+        id: go
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+
+      - name: Test
+        run: go test -coverprofile=coverage.txt -covermode=atomic ./...
+        working-directory: ${{ matrix.tool }}
