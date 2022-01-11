@@ -36,6 +36,8 @@ TODO: Look into adding option to ignore reporting broken symlinks.
 
 TODO: Implement version sort.
 
+TODO: Limit depth
+
 */
 package main
 
@@ -75,8 +77,8 @@ OPTIONS:
         [--case]
         [-t|--type <f|d|filetype>]...
         [-T|--no-type <filetype>]...
-        [-e|--extension <extensionToMatch>]...
-        [-E|--no-extension <extensionToIgnore>]...
+        [-e|--extension <extension_to_match>]...
+        [-E|--no-extension <extension_to_ignore>]...
         [--no-follow]
         [--abs|--abs-path]
         [--num-sort]
@@ -90,6 +92,7 @@ HELP:
         ffind -h|-?|--help           # shows short help
 
 TODO:
+        [-D|--no-dir <dir_to_ignore>]
         [--color <never|auto|always>]
 `
 	fmt.Fprintln(os.Stderr, synopsis)
