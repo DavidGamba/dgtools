@@ -13,9 +13,4 @@ import (
 	"log"
 )
 
-var logger = log.New(ioutil.Discard, "", 0)
-
-// SetLogger - Define a logger for the library.
-func SetLogger(newLogger *log.Logger) {
-	logger = newLogger
-}
+var Logger = log.New(ioutil.Discard, "", 0)
