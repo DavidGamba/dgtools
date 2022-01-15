@@ -1,10 +1,8 @@
-= David Gamba's Toolbox
+= David Gamba's Toolbox image:https://github.com/DavidGamba/dgtools/workflows/Tests/badge.svg[link="https://github.com/DavidGamba/dgtools/actions"]
 
-image:https://github.com/DavidGamba/dgtools/workflows/Tests/badge.svg[link="https://github.com/DavidGamba/dgtools/actions"]
-
+image:./docs/toolbox.jpg[toolbox, width=600] +
 A monorepo filled with goodies.
 
-[IMPORTANT]
 ----
 Untagged tools/libs will not be maintained for public consumption (at least initially).
 ----
