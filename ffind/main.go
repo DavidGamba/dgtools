@@ -39,11 +39,12 @@ TODO: Implement version sort.
 TODO: Limit depth
 
 */
+
 package main
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -54,6 +55,8 @@ import (
 	"github.com/DavidGamba/dgtools/ffind/semver"
 	"github.com/DavidGamba/go-getoptions"
 )
+
+var Logger = log.New(io.Discard, "", log.LstdFlags)
 
 func synopsis() {
 	synopsis := `USAGE:
@@ -73,19 +76,6 @@ func synopsis() {
         # List file pattern matching files under given dir
         ffind <dir>/ <file_pattern> [OPTIONS...]
 
-OPTIONS:
-        [--case]
-        [-t|--type <f|d|filetype>]...
-        [-T|--no-type <filetype>]...
-        [-e|--extension <extension_to_match>]...
-        [-E|--no-extension <extension_to_ignore>]...
-        [--no-follow]
-        [--abs|--abs-path]
-        [--num-sort]
-        [--hidden]
-        [--vcs]                      # Sets --hidden when set.
-        [--verbose]
-
 HELP:
         ffind --type-list|--typelist # Show type list
         ffind --version              # Show version
@@ -99,7 +89,10 @@ TODO:
 }
 
 func main() {
-	log.SetOutput(ioutil.Discard)
+	os.Exit(program(os.Args))
+}
+
+func program(args []string) int {
 	var vcs, hidden, caseSensitive, follow, abspath bool
 	var sortNum, typeDir, typeFile bool
 	var fileType []string
@@ -110,7 +103,7 @@ func main() {
 	opt.Bool("debug", false)
 	opt.Bool("verbose", false)
 	opt.Bool("type-list", false, opt.Alias("typelist"))
-	opt.BoolVar(&vcs, "vcs", true)
+	opt.BoolVar(&vcs, "vcs", true, opt.Description("Sets --hidden when set."))
 	opt.BoolVar(&hidden, "hidden", true)
 	opt.BoolVar(&caseSensitive, "case", false)
 	opt.BoolVar(&follow, "no-follow", true)
@@ -120,35 +113,35 @@ func main() {
 	noFileType := opt.StringSlice("T", 1, 1, opt.Alias("no-type"))
 	matchExtensionList := opt.StringSlice("e", 1, 1, opt.Alias("extension"))
 	ignoreExtensionList := opt.StringSlice("E", 1, 1, opt.Alias("no-extension"))
-	remaining, err := opt.Parse(os.Args[1:])
+	remaining, err := opt.Parse(args[1:])
+	if opt.Called("help") {
+		fmt.Println(opt.Help())
+		synopsis()
+		return 1
+	}
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
-		os.Exit(1)
-	}
-	if opt.Called("help") {
-		synopsis()
-		os.Exit(1)
+		return 1
 	}
 	if opt.Called("version") {
 		version := semver.Version{Major: 0, Minor: 6, Patch: 2}
 		fmt.Println(version)
-		os.Exit(1)
+		return 1
 	}
-	if opt.Called("debug") {
-		log.SetOutput(os.Stderr)
-	}
-	log.Printf("Remaining: %v, opt: %v\n", remaining, opt.Stringer())
-
-	if opt.Called("verbose") {
-		fmt.Fprintf(os.Stderr, "CLI Options: %s\n", opt.Stringer())
-	}
-
 	if opt.Called("type-list") {
 		ffind.PrintTypeList()
-		os.Exit(1)
+		return 0
 	}
+	if opt.Called("debug") {
+		Logger.SetOutput(os.Stderr)
+	}
+	Logger.Println(remaining)
+
+	// ctx, cancel, done := getoptions.InterruptContext()
+	// defer func() { cancel(); <-done }()
+
 	if opt.Called("t") || opt.Called("T") {
-		log.Printf("type: %v, no-type %v\n", *fileTypeWithFileAndDir, *noFileType)
+		Logger.Printf("type: %v, no-type %v\n", *fileTypeWithFileAndDir, *noFileType)
 		for _, t := range *fileTypeWithFileAndDir {
 			switch t {
 			case "f":
@@ -158,7 +151,7 @@ func main() {
 			default:
 				if !ffind.KnownFileType(t) {
 					fmt.Fprintf(os.Stderr, "ERROR: Provided --type is not valid '%s'\n", t)
-					os.Exit(1)
+					return 1
 				}
 				fileType = append(fileType, t)
 			}
@@ -166,7 +159,7 @@ func main() {
 		for _, t := range *noFileType {
 			if !ffind.KnownFileType(t) {
 				fmt.Fprintf(os.Stderr, "ERROR: Provided --type is not valid '%s'\n", t)
-				os.Exit(1)
+				return 1
 			}
 		}
 	}
@@ -178,7 +171,7 @@ func main() {
 		filePattern = "."
 	case 1:
 		if strings.HasSuffix(remaining[0], string(os.PathSeparator)) {
-			log.Println("Assume dir")
+			Logger.Println("Assume dir")
 			filePattern = "."
 			dir = remaining[0]
 		} else {
@@ -186,7 +179,7 @@ func main() {
 		}
 	case 2:
 		if strings.HasSuffix(remaining[0], string(os.PathSeparator)) {
-			log.Println("Assume dir")
+			Logger.Println("Assume dir")
 			dir = remaining[0]
 			filePattern = remaining[1]
 		} else {
@@ -202,14 +195,14 @@ func main() {
 		absdir, err = filepath.Abs(dir)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
-			os.Exit(1)
+			return 1
 		}
 		absdir = filepath.Dir(absdir)
 	}
 
-	log.Printf("dir: %s\n", dir)
-	log.Printf("filePattern: %s\n", filePattern)
-	log.Printf("Ext: %v\n", ignoreExtensionList)
+	Logger.Printf("dir: %s\n", dir)
+	Logger.Printf("filePattern: %s\n", filePattern)
+	Logger.Printf("Ext: %v\n", ignoreExtensionList)
 	var r *regexp.Regexp
 	if caseSensitive {
 		r, err = regexp.Compile(filePattern)
@@ -218,7 +211,7 @@ func main() {
 	}
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR: with provided file pattern %s\n", err)
-		os.Exit(1)
+		return 1
 	}
 
 	var sfn ffind.SortFn
@@ -249,7 +242,7 @@ func main() {
 				continue
 			}
 		}
-		log.Printf("ffind: %s\n", e.Path)
+		Logger.Printf("ffind: %s\n", e.Path)
 		if r.MatchString(filepath.Base(e.Path)) {
 			if abspath {
 				fmt.Println(filepath.Join(absdir, e.Path))
@@ -258,4 +251,5 @@ func main() {
 			}
 		}
 	}
+	return 0
 }
