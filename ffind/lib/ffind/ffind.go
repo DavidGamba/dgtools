@@ -36,6 +36,9 @@ For example: '.rb' and '.erb' for ruby files.
 package ffind
 
 import (
+	"errors"
+	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 )
@@ -103,10 +106,7 @@ func ListOneLevel(path string, follow bool, sortFn SortFn) <-chan FileError {
 // If `file` is a symlink and we are not following symlinks, will return a FileError channel with itself.
 // If `file` is a symlink and we are following symlinks, will return a FileError channel with the readlink file.
 // If `file` is a dir, will return a FileError channel with one level list under the dir.
-func listOneLevel(
-	fe *FileError,
-	follow bool,
-	sortFn SortFn) <-chan FileError {
+func listOneLevel(fe *FileError, follow bool, sortFn SortFn) <-chan FileError {
 	fInfo := fe.FileInfo
 	file := fe.Path
 	Logger.Printf("file: %s\n", file)
@@ -255,5 +255,99 @@ func listRecursive(fe *FileError, follow bool, s FileMatcher, sortFn SortFn) <-c
 		close(c)
 		return
 	}()
+	return c
+}
+
+type EntryError struct {
+	FileInfo fs.FileInfo
+	Path     string
+	Error    error
+	fsys     fs.FS
+	Depth    int
+}
+
+func NewEntryError(fsys fs.FS, path string) *EntryError {
+	fi, err := fs.Stat(fsys, path)
+
+	// Logger.Printf("NewFileError: %s", path)
+	// fInfo, err := os.Lstat(path)
+	// if err != nil {
+	// 	Logger.Printf("NewFileError ERROR: %s", err)
+	// 	if os.IsNotExist(err) {
+	// 		// Clean up error context
+	// 		err = os.ErrNotExist
+	// 	}
+	// }
+	// return &FileError{fInfo, filepath.Clean(path), err}, err
+
+	return &EntryError{
+		FileInfo: fi,
+		Path:     filepath.Clean(path),
+		Error:    err,
+		fsys:     fsys,
+		Depth:    0,
+	}
+}
+
+func listRecursiveFS(ee *EntryError, maxDepth int, follow bool, sortFn SortFn) <-chan EntryError {
+	c := make(chan EntryError)
+
+	go func(ee EntryError) {
+
+		if ee.Error != nil {
+			c <- ee
+			close(c)
+			return
+		}
+
+		checkSymlink := func() {
+			if ee.FileInfo.Mode()&fs.ModeSymlink != 0 && follow {
+				// https://github.com/golang/go/issues/49580
+				// Waiting for readlink implementation on FS
+				eval, err := filepath.EvalSymlinks(ee.Path)
+				fmt.Printf("eval: %v - %s\n", eval, ee.Path)
+				if err != nil {
+					// If the link is broken then just return the original file
+					if errors.Is(err, fs.ErrNotExist) {
+						return
+					}
+					ee.Error = err
+					return
+				}
+				ne := NewEntryError(ee.fsys, eval)
+				if ne.Error != nil {
+					ee.Error = err
+					return
+				}
+				ee = *ne
+				c <- ee
+			}
+		}
+
+		checkSymlink()
+
+		if ee.FileInfo.IsDir() {
+			c <- ee
+
+			dde, err := fs.ReadDir(ee.fsys, ee.Path)
+			if err != nil {
+				ee.Error = fmt.Errorf("reading dir: %w", err)
+				c <- ee
+				close(c)
+				return
+			}
+			for _, de := range dde {
+				fi, err := de.Info()
+				cr := listRecursiveFS(&EntryError{fi, filepath.Join(ee.Path, fi.Name()), err, ee.fsys, ee.Depth + 1}, maxDepth, follow, sortFn)
+				for e := range cr {
+					c <- e
+				}
+			}
+		} else {
+			c <- EntryError{ee.FileInfo, ee.Path, nil, ee.fsys, ee.Depth}
+		}
+
+		close(c)
+	}(*ee)
 	return c
 }

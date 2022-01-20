@@ -14,6 +14,7 @@ package buildutils
 import (
 	"os"
 	"strings"
+	"time"
 
 	"github.com/DavidGamba/dgtools/run"
 )
@@ -33,6 +34,31 @@ func CDGitRepoRoot() error {
 	err = os.Chdir(out)
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+// TODO: ALlow for fs override for testing
+
+func SymlinkF(target, name string) error {
+	_ = os.Remove(name)
+	return os.Symlink(target, name)
+}
+
+func Touch(filename string) error {
+	_, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		file, err := os.Create(filename)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+	} else {
+		currentTime := time.Now().Local()
+		err = os.Chtimes(filename, currentTime, currentTime)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }

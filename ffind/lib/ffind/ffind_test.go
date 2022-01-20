@@ -10,6 +10,7 @@ package ffind
 
 import (
 	"fmt"
+	"io/fs"
 	"io/ioutil"
 	"log"
 	"os"
@@ -17,7 +18,54 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"testing/fstest"
 )
+
+func makeFS() fstest.MapFS {
+	m := make(fstest.MapFS)
+
+	m["test_tree"] = &fstest.MapFile{Mode: 0777 | fs.ModeDir}
+
+	m["test_tree/.A"] = &fstest.MapFile{Mode: 0777 | fs.ModeDir}
+	m["test_tree/.a"] = &fstest.MapFile{Mode: 0777 | fs.ModeDir}
+	m["test_tree/.hg"] = &fstest.MapFile{Mode: 0777 | fs.ModeDir}
+	m["test_tree/.svn"] = &fstest.MapFile{Mode: 0777 | fs.ModeDir}
+	m["test_tree/.git"] = &fstest.MapFile{Mode: 0777 | fs.ModeDir}
+	m["test_tree/A"] = &fstest.MapFile{Mode: 0777 | fs.ModeDir}
+	m["test_tree/a"] = &fstest.MapFile{Mode: 0777 | fs.ModeDir}
+
+	m["test_tree/slnA"] = &fstest.MapFile{Mode: 0777 | fs.ModeSymlink, Data: []byte("A")}
+	m["test_tree/slnB"] = &fstest.MapFile{Mode: 0777 | fs.ModeSymlink, Data: []byte("slnA")}
+	m["test_tree/slnC"] = &fstest.MapFile{Mode: 0777 | fs.ModeSymlink, Data: []byte("A/b/C/d/E")}
+	m["test_tree/slnD"] = &fstest.MapFile{Mode: 0777 | fs.ModeSymlink, Data: []byte("a/B/c/D/e")}
+	m["test_tree/slnE"] = &fstest.MapFile{Mode: 0777 | fs.ModeSymlink, Data: []byte("snlF")}
+	m["test_tree/slnF"] = &fstest.MapFile{Mode: 0777 | fs.ModeSymlink, Data: []byte("snlG")}
+	m["test_tree/slnG"] = &fstest.MapFile{Mode: 0777 | fs.ModeSymlink, Data: []byte("broken")}
+
+	m["test_tree/.A/b/C/d/E"] = &fstest.MapFile{Mode: 0666}
+	m["test_tree/.a/B/c/D/e"] = &fstest.MapFile{Mode: 0666}
+	m["test_tree/.hg/E"] = &fstest.MapFile{Mode: 0666}
+	m["test_tree/.hg/e"] = &fstest.MapFile{Mode: 0666}
+	m["test_tree/.svn/E"] = &fstest.MapFile{Mode: 0666}
+	m["test_tree/.svn/e"] = &fstest.MapFile{Mode: 0666}
+	m["test_tree/A/b/C/d/E"] = &fstest.MapFile{Mode: 0666}
+	m["test_tree/a/B/c/D/e"] = &fstest.MapFile{Mode: 0666}
+
+	return m
+}
+
+func TestListRecursiveFS(t *testing.T) {
+	// m := makeFS()
+	m := os.DirFS("../../test_files")
+	ee := NewEntryError(m, "test_tree")
+	ch := listRecursiveFS(ee, 0, true, nil)
+	for e := range ch {
+		if e.Error != nil {
+			t.Errorf("Error: %v\n", e.Error)
+		}
+		t.Errorf("%v\n", e.Path)
+	}
+}
 
 func goToRootDir() {
 	log.SetOutput(os.Stderr)
