@@ -24,6 +24,7 @@ jobs:
           - password-cache/cmd/password-cache
           - webserve
           - yaml-parse
+          - ffind
     steps:
       - name: Set up Go 1.x
         uses: actions/setup-go@v2
@@ -63,7 +64,6 @@ jobs:
         os: [ubuntu-latest]
         tool:
           - cli-bookmarks
-          - ffind
     steps:
       - name: Set up Go 1.x
         uses: actions/setup-go@v2
