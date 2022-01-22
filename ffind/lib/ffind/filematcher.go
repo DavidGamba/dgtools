@@ -26,6 +26,8 @@ type FileMatcher interface {
 	SkipFileName(name string) bool
 	// Include file based on name.
 	MatchFileName(name string) bool
+	// Max depth to recurse to
+	MaximumDepth() int
 }
 
 // BasicFileMatch - A simple FileMatcher interface implementation.
@@ -70,6 +72,8 @@ type BasicFileMatch struct {
 	IgnoreFileTypeList []string
 	// Matches files that end in any of the extensions listed in the provided type.
 	MatchFileTypeList []string
+
+	MaxDepth int
 }
 
 // nameInEqualsList - Case Insensitive equals matching.
@@ -236,4 +240,8 @@ func (l *BasicFileMatch) MatchFileName(name string) bool {
 		return true
 	}
 	return false
+}
+
+func (l *BasicFileMatch) MaximumDepth() int {
+	return l.MaxDepth
 }
