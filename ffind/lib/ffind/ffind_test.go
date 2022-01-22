@@ -54,19 +54,19 @@ func makeFS() fstest.MapFS {
 	return m
 }
 
-func TestListRecursiveFS(t *testing.T) {
-	goToRootDir()
-	// m := makeFS()
-	m := os.DirFS("test_files")
-	ee := NewEntryError(m, "test_tree")
-	ch := listRecursiveFS(ee, 0, true, nil)
-	for e := range ch {
-		if e.Error != nil {
-			t.Errorf("Error: %v\n", e.Error)
-		}
-		t.Errorf("%v\n", e.Path)
-	}
-}
+// func TestListRecursiveFS(t *testing.T) {
+// 	goToRootDir()
+// 	// m := makeFS()
+// 	m := os.DirFS("test_files")
+// 	ee := NewEntryError(m, "test_tree")
+// 	ch := listRecursiveFS(ee, 0, true, nil)
+// 	for e := range ch {
+// 		if e.Error != nil {
+// 			t.Errorf("Error: %v\n", e.Error)
+// 		}
+// 		t.Errorf("%v\n", e.Path)
+// 	}
+// }
 
 func goToRootDir() {
 	cwd, _ := os.Getwd()
