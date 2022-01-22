@@ -13,7 +13,7 @@ Library goals:
 
 • Return a file list given a dir.
 
-•  Return the given file given a file.
+• Return the given file given a file.
 
 • Do case insensitive (by default) or sensitive file matching.
 
@@ -170,9 +170,7 @@ func listOneLevel(fe *FileError, follow bool, sortFn SortFn) <-chan FileError {
 }
 
 // ListRecursive - will return a recursive list of FileError results under `path`.
-func ListRecursive(path string,
-	follow bool,
-	s FileMatcher, sortFn SortFn) <-chan FileError {
+func ListRecursive(path string, follow bool, s FileMatcher, sortFn SortFn) <-chan FileError {
 	fe, _ := NewFileError(path)
 	return listRecursive(fe, follow, s, sortFn)
 }

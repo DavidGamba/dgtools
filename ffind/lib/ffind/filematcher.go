@@ -34,10 +34,13 @@ type BasicFileMatch struct {
 	IgnoreFileResults bool
 	// Ignore dirs from output.
 	IgnoreDirResults bool
+
 	// Ignores .git, .svn and .hg directories.
 	IgnoreVCSDirs bool
+
 	// Ignores files and dirs with names starting in .
 	IgnoreHidden bool
+
 	// Ignores dirs that are case insensitive equal to any of the provided list of strings.
 	IgnoreDirEqualsList []string
 	// Ignores dirs that are case sensitive equal to any of the provided list of strings.
@@ -46,6 +49,7 @@ type BasicFileMatch struct {
 	IgnoreDirContainsList []string
 	// Ignores dirs that contain any of the case sensitive provided strings.
 	IgnoreDirContainsListCase []string
+
 	// Ignores files that are case insensitive equal to any of the provided list of strings.
 	IgnoreFileEqualsList []string
 	// Ignores files that are case sensitive equal to any of the provided list of strings.
@@ -54,12 +58,14 @@ type BasicFileMatch struct {
 	IgnoreFileContainsList []string
 	// Ignores files that contain any of the case sensitive provided strings.
 	IgnoreFileContainsListCase []string
+
 	// Ignores files that end in any of the case insensitive provided strings.
 	// Dot is not included by default, so it must be provided in the list.
 	IgnoreFileExtensionList []string
 	// Matches files that end in any of the case insensitive provided strings.
 	// Dot is not included by default, so it must be provided in the list.
 	MatchFileExtensionList []string
+
 	// Ignores files that end in any of the extensions listed in the provided type.
 	IgnoreFileTypeList []string
 	// Matches files that end in any of the extensions listed in the provided type.
