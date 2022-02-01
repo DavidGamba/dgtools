@@ -33,7 +33,7 @@ func program(args []string) int {
 	opt := getoptions.New()
 	opt.Self("", `Parses YAML input passed from file or piped to STDIN and filters it by key or index.
 
-    Source: https://github.com/DavidGamba/dgtools`)
+         Source: https://github.com/DavidGamba/dgtools`)
 	opt.Bool("help", false, opt.Alias("?"))
 	opt.Bool("debug", false)
 	opt.Bool("version", false, opt.Alias("V"))
@@ -46,6 +46,7 @@ func program(args []string) int {
 		opt.Description(`Key or index to descend to.
 Multiple keys allow to descend further.
 Indexes are positive integers.`))
+	opt.IntOptional("document", 1, opt.Description("Document number"), opt.Alias("d"), opt.ArgName("number"))
 	_, err := opt.Parse(os.Args[1:])
 	if opt.Called("help") {
 		fmt.Println(opt.Help())
@@ -90,11 +91,11 @@ func realMain(opt *getoptions.GetOpt) error {
 	stdinIsDevice := (statStdin.Mode() & os.ModeDevice) != 0
 
 	var err error
-	var yml *yamlutils.YML
+	var ymlList []*yamlutils.YML
 	if !stdinIsDevice && !opt.Called("file") {
 		Logger.Printf("Reading from stdin\n")
 		reader := os.Stdin
-		yml, err = yamlutils.NewFromReader(reader)
+		ymlList, err = yamlutils.NewFromReader(reader)
 		if err != nil {
 			return fmt.Errorf("reading yaml from STDIN: %w", err)
 		}
@@ -103,12 +104,28 @@ func realMain(opt *getoptions.GetOpt) error {
 		if !opt.Called("file") {
 			return fmt.Errorf("missing argument '--file <file>'")
 		}
-		yml, err = yamlutils.NewFromFile(file)
+		ymlList, err = yamlutils.NewFromFile(file)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "ERROR: reading yaml file: %s\n", err)
 			os.Exit(1)
 		}
 	}
+
+	if !opt.Called("document") && len(ymlList) > 1 {
+		fmt.Fprintf(os.Stderr,
+			`WARNING: provided input contains %d YAML documents
+         specify '--document <number>' to remove this warning
+`, len(ymlList))
+	}
+
+	n := 0
+	if opt.Called("document") {
+		n = opt.Value("document").(int) - 1
+	}
+	if len(ymlList) < n+1 {
+		return fmt.Errorf("wrong document number: %d", n+1)
+	}
+	yml := ymlList[n]
 
 	if opt.Called("add") {
 		str, err := yml.AddString(xpath, add)

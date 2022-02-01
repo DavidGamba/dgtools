@@ -12,12 +12,12 @@ Package yamlutils - Utilities to read yml files like if using xpath
 package yamlutils
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
+	"os"
 	"strconv"
 	"strings"
 
@@ -39,33 +39,47 @@ type YML struct {
 	Tree interface{}
 }
 
-// NewFromFile returns a pointer to a YML object from a file.
-func NewFromFile(filename string) (*YML, error) {
-	data, err := ioutil.ReadFile(filename)
-	if err != nil {
-		return nil, err
+// NewFromFile returns a list of pointers to a YML object from a file.
+//
+// Returns a list since YAML files can contain multiple documents:
+// https://yaml.org/spec/1.2-old/spec.html#id2800401
+func NewFromFile(filename string) ([]*YML, error) {
+	list := []*YML{}
+	fh, err := os.Open(filename)
+	decoder := yaml.NewDecoder(fh)
+	for {
+		var tree interface{}
+		err = decoder.Decode(&tree)
+		if err != nil {
+			if !errors.Is(err, io.EOF) {
+				return nil, err
+			}
+			break
+		}
+		list = append(list, &YML{Tree: tree})
 	}
-	var tree interface{}
-	err = yaml.Unmarshal(data, &tree)
-	if err != nil {
-		return nil, err
-	}
-	return &YML{Tree: tree}, nil
+	return list, nil
 }
 
-// NewFromReader returns a pointer to a YML object from an io.Reader.
-func NewFromReader(reader io.Reader) (*YML, error) {
-	var tree interface{}
-	buf := new(bytes.Buffer)
-	_, err := buf.ReadFrom(reader)
-	if err != nil {
-		return nil, err
+// NewFromReader returns a list of pointers to a YML object from an io.Reader.
+//
+// Returns a list since YAML files can contain multiple documents:
+// https://yaml.org/spec/1.2-old/spec.html#id2800401
+func NewFromReader(reader io.Reader) ([]*YML, error) {
+	list := []*YML{}
+	decoder := yaml.NewDecoder(reader)
+	for {
+		var tree interface{}
+		err := decoder.Decode(&tree)
+		if err != nil {
+			if !errors.Is(err, io.EOF) {
+				return nil, err
+			}
+			break
+		}
+		list = append(list, &YML{Tree: tree})
 	}
-	err = yaml.Unmarshal(buf.Bytes(), &tree)
-	if err != nil {
-		return nil, err
-	}
-	return &YML{Tree: tree}, nil
+	return list, nil
 }
 
 // NewFromString - returns a pointer to a YML object from a string.
