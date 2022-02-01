@@ -1,0 +1,117 @@
+= yaml-parse
+
+Parses YAML input passed from file or piped to STDIN and filters it by key or index
+
+== Install
+
+`$ go install github.com/DavidGamba/dgtools/yaml-parse@master`
+
+== Examples
+
+Given the following test data in the file `test_data/test.yaml`:
+
+[source, yaml]
+----
+---
+hello: world
+
+array:
+  - element 1
+  - element 2
+  - element 3
+
+array 2:
+  - key1:     value1
+  - key2: value2
+  - key3: value3
+
+number: 123
+float: 123.123
+bool: true
+----
+
+.Print all contents
+----
+$ yaml-parse -f test_data/test.yaml
+array:
+- element 1
+- element 2
+- element 3
+array 2:
+- key1: value1
+- key2: value2
+- key3: value3
+bool: true
+float: 123.123
+hello: world
+number: 123
+----
+
+.Print `array`
+----
+$ yaml-parse -f test_data/test.yaml -k array
+- element 1
+- element 2
+- element 3
+----
+
+.Print `array` first element
+----
+$ yaml-parse -f test_data/test.yaml -k array -k 0
+element 1
+----
+
+.Print `array 2`
+----
+$ yaml-parse -f test_data/test.yaml -k 'array 2'
+- key1: value1
+- key2: value2
+- key3: value3
+----
+
+.Print `array 2` first element then map value
+----
+$ yaml-parse -f test_data/test.yaml -k 'array 2' -k 0 -k key1
+value1
+----
+
+.Do the same with slash
+----
+$ yaml-parse -f test_data/test.yaml -k 'array 2/0/key1'
+value1
+----
+
+.Add a json element to 'array 2'
+----
+$ yaml-parse -f test_data/test.yaml --add '{ hola: mundo }' -k 'array 2'
+array:
+- element 1
+- element 2
+- element 3
+array 2:
+- key1: value1
+- key2: value2
+- key3: value3
+- hola: mundo
+bool: true
+float: 123.123
+hello: world
+number: 123
+----
+
+.Read the second document of a multi document YAML file
+----
+$ yaml-parse -f test_data/multiple.yaml -d 2
+arreglo:
+- elemento 1
+- elemento 2
+- elemento 3
+arreglo 2:
+- llave1: valor1
+- llave2: valor2
+- llave3: valor3
+bool: true
+float: 123.123
+hola: mundo
+numero: 123
+----
