@@ -59,12 +59,35 @@ func CacheSecret(name string, password []byte, timeoutSeconds uint) error {
 		return fmt.Errorf("couldn't create keyring session: %w", err)
 	}
 
-	// Store key
-	keyring.SetDefaultTimeout(timeoutSeconds)
-	key, err := keyring.Add(name, password)
+	session, err := keyctl.SessionKeyring()
+	if err != nil {
+		return fmt.Errorf("couldn't create session: %w", err)
+	}
+	session.SetDefaultTimeout(timeoutSeconds)
+	key, err := session.Add(name, password)
 	if err != nil {
 		return fmt.Errorf("couldn't store '%s': %s", name, err)
 	}
+
+	perm := keyctl.PermUserAll | keyctl.PermProcessAll
+	err = keyctl.SetPerm(key, perm)
+	if err != nil {
+		return fmt.Errorf("couldn't set perms '%s': %s", name, err)
+	}
+	err = keyctl.Link(keyring, key)
+	if err != nil {
+		return fmt.Errorf("couldn't link '%s': %s", name, err)
+	}
+
+	err = keyctl.Unlink(session, key)
+	if err != nil {
+		return fmt.Errorf("couldn't unlink '%s': %s", name, err)
+	}
+	key, err = keyring.Search(name)
+	if err != nil {
+		return fmt.Errorf("couldn't find '%s': %s", name, err)
+	}
+
 	info, _ := key.Info()
 	logger.Printf("key: %+v", info)
 	return nil
@@ -80,7 +103,7 @@ func CacheSecret(name string, password []byte, timeoutSeconds uint) error {
 func GetAndCacheSecret(name, msg string, timeoutSeconds uint) ([]byte, error) {
 	data, err := GetSecret(name, msg)
 	if err != nil {
-		return data, err
+		return data, fmt.Errorf("get secret: %w", err)
 	}
 
 	err = CacheSecret(name, data, timeoutSeconds)
