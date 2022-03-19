@@ -1,12 +1,14 @@
 module github.com/DavidGamba/dgtools/json-parse
 
+go 1.18
+
 require (
-	github.com/DavidGamba/dgtools v0.0.0
 	github.com/DavidGamba/dgtools/jsonutils v0.0.0
-	github.com/DavidGamba/go-getoptions v0.21.0
+	github.com/DavidGamba/go-getoptions v0.25.3
 )
 
-replace github.com/DavidGamba/dgtools => ../
+require github.com/DavidGamba/dgtools/trees v0.0.0 // indirect
+
 replace github.com/DavidGamba/dgtools/jsonutils => ../jsonutils
 
-go 1.16
+replace github.com/DavidGamba/dgtools/trees => ../trees

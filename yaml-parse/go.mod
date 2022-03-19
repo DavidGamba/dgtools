@@ -5,8 +5,13 @@ require (
 	github.com/DavidGamba/go-getoptions v0.25.3
 )
 
-replace github.com/DavidGamba/dgtools => ../
+require (
+	github.com/DavidGamba/dgtools/trees v0.0.0 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
+)
 
 replace github.com/DavidGamba/dgtools/yamlutils => ../yamlutils
 
-go 1.15
+replace github.com/DavidGamba/dgtools/trees => ../trees
+
+go 1.18
