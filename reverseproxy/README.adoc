@@ -1,0 +1,41 @@
+= ReverseProxy
+
+Creates a very simple reverse proxy that inserts the following headers:
+
+* X-Forwarded-Host
+* X-Forwarded-Proto
+* X-Forwarded-Url
+
+It allows to reverse proxy multiple services with their own base paths.
+
+== Creating a self signed cert
+
+----
+$ openssl req -new -subj "/C=CA/ST=Alberta/CN=localhost" -newkey rsa:2048 -nodes -keyout localhost.key -out localhost.csr
+$ openssl x509 -req -days 365 -in localhost.csr -signkey localhost.key -out localhost.crt
+$ cat localhost.crt localhost.key > localhost.pem
+----
+
+Taken from https://stackoverflow.com/a/65432506
+
+== Run
+
+Without TLS:
+
+----
+$ ./reverseproxy -p 8080 -t http://localhost:8081 -b /path
+----
+
+With TLS:
+
+----
+$ ./reverseproxy -p 8443 -t http://localhost:8081 -b /path -cert localhost.crt -key localhost.key
+----
+
+With multiple services:
+
+----
+$ ./reverseproxy -p 8080 \
+  -t http://localhost:8081 -b /service-a \
+  -t http://localhost:8082 -b /service-b
+----

@@ -8,3 +8,4 @@ joinlines/joinlines
 password-cache/cmd/password-cache/password-cache
 webserve/webserve
 yaml-parse/yaml-parse
+reverseproxy/reverseproxy
