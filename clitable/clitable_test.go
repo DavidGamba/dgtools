@@ -6,13 +6,15 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-package clitable
+package clitable_test
 
 import (
 	"bytes"
 	"io"
 	"reflect"
 	"testing"
+
+	"github.com/DavidGamba/dgtools/clitable"
 )
 
 func Test_GetTableInfo(t *testing.T) {
@@ -22,12 +24,12 @@ func Test_GetTableInfo(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    *TableInfo
+		want    *clitable.TableInfo
 		wantErr bool
 	}{
 		{"single column, single row",
 			args{bytes.NewBufferString("hello")},
-			&TableInfo{
+			&clitable.TableInfo{
 				Columns:            1,
 				Rows:               1,
 				PerRowColumnWidths: [][]int{{5}},
@@ -38,7 +40,7 @@ func Test_GetTableInfo(t *testing.T) {
 			false},
 		{"multi column, single row",
 			args{bytes.NewBufferString("a,bb")},
-			&TableInfo{
+			&clitable.TableInfo{
 				Columns:            2,
 				Rows:               1,
 				PerRowColumnWidths: [][]int{{1, 2}},
@@ -50,7 +52,7 @@ func Test_GetTableInfo(t *testing.T) {
 		{"multi column, multi row",
 			args{bytes.NewBufferString(`a,bb
 ccc,dddd`)},
-			&TableInfo{
+			&clitable.TableInfo{
 				Columns:            2,
 				Rows:               2,
 				PerRowColumnWidths: [][]int{{1, 2}, {3, 4}},
@@ -62,7 +64,7 @@ ccc,dddd`)},
 		{"multi column, multi row, uneven rows",
 			args{bytes.NewBufferString(`a
 ccc,dddd`)},
-			&TableInfo{
+			&clitable.TableInfo{
 				Columns:            2,
 				Rows:               2,
 				PerRowColumnWidths: [][]int{{1}, {3, 4}},
@@ -76,7 +78,7 @@ ccc,dddd`)},
 bbbbb
 bb",ccc
 dddd,ee,fff`)},
-			&TableInfo{
+			&clitable.TableInfo{
 				Columns:            3,
 				Rows:               2,
 				PerRowColumnWidths: [][]int{{1, 5, 3}, {4, 2, 3}},
@@ -87,7 +89,7 @@ dddd,ee,fff`)},
 			false},
 		{"bad input",
 			args{bytes.NewBufferString(`a,"bb`)},
-			&TableInfo{
+			&clitable.TableInfo{
 				Columns: 0,
 				Rows:    0,
 			},
@@ -95,7 +97,7 @@ dddd,ee,fff`)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetTableInfo(CSVTable{tt.args.reader})
+			got, err := clitable.GetTableInfo(clitable.CSVTable{tt.args.reader})
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetTableInfo() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -109,18 +111,18 @@ dddd,ee,fff`)},
 
 func TestGetTableInfoSimpleTable(t *testing.T) {
 	type args struct {
-		t Table
+		t clitable.Table
 	}
 	tests := []struct {
 		name    string
 		args    args
-		want    *TableInfo
+		want    *clitable.TableInfo
 		wantErr bool
 	}{
 		{
 			"Basic table 1x1",
-			args{SimpleTable{[][]string{{"a"}}}},
-			&TableInfo{
+			args{clitable.SimpleTable{[][]string{{"a"}}}},
+			&clitable.TableInfo{
 				Columns:            1,
 				Rows:               1,
 				PerRowColumnWidths: [][]int{{1}},
@@ -132,8 +134,8 @@ func TestGetTableInfoSimpleTable(t *testing.T) {
 		},
 		{
 			"Basic table 2x2",
-			args{SimpleTable{[][]string{{"a", "b"}, {"a", "b"}}}},
-			&TableInfo{
+			args{clitable.SimpleTable{[][]string{{"a", "b"}, {"a", "b"}}}},
+			&clitable.TableInfo{
 				Columns:            2,
 				Rows:               2,
 				PerRowColumnWidths: [][]int{{1, 1}, {1, 1}},
@@ -146,7 +148,7 @@ func TestGetTableInfoSimpleTable(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetTableInfo(tt.args.t)
+			got, err := clitable.GetTableInfo(tt.args.t)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetTableInfo() error = %v, wantErr %v", err, tt.wantErr)
 				return
