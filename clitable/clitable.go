@@ -32,61 +32,171 @@ import (
 // Set output to os.Stderr or override.
 var Logger = log.New(ioutil.Discard, "clitable DEBUG ", log.LstdFlags)
 
-// TableConfig -
-type TableConfig struct {
-	HeaderStart     string
-	HeaderEnd       string
-	HeaderJuncture  string
-	Body            string
-	Column          string
-	LineStart       string
-	LineEnd         string
-	LineJuncture    string
-	LineBetweenRows bool
-	ColumnEdges     bool
+type TablePrinter struct {
+	tableConfig tableConfig
 }
 
-// NewDefaultTableConfig -
-func NewDefaultTableConfig(columnEdges, lineBetweenRows bool) TableConfig {
-	return TableConfig{
-		HeaderStart:     "┌",
-		HeaderEnd:       "┐",
-		HeaderJuncture:  "┬",
-		Body:            "─",
-		Column:          "│",
-		LineStart:       "├",
-		LineEnd:         "┤",
-		LineJuncture:    "┼",
-		LineBetweenRows: lineBetweenRows,
-		ColumnEdges:     columnEdges,
+type tableConfig struct {
+	HasHeader bool
+
+	TopLine     bool
+	TopStart    string
+	TopEnd      string
+	TopJuncture string
+	TopBody     string
+
+	HeaderDividerLine     bool
+	HeaderDividerStart    string
+	HeaderDividerEnd      string
+	HeaderDividerJuncture string
+	HeaderDividerBody     string
+
+	BottomLine     bool
+	BottomStart    string
+	BottomEnd      string
+	BottomJuncture string
+	BottomBody     string
+
+	DividerLine     bool
+	DividerStart    string
+	DividerEnd      string
+	DividerJuncture string
+	DividerBody     string
+
+	Column      string
+	ColumnEdges bool
+}
+
+func NewTablePrinter() *TablePrinter {
+	tp := &TablePrinter{}
+	tp.SetStyle(Full)
+	tp.tableConfig.HasHeader = true
+	return tp
+}
+
+type Style int
+
+const (
+	Full Style = iota
+	Ascii
+	Compact
+	Space
+)
+
+func (tp *TablePrinter) HasHeader(b bool) *TablePrinter {
+	tp.tableConfig.HasHeader = b
+	return tp
+}
+
+func (tp *TablePrinter) SetStyle(s Style) *TablePrinter {
+	switch s {
+	case Full:
+		tp.tableConfig.TopLine = true
+		tp.tableConfig.TopStart = "┌"
+		tp.tableConfig.TopEnd = "┐"
+		tp.tableConfig.TopJuncture = "┬"
+		tp.tableConfig.TopBody = "─"
+
+		tp.tableConfig.HeaderDividerLine = true
+		tp.tableConfig.HeaderDividerStart = "╞"
+		tp.tableConfig.HeaderDividerEnd = "╡"
+		tp.tableConfig.HeaderDividerJuncture = "╪"
+		tp.tableConfig.HeaderDividerBody = "═"
+
+		tp.tableConfig.BottomLine = true
+		tp.tableConfig.BottomStart = "└"
+		tp.tableConfig.BottomEnd = "┘"
+		tp.tableConfig.BottomJuncture = "┴"
+		tp.tableConfig.BottomBody = "─"
+
+		tp.tableConfig.DividerLine = true
+		tp.tableConfig.DividerStart = "├"
+		tp.tableConfig.DividerEnd = "┤"
+		tp.tableConfig.DividerJuncture = "┼"
+		tp.tableConfig.DividerBody = "─"
+
+		tp.tableConfig.Column = "│"
+		tp.tableConfig.ColumnEdges = true
+	case Compact:
+		tp.tableConfig.TopLine = true
+		tp.tableConfig.TopStart = "┌"
+		tp.tableConfig.TopEnd = "┐"
+		tp.tableConfig.TopJuncture = "┬"
+		tp.tableConfig.TopBody = "─"
+
+		tp.tableConfig.HeaderDividerLine = true
+		tp.tableConfig.HeaderDividerStart = "╞"
+		tp.tableConfig.HeaderDividerEnd = "╡"
+		tp.tableConfig.HeaderDividerJuncture = "╪"
+		tp.tableConfig.HeaderDividerBody = "═"
+
+		tp.tableConfig.BottomLine = true
+		tp.tableConfig.BottomStart = "└"
+		tp.tableConfig.BottomEnd = "┘"
+		tp.tableConfig.BottomJuncture = "┴"
+		tp.tableConfig.BottomBody = "─"
+
+		tp.tableConfig.DividerLine = false
+		tp.tableConfig.DividerStart = "├"
+		tp.tableConfig.DividerEnd = "┤"
+		tp.tableConfig.DividerJuncture = "┼"
+		tp.tableConfig.DividerBody = "─"
+
+		tp.tableConfig.Column = "│"
+		tp.tableConfig.ColumnEdges = false
+	case Ascii:
+		tp.tableConfig.TopLine = true
+		tp.tableConfig.TopStart = "+"
+		tp.tableConfig.TopEnd = "+"
+		tp.tableConfig.TopJuncture = "+"
+		tp.tableConfig.TopBody = "-"
+
+		tp.tableConfig.HeaderDividerLine = true
+		tp.tableConfig.HeaderDividerStart = "+"
+		tp.tableConfig.HeaderDividerEnd = "+"
+		tp.tableConfig.HeaderDividerJuncture = "+"
+		tp.tableConfig.HeaderDividerBody = "="
+
+		tp.tableConfig.BottomLine = true
+		tp.tableConfig.BottomStart = "+"
+		tp.tableConfig.BottomEnd = "+"
+		tp.tableConfig.BottomJuncture = "+"
+		tp.tableConfig.BottomBody = "-"
+
+		tp.tableConfig.DividerLine = true
+		tp.tableConfig.DividerStart = "+"
+		tp.tableConfig.DividerEnd = "+"
+		tp.tableConfig.DividerJuncture = "+"
+		tp.tableConfig.DividerBody = "-"
+
+		tp.tableConfig.Column = "|"
+		tp.tableConfig.ColumnEdges = true
+	case Space:
+		tp.tableConfig.TopLine = false
+		tp.tableConfig.BottomLine = false
+		tp.tableConfig.DividerLine = false
+		tp.tableConfig.HeaderDividerLine = false
+
+		tp.tableConfig.Column = " "
+		tp.tableConfig.ColumnEdges = false
 	}
+	return tp
 }
 
-func printHorizontalLine(start, juncture, end, body string, tableInfo *TableInfo, config TableConfig) {
-	for i := 0; i < tableInfo.Columns; i++ {
-		if i == 0 {
-			if config.ColumnEdges {
-				fmt.Printf(start)
-			} else {
-				fmt.Printf("")
-			}
-		} else {
-			fmt.Printf(juncture)
-		}
-		// Column width with space padding on each side
-		fmt.Printf(strings.Repeat(body, tableInfo.ColumnWidths[i]+2))
-		if i+1 == tableInfo.Columns {
-			if config.ColumnEdges {
-				fmt.Println(end)
-			} else {
-				fmt.Println("")
-			}
-		}
+func (tp *TablePrinter) Print(t Table) error {
+	return tp.Fprint(os.Stdout, t)
+}
+
+func (tp *TablePrinter) Fprint(w io.Writer, t Table) error {
+	tableInfo, err := GetTableInfo(t)
+	if err != nil {
+		return err
 	}
+	return tp.fprint(w, t, tableInfo)
 }
 
-// PrintCSVTable - Given an io.Reader that points to CSV content, it prints the CSV as a table.
-func PrintCSVTable(r io.Reader) error {
+func (tp *TablePrinter) FprintCSVReader(w io.Writer, r io.Reader) error {
+	// TODO: I am sure I can make this simpler and maybe even not necessary
 	var readerCopy bytes.Buffer
 	reader := io.TeeReader(r, &readerCopy)
 	t := CSVTable{reader}
@@ -96,48 +206,29 @@ func PrintCSVTable(r io.Reader) error {
 	}
 	Logger.Printf("tableInfo: %s\n", tableInfo)
 	t = CSVTable{&readerCopy}
-	return FprintfTable(os.Stdout, NewDefaultTableConfig(true, true), t, tableInfo)
+	return tp.fprint(os.Stdout, t, tableInfo)
 }
 
-// PrintSimpleTable -
-func PrintSimpleTable(data [][]string) error {
-	t := SimpleTable{data}
-	tableInfo, err := GetTableInfo(t)
-	if err != nil {
-		return err
-	}
-	Logger.Printf("tableInfo: %s\n", tableInfo)
-	return FprintfTable(os.Stdout, NewDefaultTableConfig(true, true), t, tableInfo)
-}
-
-// FprintfTable -
-func FprintfTable(w io.Writer, config TableConfig, t Table, tableInfo *TableInfo) error {
-	var err error
-	if tableInfo == nil {
-		tableInfo, err = GetTableInfo(t)
-		if err != nil {
-			return err
-		}
-	}
-	header := true
+func (tp *TablePrinter) fprint(w io.Writer, t Table, tableInfo *TableInfo) error {
+	header := tp.tableConfig.TopLine
 	rowCounter := 0
 	for row := range t.RowIterator() {
 		if row.Error != nil {
 			return row.Error
 		}
 		if header {
-			printHorizontalLine("┌", "┬", "┐", "─", tableInfo, config)
+			printTopLine(tp.tableConfig, tableInfo)
 			header = false
 		}
 		for i := 0; i < tableInfo.RowHeights[rowCounter]; i++ {
-			if config.ColumnEdges {
-				fmt.Printf("│")
+			if tp.tableConfig.ColumnEdges {
+				fmt.Printf(tp.tableConfig.Column)
 			} else {
 				fmt.Printf("")
 			}
 			for j := 0; j < tableInfo.Columns; j++ {
 				if j > 0 {
-					fmt.Printf("│")
+					fmt.Printf(tp.tableConfig.Column)
 				}
 				if len(row.Fields) <= j {
 					fmt.Printf(" %-"+strconv.Itoa(tableInfo.ColumnWidths[j])+"s ", " ")
@@ -150,19 +241,66 @@ func FprintfTable(w io.Writer, config TableConfig, t Table, tableInfo *TableInfo
 					fmt.Printf(" %-"+strconv.Itoa(tableInfo.ColumnWidths[j])+"s ", " ")
 				}
 			}
-			if config.ColumnEdges {
-				fmt.Println("│")
+			if tp.tableConfig.ColumnEdges {
+				fmt.Println(tp.tableConfig.Column)
 			} else {
 				fmt.Println("")
 			}
 		}
 		if rowCounter+1 < tableInfo.Rows {
-			if config.LineBetweenRows {
-				printHorizontalLine("├", "┼", "┤", "─", tableInfo, config)
+			if rowCounter+1 == 1 && tp.tableConfig.HeaderDividerLine {
+				if tp.tableConfig.HasHeader {
+					printHeaderDividerLine(tp.tableConfig, tableInfo)
+				} else {
+					printDividerLine(tp.tableConfig, tableInfo)
+				}
+			} else if tp.tableConfig.DividerLine {
+				printDividerLine(tp.tableConfig, tableInfo)
 			}
 		}
 		rowCounter++
 	}
-	printHorizontalLine("└", "┴", "┘", "─", tableInfo, config)
+	if tp.tableConfig.BottomLine {
+		printBottomLine(tp.tableConfig, tableInfo)
+	}
 	return nil
+}
+
+func printTopLine(tableConfig tableConfig, tableInfo *TableInfo) {
+	printHorizontalLine(tableConfig.TopStart, tableConfig.TopJuncture, tableConfig.TopEnd, tableConfig.TopBody, tableConfig.ColumnEdges, tableInfo)
+}
+
+func printBottomLine(tableConfig tableConfig, tableInfo *TableInfo) {
+	printHorizontalLine(tableConfig.BottomStart, tableConfig.BottomJuncture, tableConfig.BottomEnd, tableConfig.BottomBody, tableConfig.ColumnEdges, tableInfo)
+}
+
+func printDividerLine(tableConfig tableConfig, tableInfo *TableInfo) {
+	printHorizontalLine(tableConfig.DividerStart, tableConfig.DividerJuncture, tableConfig.DividerEnd, tableConfig.DividerBody, tableConfig.ColumnEdges, tableInfo)
+}
+
+func printHeaderDividerLine(tableConfig tableConfig, tableInfo *TableInfo) {
+	printHorizontalLine(tableConfig.HeaderDividerStart, tableConfig.HeaderDividerJuncture, tableConfig.HeaderDividerEnd, tableConfig.HeaderDividerBody, tableConfig.ColumnEdges, tableInfo)
+}
+
+func printHorizontalLine(start, juncture, end, body string, columnEdges bool, tableInfo *TableInfo) {
+	for i := 0; i < tableInfo.Columns; i++ {
+		if i == 0 {
+			if columnEdges {
+				fmt.Printf(start)
+			} else {
+				fmt.Printf("")
+			}
+		} else {
+			fmt.Printf(juncture)
+		}
+		// Column width with space padding on each side
+		fmt.Printf(strings.Repeat(body, tableInfo.ColumnWidths[i]+2))
+		if i+1 == tableInfo.Columns {
+			if columnEdges {
+				fmt.Println(end)
+			} else {
+				fmt.Println("")
+			}
+		}
+	}
 }

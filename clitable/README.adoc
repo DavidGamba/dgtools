@@ -21,13 +21,127 @@ For simple tables of type `[][]string`:
 
 [source, go]
 ----
-data := [][]string{{"a", "b"}, {"a", "b"}}
-clitable.PrintSimpleTable(data)
+simpleData := [][]string{{"Hello", "1"}, {"World", "2"}}
+clitable.NewTablePrinter().Print(clitable.SimpleTable{simpleData})
 ----
 
-For iterating over structs you need to implement the table interface:
+----
+┌───────┬───┐
+│ Hello │ 1 │
+├───────┼───┤
+│ World │ 2 │
+└───────┴───┘
+----
+
+For CSV from an `io.Reader`:
 
 [source, go]
 ----
+r := strings.NewReader("Hello,1\nWorld,2\n")
+clitable.NewTablePrinter().FprintCSVReader(os.Stdout, r)
+----
 
 ----
+┌───────┬───┐
+│ Hello │ 1 │
+├───────┼───┤
+│ World │ 2 │
+└───────┴───┘
+----
+
+For iterating over structs you need to implement the table interface by adding a `RowIterator` function:
+
+[source, go]
+----
+type Data struct {
+	Info []struct {
+		Name string
+		ID   int
+	}
+}
+
+func (d *Data) RowIterator() <-chan clitable.Row {
+	c := make(chan clitable.Row)
+	go func() {
+		c <- clitable.Row{Fields: []string{"", "Name", "ID"}}
+		for i, row := range d.Info {
+			c <- clitable.Row{Fields: []string{strconv.Itoa(i + 1), row.Name, strconv.Itoa(row.ID)}}
+		}
+		close(c)
+	}()
+	return c
+}
+----
+
+Then print:
+
+[source, go]
+----
+data := &Data{[]struct {
+  Name string
+  ID   int
+}{{"Hello", 1}, {"World", 2}}}
+
+clitable.NewTablePrinter().Fprint(os.Stdout, data)
+----
+
+----
+┌───┬───────┬────┐
+│   │ Name  │ ID │
+╞═══╪═══════╪════╡
+│ 1 │ Hello │ 1  │
+├───┼───────┼────┤
+│ 2 │ World │ 2  │
+└───┴───────┴────┘
+----
+
+Controlling style:
+
+[source, go]
+----
+clitable.NewTablePrinter().SetStyle(clitable.Full).Print(data)
+
+┌───┬───────┬────┐
+│   │ Name  │ ID │
+╞═══╪═══════╪════╡
+│ 1 │ Hello │ 1  │
+├───┼───────┼────┤
+│ 2 │ World │ 2  │
+└───┴───────┴────┘
+
+clitable.NewTablePrinter().SetStyle(clitable.Full).HasHeader(false).Print(data)
+
+┌───┬───────┬────┐
+│   │ Name  │ ID │
+├───┼───────┼────┤
+│ 1 │ Hello │ 1  │
+├───┼───────┼────┤
+│ 2 │ World │ 2  │
+└───┴───────┴────┘
+
+clitable.NewTablePrinter().SetStyle(clitable.Compact).Print(data)
+
+───┬───────┬────
+   │ Name  │ ID 
+═══╪═══════╪════
+ 1 │ Hello │ 1  
+ 2 │ World │ 2  
+───┴───────┴────
+
+clitable.NewTablePrinter().SetStyle(clitable.Ascii).Print(data)
+
++---+-------+----+
+|   | Name  | ID |
++===+=======+====+
+| 1 | Hello | 1  |
++---+-------+----+
+| 2 | World | 2  |
++---+-------+----+
+
+clitable.NewTablePrinter().SetStyle(clitable.Space).Print(data)
+
+     Name    ID 
+ 1   Hello   1  
+ 2   World   2  
+----
+

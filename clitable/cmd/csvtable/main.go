@@ -33,7 +33,7 @@ import (
 //   go build -ldflags="-X main.BuildMetadata=`date +'%Y%m%d%H%M%S'`.`git rev-parse --short HEAD`"
 var BuildMetadata = "dev"
 
-const semVersion = "0.2.0"
+const semVersion = "0.3.0"
 
 var logger = log.New(ioutil.Discard, "main DEBUG ", log.LstdFlags)
 
@@ -52,6 +52,7 @@ func main() {
 	opt.Bool("help", false, opt.Alias("?"))
 	opt.Bool("debug", false)
 	opt.Bool("version", false, opt.Alias("V"))
+	header := opt.Bool("no-header", true)
 	opt.HelpSynopsisArgs("<csv_filename>")
 	remaining, err := opt.Parse(os.Args[1:])
 	if opt.Called("help") {
@@ -97,7 +98,7 @@ func main() {
 		defer fh.Close()
 		reader = fh
 	}
-	err = clitable.PrintCSVTable(reader)
+	err = clitable.NewTablePrinter().HasHeader(*header).FprintCSVReader(os.Stdout, reader)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
 		os.Exit(1)
