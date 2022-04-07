@@ -51,8 +51,8 @@ func (i *TableInfo) String() string {
 
 // Row - Data and Error struct
 type Row struct {
-	Data  []string
-	Error error
+	Fields []string
+	Error  error
 }
 
 // Table - interface used to print a table
@@ -167,11 +167,11 @@ func FprintfTable(w io.Writer, config TableConfig, t Table, tableInfo *TableInfo
 				if j > 0 {
 					fmt.Printf("│")
 				}
-				if len(row.Data) <= j {
+				if len(row.Fields) <= j {
 					fmt.Printf(" %-"+strconv.Itoa(tableInfo.ColumnWidths[j])+"s ", " ")
 					continue
 				}
-				multiLine := strings.Split(row.Data[j], "\n")
+				multiLine := strings.Split(row.Fields[j], "\n")
 				if len(multiLine) > i {
 					fmt.Printf(" %-"+strconv.Itoa(tableInfo.ColumnWidths[j])+"s ", multiLine[i])
 				} else {
@@ -210,7 +210,7 @@ func SimpleRowIterator(data [][]string) <-chan Row {
 	c := make(chan Row)
 	go func() {
 		for _, row := range data {
-			c <- Row{Data: row}
+			c <- Row{Fields: row}
 		}
 		close(c)
 	}()
@@ -243,7 +243,7 @@ func CSVRowIterator(reader io.Reader) <-chan Row {
 				close(c)
 				return
 			}
-			c <- Row{Data: record}
+			c <- Row{Fields: record}
 		}
 		close(c)
 	}()
@@ -262,7 +262,7 @@ func GetTableInfo(t Table) (*TableInfo, error) {
 		if row.Error != nil {
 			return &TableInfo{}, row.Error
 		}
-		rowColumns := len(row.Data)
+		rowColumns := len(row.Fields)
 		// Update columns
 		if rowColumns > columns {
 			columns = rowColumns
@@ -270,7 +270,7 @@ func GetTableInfo(t Table) (*TableInfo, error) {
 		// Get Column Widths for this row
 		rowColumnWidths := make([]int, rowColumns)
 		rowRows := make([]int, rowColumns)
-		for i, cData := range row.Data {
+		for i, cData := range row.Fields {
 			// Some records might be multiline, split the record and get the biggest width
 			multiLine := strings.Split(cData, "\n")
 			if len(multiLine) > 1 {
