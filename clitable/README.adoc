@@ -1,11 +1,33 @@
-= CSVTable
+= CLITable
 
-Pretty print CSV files as tables on the command line.
+Pretty print Data as tables on the command line.
+
+== CLI tool
+
+The csvtable cli tool allows printing CSV data as a table:
+
+  go install github.com/DavidGamba/dgtools/clitable/cmd/csvtable
 
 == Library
 
-image:https://godoc.org/github.com/DavidGamba/csvtable?status.svg[link="http://godoc.org/github.com/DavidGamba/csvtable"]
+image:https://pkg.go.dev/badge/github.com/DavidGamba/dgtools/clitable.svg[Go Reference, link="https://pkg.go.dev/github.com/DavidGamba/dgtools/clitable"]
 
-Also provided as a library:
+[source, go]
+----
+import "github.com/DavidGamba/dgtools/clitable"
+----
 
-  import "github.com/DavidGamba/csvtable/lib/csvtable"
+For simple tables of type `[][]string`:
+
+[source, go]
+----
+data := [][]string{{"a", "b"}, {"a", "b"}}
+clitable.PrintSimpleTable(data)
+----
+
+For iterating over structs you need to implement the table interface:
+
+[source, go]
+----
+
+----

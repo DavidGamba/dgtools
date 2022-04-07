@@ -1,13 +1,13 @@
-// This file is part of csv-table.
+// This file is part of clitable.
 //
-// Copyright (C) 2017-2019  David Gamba Rios
+// Copyright (C) 2017-2022  David Gamba Rios
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-Package csv-table provides a tool to view csv files on the cmdline.
+Package csvtable provides a tool to view csv files on the cmdline.
 
 		┌──┬──┐
 		│  │  │
@@ -24,7 +24,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/DavidGamba/dgtools/csvtable"
+	"github.com/DavidGamba/dgtools/clitable"
 	"github.com/DavidGamba/go-getoptions"
 )
 
@@ -69,7 +69,7 @@ func main() {
 	}
 	if opt.Called("debug") {
 		logger.SetOutput(os.Stderr)
-		csvtable.Logger.SetOutput(os.Stderr)
+		clitable.Logger.SetOutput(os.Stderr)
 	}
 	logger.Println(remaining)
 
@@ -97,7 +97,7 @@ func main() {
 		defer fh.Close()
 		reader = fh
 	}
-	err = csvtable.PrintCSVTable(reader)
+	err = clitable.PrintCSVTable(reader)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
 		os.Exit(1)

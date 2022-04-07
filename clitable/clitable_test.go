@@ -1,12 +1,12 @@
-// This file is part of csv-table.
+// This file is part of clitable.
 //
-// Copyright (C) 2017-2019  David Gamba Rios
+// Copyright (C) 2017-2022  David Gamba Rios
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-package csvtable
+package clitable
 
 import (
 	"bytes"
@@ -22,12 +22,12 @@ func Test_GetTableInfo(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    TableInfo
+		want    *TableInfo
 		wantErr bool
 	}{
 		{"single column, single row",
 			args{bytes.NewBufferString("hello")},
-			TableInfo{
+			&TableInfo{
 				Columns:            1,
 				Rows:               1,
 				PerRowColumnWidths: [][]int{{5}},
@@ -38,7 +38,7 @@ func Test_GetTableInfo(t *testing.T) {
 			false},
 		{"multi column, single row",
 			args{bytes.NewBufferString("a,bb")},
-			TableInfo{
+			&TableInfo{
 				Columns:            2,
 				Rows:               1,
 				PerRowColumnWidths: [][]int{{1, 2}},
@@ -50,7 +50,7 @@ func Test_GetTableInfo(t *testing.T) {
 		{"multi column, multi row",
 			args{bytes.NewBufferString(`a,bb
 ccc,dddd`)},
-			TableInfo{
+			&TableInfo{
 				Columns:            2,
 				Rows:               2,
 				PerRowColumnWidths: [][]int{{1, 2}, {3, 4}},
@@ -62,7 +62,7 @@ ccc,dddd`)},
 		{"multi column, multi row, uneven rows",
 			args{bytes.NewBufferString(`a
 ccc,dddd`)},
-			TableInfo{
+			&TableInfo{
 				Columns:            2,
 				Rows:               2,
 				PerRowColumnWidths: [][]int{{1}, {3, 4}},
@@ -76,7 +76,7 @@ ccc,dddd`)},
 bbbbb
 bb",ccc
 dddd,ee,fff`)},
-			TableInfo{
+			&TableInfo{
 				Columns:            3,
 				Rows:               2,
 				PerRowColumnWidths: [][]int{{1, 5, 3}, {4, 2, 3}},
@@ -87,7 +87,7 @@ dddd,ee,fff`)},
 			false},
 		{"bad input",
 			args{bytes.NewBufferString(`a,"bb`)},
-			TableInfo{
+			&TableInfo{
 				Columns: 0,
 				Rows:    0,
 			},
@@ -107,20 +107,20 @@ dddd,ee,fff`)},
 	}
 }
 
-func TestGetTableInfo(t *testing.T) {
+func TestGetTableInfoSimpleTable(t *testing.T) {
 	type args struct {
 		t Table
 	}
 	tests := []struct {
 		name    string
 		args    args
-		want    TableInfo
+		want    *TableInfo
 		wantErr bool
 	}{
 		{
 			"Basic table 1x1",
 			args{SimpleTable{[][]string{{"a"}}}},
-			TableInfo{
+			&TableInfo{
 				Columns:            1,
 				Rows:               1,
 				PerRowColumnWidths: [][]int{{1}},
@@ -133,7 +133,7 @@ func TestGetTableInfo(t *testing.T) {
 		{
 			"Basic table 2x2",
 			args{SimpleTable{[][]string{{"a", "b"}, {"a", "b"}}}},
-			TableInfo{
+			&TableInfo{
 				Columns:            2,
 				Rows:               2,
 				PerRowColumnWidths: [][]int{{1, 1}, {1, 1}},

@@ -1,13 +1,13 @@
-// This file is part of csv-table.
+// This file is part of clitable.
 //
-// Copyright (C) 2017-2019  David Gamba Rios
+// Copyright (C) 2017-2022  David Gamba Rios
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
-Package csv-table provides a tool to view csv files on the cmdline.
+Package clitable provides a tool to view data as a table on the cmdline.
 
 		┌──┬──┐
 		│  │  │
@@ -15,7 +15,7 @@ Package csv-table provides a tool to view csv files on the cmdline.
 		└──┴──┘
 
 */
-package csvtable
+package clitable
 
 import (
 	"bytes"
@@ -31,20 +31,19 @@ import (
 
 // Logger - Default *log.Logger variable.
 // Set output to os.Stderr or override.
-var Logger = log.New(ioutil.Discard, "csvtable DEBUG ", log.LstdFlags)
+var Logger = log.New(ioutil.Discard, "clitable DEBUG ", log.LstdFlags)
 
 // TableInfo - Table information
 type TableInfo struct {
 	Columns            int
 	Rows               int
 	PerRowColumnWidths [][]int
-	// Number of Lines in a Row due to multiline entries.
-	PerRowRows   [][]int
-	ColumnWidths []int
-	RowHeights   []int
+	PerRowRows         [][]int // Number of Lines in a Row due to multiline entries.
+	ColumnWidths       []int
+	RowHeights         []int
 }
 
-func (i TableInfo) String() string {
+func (i *TableInfo) String() string {
 	str := fmt.Sprintf("%d Rows x %d Columns\nColumn widths: %v, Row heights: %v\nPerRowColumnWidths: %v\nPerRowRows: %v\n",
 		i.Rows, i.Columns, i.ColumnWidths, i.RowHeights, i.PerRowColumnWidths, i.PerRowRows)
 	return str
@@ -91,7 +90,7 @@ func NewDefaultTableConfig(columnEdges, lineBetweenRows bool) TableConfig {
 	}
 }
 
-func printHorizontalLine(start, juncture, end, body string, tableInfo TableInfo, config TableConfig) {
+func printHorizontalLine(start, juncture, end, body string, tableInfo *TableInfo, config TableConfig) {
 	for i := 0; i < tableInfo.Columns; i++ {
 		if i == 0 {
 			if config.ColumnEdges {
@@ -140,7 +139,14 @@ func PrintSimpleTable(data [][]string) error {
 }
 
 // FprintfTable -
-func FprintfTable(w io.Writer, config TableConfig, t Table, tableInfo TableInfo) error {
+func FprintfTable(w io.Writer, config TableConfig, t Table, tableInfo *TableInfo) error {
+	var err error
+	if tableInfo == nil {
+		tableInfo, err = GetTableInfo(t)
+		if err != nil {
+			return err
+		}
+	}
 	header := true
 	rowCounter := 0
 	for row := range t.RowIterator() {
@@ -245,7 +251,7 @@ func CSVRowIterator(reader io.Reader) <-chan Row {
 }
 
 // GetTableInfo - Iterates over all the elements of the table to get number of Colums, Colum widths, etc.
-func GetTableInfo(t Table) (TableInfo, error) {
+func GetTableInfo(t Table) (*TableInfo, error) {
 	var rows int
 	var columns int
 	var perRowColumnWidths [][]int
@@ -254,7 +260,7 @@ func GetTableInfo(t Table) (TableInfo, error) {
 	var rowHeights []int
 	for row := range t.RowIterator() {
 		if row.Error != nil {
-			return TableInfo{}, row.Error
+			return &TableInfo{}, row.Error
 		}
 		rowColumns := len(row.Data)
 		// Update columns
@@ -310,7 +316,7 @@ func GetTableInfo(t Table) (TableInfo, error) {
 			}
 		}
 	}
-	return TableInfo{
+	return &TableInfo{
 		Rows:               rows,
 		Columns:            columns,
 		PerRowColumnWidths: perRowColumnWidths,
