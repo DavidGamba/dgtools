@@ -38,6 +38,17 @@ func Test_GetTableInfo(t *testing.T) {
 				RowHeights:         []int{1},
 			},
 			false},
+		{"single column, single row emoji ⚽⛪Å®",
+			args{bytes.NewBufferString("hello ⚽⛪Å®")},
+			&clitable.TableInfo{
+				Columns:            1,
+				Rows:               1,
+				PerRowColumnWidths: [][]int{{12}},
+				PerRowRows:         [][]int{{1}},
+				ColumnWidths:       []int{12},
+				RowHeights:         []int{1},
+			},
+			false},
 		{"multi column, single row",
 			args{bytes.NewBufferString("a,bb")},
 			&clitable.TableInfo{

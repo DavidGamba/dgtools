@@ -40,7 +40,7 @@ func TestTableStructData(t *testing.T) {
 	data := &Data{[]struct {
 		Name string
 		ID   int
-	}{{"Hello", 1}, {"World", 2}}}
+	}{{"Hello", 1}, {"World ⚽⛪⚽⛪Å®", 2}}}
 
 	clitable.NewTablePrinter().Fprint(os.Stdout, data)
 	simpleData := [][]string{{"Hello", "1"}, {"World", "2"}}
@@ -53,4 +53,28 @@ func TestTableStructData(t *testing.T) {
 	clitable.NewTablePrinter().SetStyle(clitable.Compact).Print(data)
 	clitable.NewTablePrinter().SetStyle(clitable.Ascii).Print(data)
 	clitable.NewTablePrinter().SetStyle(clitable.Space).Print(data)
+}
+
+func TestStringWidth(t *testing.T) {
+	tests := []struct {
+		name   string
+		input  string
+		lenght int
+		count  int
+	}{
+		{"A", "A", 1, 0},
+		{"Å", "Å", 1, 0},
+		{"⚽", "⚽", 2, 1},
+		{"⛪", "⛪", 2, 1},
+		{"®", "®", 1, 0},
+		{"World Å®⚽⛪⚽⛪", "World Å®⚽⛪⚽⛪", 16, 4},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			l, c := clitable.StringWidth(test.input)
+			if test.lenght != l || test.count != c {
+				t.Errorf("expected: %d, got: %d, %s - %#U\n", test.lenght, l, test.input, []byte(test.input))
+			}
+		})
+	}
 }

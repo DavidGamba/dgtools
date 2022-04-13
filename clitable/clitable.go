@@ -236,7 +236,12 @@ func (tp *TablePrinter) fprint(w io.Writer, t Table, tableInfo *TableInfo) error
 				}
 				multiLine := strings.Split(row.Fields[j], "\n")
 				if len(multiLine) > i {
-					fmt.Printf(" %-"+strconv.Itoa(tableInfo.ColumnWidths[j])+"s ", multiLine[i])
+					_, c := StringWidth(multiLine[i])
+					if c > 0 {
+						fmt.Printf(" %-"+strconv.Itoa(tableInfo.ColumnWidths[j]-c)+"s ", multiLine[i])
+					} else {
+						fmt.Printf(" %-"+strconv.Itoa(tableInfo.ColumnWidths[j])+"s ", multiLine[i])
+					}
 				} else {
 					fmt.Printf(" %-"+strconv.Itoa(tableInfo.ColumnWidths[j])+"s ", " ")
 				}
