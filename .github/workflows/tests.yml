@@ -18,7 +18,7 @@ jobs:
           - cathtml
           - cssh/cscp
           - cssh/cssh
-          - csvtable/cmd/csvtable
+          - clitable/cmd/csvtable
           - grepp
           - joinlines
           - password-cache/cmd/password-cache

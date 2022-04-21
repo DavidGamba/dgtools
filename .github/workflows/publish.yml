@@ -38,7 +38,7 @@ jobs:
         tool:
           - cssh/cscp
           - cssh/cssh
-          - csvtable/cmd/csvtable
+          - clitable/cmd/csvtable
           - grepp
           - joinlines
           - yaml-parse
