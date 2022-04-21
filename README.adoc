@@ -17,6 +17,8 @@ image:https://pkg.go.dev/badge/github.com/DavidGamba/dgtools/run.svg[Go Referenc
 
 image:https://pkg.go.dev/badge/github.com/DavidGamba/dgtools/password-cache.svg[Go Reference, link="https://pkg.go.dev/github.com/DavidGamba/dgtools/password-cache"] link:password-cache[] - Cache credentials using the Linux keyring in Go.
 
+image:https://pkg.go.dev/badge/github.com/DavidGamba/dgtools/clitable.svg[Go Reference, link="https://pkg.go.dev/github.com/DavidGamba/dgtools/clitable"] link:password-cache[] - Pretty print Data as tables on the command line.
+
 == Index of Tools
 
 link:cli-bookmarks[] - yet another tool to bookmark filesystem locations and access them in a fast and easy way.
@@ -36,3 +38,5 @@ link:password-cache[] - Cache credentials using the Linux keyring in Go.
 link:yaml-parse[] - Parse and extract data from YAML files.
 
 link:reverseproxy[] - Creates a very simple reverse proxy that allows to proxy multiple local services at different base paths dynamically with CLI args.
+
+link:clitable[csvtable] - Pretty print csv input as a table.
