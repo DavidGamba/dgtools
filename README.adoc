@@ -17,7 +17,7 @@ image:https://pkg.go.dev/badge/github.com/DavidGamba/dgtools/run.svg[Go Referenc
 
 image:https://pkg.go.dev/badge/github.com/DavidGamba/dgtools/password-cache.svg[Go Reference, link="https://pkg.go.dev/github.com/DavidGamba/dgtools/password-cache"] link:password-cache[] - Cache credentials using the Linux keyring in Go.
 
-image:https://pkg.go.dev/badge/github.com/DavidGamba/dgtools/clitable.svg[Go Reference, link="https://pkg.go.dev/github.com/DavidGamba/dgtools/clitable"] link:password-cache[] - Pretty print Data as tables on the command line.
+image:https://pkg.go.dev/badge/github.com/DavidGamba/dgtools/clitable.svg[Go Reference, link="https://pkg.go.dev/github.com/DavidGamba/dgtools/clitable"] link:clitable[] - Pretty print Data as tables on the command line.
 
 == Index of Tools
 
