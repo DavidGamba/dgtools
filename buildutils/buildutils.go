@@ -12,7 +12,11 @@ Package buildutils provides functions used when writing build automation.
 package buildutils
 
 import (
+	"fmt"
+	"io"
+	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/DavidGamba/dgtools/run"
@@ -34,5 +38,33 @@ func CDGitRepoRoot() error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func GetFileFromURL(url, outputFilename string) error {
+	dir := filepath.Dir(outputFilename)
+	err := os.MkdirAll(dir, 0755)
+	if err != nil {
+		return fmt.Errorf("failed to create dir structure '%s': %s", dir, err)
+	}
+
+	f, err := os.Create(outputFilename)
+	if err != nil {
+		return fmt.Errorf("failed to create file '%s': %s", outputFilename, err)
+	}
+	defer f.Close()
+
+	client := http.Client{}
+	resp, err := client.Get(url)
+	if err != nil {
+		return fmt.Errorf("failed to download from '%s': %s", url, err)
+	}
+	defer resp.Body.Close()
+
+	_, err = io.Copy(f, resp.Body)
+	if err != nil {
+		return fmt.Errorf("failed to write file '%s': %s", outputFilename, err)
+	}
+
 	return nil
 }
