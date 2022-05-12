@@ -87,7 +87,13 @@ Import: `github.com/DavidGamba/dgtools/run`
 .Run command and only return Stdout but print Stderr to os.Stderr as it happends
 [source, go]
 ----
-	out, err := run.CMD("./command", "arg1", "arg2").PrintErr().STDOutOutput()
+	out, err := run.CMD("./command", "arg1", "arg2").STDOutOutput()
+----
+
+.Run command and only return Stdout but discard Stderr for quiet mode.
+[source, go]
+----
+	out, err := run.CMD("./command", "arg1", "arg2").DiscardErr().STDOutOutput()
 ----
 
 .Run command and only return Stdout but save Stderr output to the error object if there was an error
