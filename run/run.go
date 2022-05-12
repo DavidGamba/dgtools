@@ -45,6 +45,7 @@ func CMD(cmd ...string) *RunInfo {
 	r.stdout = nil
 	r.stderr = nil
 	r.ctx = context.Background()
+	r.printErr = true
 	return r
 }
 
@@ -100,8 +101,16 @@ func (r *RunInfo) SaveErr() *RunInfo {
 }
 
 // PrintErr - Regardless of operation mode, print errors to os.Stderr as they occur.
+//
+// Deprecated: This is the default behaviour, setting this is unnecessary and will be removed in the future.
 func (r *RunInfo) PrintErr() *RunInfo {
 	r.printErr = true
+	return r
+}
+
+// DiscardErr - Don't print command error to stderr by default.
+func (r *RunInfo) DiscardErr() *RunInfo {
+	r.printErr = false
 	return r
 }
 
