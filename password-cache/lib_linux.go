@@ -54,17 +54,38 @@ func GetSecret(name, msg string) ([]byte, error) {
 // To invalidate a secret, save it with a 1 second timeout.
 func CacheSecret(name string, password []byte, timeoutSeconds uint) error {
 	// Create session
-	keyring, err := keyctl.UserSessionKeyring()
+	userKeyring, err := keyctl.UserSessionKeyring()
+	if err != nil {
+		return fmt.Errorf("couldn't create keyring user session: %w", err)
+	}
+
+	sessionKeyring, err := keyctl.SessionKeyring()
 	if err != nil {
 		return fmt.Errorf("couldn't create keyring session: %w", err)
 	}
 
 	// Store key
-	keyring.SetDefaultTimeout(timeoutSeconds)
-	key, err := keyring.Add(name, password)
+	key, err := sessionKeyring.Add(name, password)
 	if err != nil {
-		return fmt.Errorf("couldn't store '%s': %s", name, err)
+		return fmt.Errorf("couldn't store '%s' in session keyring: %w", name, err)
 	}
+	key.ExpireAfter(timeoutSeconds)
+
+	perm := keyctl.PermUserAll | keyctl.PermProcessAll
+	if err := keyctl.SetPerm(key, perm); err != nil {
+		return fmt.Errorf("couldn't update permissions for '%s' in session keyring: %w", name, err)
+	}
+
+	err = keyctl.Link(userKeyring, key)
+	if err != nil {
+		return fmt.Errorf("couldn't link '%s' to user keyring: %w", name, err)
+	}
+
+	err = keyctl.Unlink(sessionKeyring, key)
+	if err != nil {
+		return fmt.Errorf("couldn't unlink '%s' from session keyring: %w", name, err)
+	}
+
 	info, _ := key.Info()
 	logger.Printf("key: %+v", info)
 	return nil
