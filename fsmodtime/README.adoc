@@ -1,0 +1,3 @@
+= fsmodtime
+
+image:https://pkg.go.dev/badge/github.com/DavidGamba/dgtools/fsmodtime.svg[Go Reference, link="https://pkg.go.dev/github.com/DavidGamba/dgtools/fsmodtime"] link:fsmodtime[] - Provides functions to determine if you want to build targets from sources based on modification time.

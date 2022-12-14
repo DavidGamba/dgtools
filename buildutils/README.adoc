@@ -1,0 +1,3 @@
+= buildutils
+
+image:https://pkg.go.dev/badge/github.com/DavidGamba/dgtools/buildutils.svg[Go Reference, link="https://pkg.go.dev/github.com/DavidGamba/dgtools/buildutils"] link:buildutils[] - Provides functions used when writing build automation.
