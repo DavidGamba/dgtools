@@ -41,6 +41,14 @@ func CDGitRepoRoot() error {
 	return nil
 }
 
+// GitRepoName - Gets the Git repository name by parsing the origin URL
+func GitRepoName() (string, error) {
+	out, err := run.CMD("git", "config", "--get", "remote.origin.url").STDOutOutput()
+	url := strings.TrimSpace(string(out))
+	name := strings.TrimSuffix(filepath.Base(url), ".git")
+	return name, err
+}
+
 func GetFileFromURL(url, outputFilename string) error {
 	dir := filepath.Dir(outputFilename)
 	err := os.MkdirAll(dir, 0755)
