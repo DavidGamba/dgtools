@@ -13,6 +13,8 @@ import (
 	"io/fs"
 	"os"
 	"path"
+	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -115,4 +117,37 @@ func TargetTime(fsys fs.FS, targetTime time.Time, sources []string) ([]string, b
 	}
 	// targets are newer, nothing to do
 	return []string{}, false, nil
+}
+
+// ParentDir - Given a list of paths, it finds the common parent dir.
+// Assumes / as the filepath separator.
+func ParentDir(paths []string) (string, error) {
+	switch len(paths) {
+	case 0:
+		return "", nil
+	case 1:
+		return filepath.Clean(paths[0]), nil
+	}
+	p, err := filepath.Abs(paths[0])
+	if err != nil {
+		return "", fmt.Errorf("failed to get absolute path: %w", err)
+	}
+	pl := strings.Split(p, "/")
+	for _, v := range paths[1:] {
+		v, err := filepath.Abs(v)
+		if err != nil {
+			return "", fmt.Errorf("failed to get absolute path: %w", err)
+		}
+		vl := strings.Split(v, "/")
+		if len(vl) < len(pl) {
+			pl = pl[:len(vl)]
+		}
+		for i := 0; i < len(pl); i++ {
+			if vl[i] != pl[i] {
+				pl = pl[:i]
+			}
+		}
+	}
+	r := "/" + filepath.Join(pl...)
+	return r, nil
 }

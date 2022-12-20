@@ -11,6 +11,7 @@ package fsmodtime
 import (
 	"errors"
 	"os"
+	"path/filepath"
 	"reflect"
 	"testing"
 	"testing/fstest"
@@ -196,6 +197,68 @@ func TestTarget(t *testing.T) {
 		}
 		if modified {
 			t.Errorf("unexpected modified: %v", modified)
+		}
+		t.Log(buf.String())
+	})
+}
+
+func TestParentDir(t *testing.T) {
+	t.Run("empty", func(t *testing.T) {
+		buf := setupLogging()
+		dir, err := ParentDir([]string{})
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		if dir != "" {
+			t.Errorf("unexpected dir: %s", dir)
+		}
+		t.Log(buf.String())
+	})
+	t.Run("one", func(t *testing.T) {
+		buf := setupLogging()
+		dir, err := ParentDir([]string{"/a/b/c/d"})
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		if dir != "/a/b/c/d" {
+			t.Errorf("unexpected dir: %s", dir)
+		}
+		t.Log(buf.String())
+	})
+	t.Run("simple", func(t *testing.T) {
+		buf := setupLogging()
+		dir, err := ParentDir([]string{"/a/b/c/d", "/a/b/c/e"})
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		if dir != "/a/b/c" {
+			t.Errorf("unexpected dir: %s", dir)
+		}
+		t.Log(buf.String())
+	})
+	t.Run("relative", func(t *testing.T) {
+		buf := setupLogging()
+		dir, err := ParentDir([]string{"../a/b/c/d", "../a/b/c/e"})
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		cwd, _ := os.Getwd()
+		dir, _ = filepath.Rel(cwd, dir)
+		if dir != "../a/b/c" {
+			t.Errorf("unexpected dir: %s", dir)
+		}
+		t.Log(buf.String())
+	})
+	t.Run("mixed", func(t *testing.T) {
+		buf := setupLogging()
+		dir, err := ParentDir([]string{"a/b/c/d", "../../e"})
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		cwd, _ := os.Getwd()
+		dir, _ = filepath.Rel(cwd, dir)
+		if dir != "../.." {
+			t.Errorf("unexpected dir: %s", dir)
 		}
 		t.Log(buf.String())
 	})
