@@ -176,4 +176,27 @@ func TestTarget(t *testing.T) {
 		}
 		t.Log(buf.String())
 	})
+
+	t.Run("bad sources", func(t *testing.T) {
+		buf := setupLogging()
+		m["target"] = &fstest.MapFile{
+			Mode:    0666,
+			ModTime: time.Date(51, time.January, 1, 0, 0, 0, 0, time.UTC),
+		}
+		paths, modified, err := Target(m, []string{"target"}, []string{"source"})
+		if err == nil {
+			t.Log(buf.String())
+			t.Fatalf("expected error, nothing found")
+		}
+		if !errors.Is(err, ErrNotFound) {
+			t.Errorf("unexpected error: %v", err)
+		}
+		if paths != nil {
+			t.Errorf("unexpected paths: %v", paths)
+		}
+		if modified {
+			t.Errorf("unexpected modified: %v", modified)
+		}
+		t.Log(buf.String())
+	})
 }

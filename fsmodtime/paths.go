@@ -47,6 +47,8 @@ func ExpandEnv(lines []string) ([]string, error) {
 // Glob - like io/fs.Glob on many paths.
 // It allows to stop globbing patterns once it has found a pattern that has no matches.
 // Glob syntax described here: https://golang.org/pkg/path/filepath/#Match
+//
+// Returns the list of matches, a bool indicating if there is a pattern that had no matches and an error
 func Glob(fsys fs.FS, stop bool, patterns []string) ([]string, bool, error) {
 	matches := []string{}
 	for _, p := range patterns {
@@ -62,6 +64,8 @@ func Glob(fsys fs.FS, stop bool, patterns []string) ([]string, bool, error) {
 	return matches, false, nil
 }
 
+// Target - Given a list of targets it indicates whether or not the sources have modifications past the targets last.
+// The first return is the file modified.
 func Target(fsys fs.FS, targets []string, sources []string) ([]string, bool, error) {
 	targets, err := ExpandEnv(targets)
 	if err != nil {
@@ -84,6 +88,8 @@ func Target(fsys fs.FS, targets []string, sources []string) ([]string, bool, err
 	return TargetTime(fsys, fi.ModTime(), sources)
 }
 
+// TargetTime - Given a time it indicates whether or not the sources have modifications past the time.
+// The first return is the file modified.
 func TargetTime(fsys fs.FS, targetTime time.Time, sources []string) ([]string, bool, error) {
 	sources, err := ExpandEnv(sources)
 	if err != nil {
@@ -98,6 +104,9 @@ func TargetTime(fsys fs.FS, targetTime time.Time, sources []string) ([]string, b
 	p, fi, err := Last(fsys, sources)
 	if err != nil {
 		return nil, false, err
+	}
+	if fi == nil {
+		return nil, false, ErrNotFound
 	}
 	Logger.Printf("last source: %q\n", path.Join(p, fi.Name()))
 	if targetTime.Before(fi.ModTime()) {
