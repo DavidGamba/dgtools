@@ -1,0 +1,43 @@
+= cueutils
+
+image:https://pkg.go.dev/badge/github.com/DavidGamba/dgtools/cueutils.svg[Go Reference, link="https://pkg.go.dev/github.com/DavidGamba/dgtools/cueutils"]
+
+Provides helpers to work with Cue.
+
+Import: `github.com/DavidGamba/dgtools/cueutils`
+
+== Examples
+
+[source, go]
+----
+//go:embed schemas/schema.cue
+var f embed.FS
+
+	configs := []cueutils.CueConfigFile{}
+
+  // Read embedded schemas
+	schemaFilename := "schemas/schema.cue"
+	schemaFH, err := f.Open(schemaFilename)
+	if err != nil {
+		return fmt.Errorf("failed to open '%s': %w", schemaFilename, err)
+	}
+	defer schemaFH.Close()
+	configs = append(configs, cueutils.CueConfigFile{Data: schemaFH, Name: schemaFilename})
+
+  // Read multiple config files
+	for _, configFilename := range configFilenames {
+		configFH, err := os.Open(configFilename)
+		if err != nil {
+			return fmt.Errorf("failed to open '%s': %w", configFilename, err)
+		}
+		defer configFH.Close()
+		configs = append(configs, cueutils.CueConfigFile{Data: configFH, Name: configFilename})
+	}
+
+  // Unmarshal into local data structure
+	d := MyDataStructe{}
+	err = cueutils.Unmarshal(configs, &d)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal: %w", err)
+	}
+----
