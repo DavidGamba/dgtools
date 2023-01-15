@@ -15,7 +15,7 @@ var f embed.FS
 
 	configs := []cueutils.CueConfigFile{}
 
-  // Read embedded schemas
+	// Read embedded schemas
 	schemaFilename := "schemas/schema.cue"
 	schemaFH, err := f.Open(schemaFilename)
 	if err != nil {
@@ -24,7 +24,7 @@ var f embed.FS
 	defer schemaFH.Close()
 	configs = append(configs, cueutils.CueConfigFile{Data: schemaFH, Name: schemaFilename})
 
-  // Read multiple config files
+	// Read multiple config files
 	for _, configFilename := range configFilenames {
 		configFH, err := os.Open(configFilename)
 		if err != nil {
@@ -34,7 +34,7 @@ var f embed.FS
 		configs = append(configs, cueutils.CueConfigFile{Data: configFH, Name: configFilename})
 	}
 
-  // Unmarshal into local data structure
+	// Unmarshal into local data structure
 	d := MyDataStructe{}
 	err = cueutils.Unmarshal(configs, &d)
 	if err != nil {
