@@ -46,6 +46,10 @@ type YML struct {
 func NewFromFile(filename string) ([]*YML, error) {
 	list := []*YML{}
 	fh, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+
 	decoder := yaml.NewDecoder(fh)
 	for {
 		var tree interface{}

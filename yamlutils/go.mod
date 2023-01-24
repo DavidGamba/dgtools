@@ -1,4 +1,4 @@
-module github.com/dgtools/yamlutils
+module github.com/DavidGamba/dgtools/yamlutils
 
 go 1.16
 
