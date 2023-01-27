@@ -6,6 +6,7 @@ ffind/ffind
 grepp/grepp
 joinlines/joinlines
 password-cache/cmd/password-cache/password-cache
+reverseproxy/reverseproxy
 webserve/webserve
 yaml-parse/yaml-parse
-reverseproxy/reverseproxy
+yaml-seam/yaml-seam
