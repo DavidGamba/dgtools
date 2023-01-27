@@ -32,7 +32,7 @@ bool: true
 
 .Print all contents
 ----
-$ yaml-parse -f test_data/test.yaml
+$ yaml-parse test_data/test.yaml
 array:
 - element 1
 - element 2
@@ -49,7 +49,7 @@ number: 123
 
 .Print `array`
 ----
-$ yaml-parse -f test_data/test.yaml -k array
+$ yaml-parse test_data/test.yaml -k array
 - element 1
 - element 2
 - element 3
@@ -57,13 +57,13 @@ $ yaml-parse -f test_data/test.yaml -k array
 
 .Print `array` first element
 ----
-$ yaml-parse -f test_data/test.yaml -k array -k 0
+$ yaml-parse test_data/test.yaml -k array -k 0
 element 1
 ----
 
 .Print `array 2`
 ----
-$ yaml-parse -f test_data/test.yaml -k 'array 2'
+$ yaml-parse test_data/test.yaml -k 'array 2'
 - key1: value1
 - key2: value2
 - key3: value3
@@ -71,19 +71,19 @@ $ yaml-parse -f test_data/test.yaml -k 'array 2'
 
 .Print `array 2` first element then map value
 ----
-$ yaml-parse -f test_data/test.yaml -k 'array 2' -k 0 -k key1
+$ yaml-parse test_data/test.yaml -k 'array 2' -k 0 -k key1
 value1
 ----
 
 .Do the same with slash
 ----
-$ yaml-parse -f test_data/test.yaml -k 'array 2/0/key1'
+$ yaml-parse test_data/test.yaml -k 'array 2/0/key1'
 value1
 ----
 
 .Add a json element to 'array 2'
 ----
-$ yaml-parse -f test_data/test.yaml --add '{ hola: mundo }' -k 'array 2'
+$ yaml-parse test_data/test.yaml --add '{ hola: mundo }' -k 'array 2'
 array:
 - element 1
 - element 2
@@ -101,7 +101,7 @@ number: 123
 
 .Read the second document of a multi document YAML file
 ----
-$ yaml-parse -f test_data/multiple.yaml -d 2
+$ yaml-parse test_data/multiple.yaml -d 2
 arreglo:
 - elemento 1
 - elemento 2

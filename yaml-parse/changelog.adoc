@@ -1,0 +1,16 @@
+= Changelog
+:toc:
+
+== v0.2.0 Simplify usage
+
+* Remove -f option to read from file
+
+[source, diff]
+----
+- yaml-parse -f test_data/test.yaml
++ yaml-parse test_data/test.yaml
+----
+
+* Remove replace directives in go.mod
+
+== v0.1.0 Initial release
