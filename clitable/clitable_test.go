@@ -53,6 +53,7 @@ func TestTableStructData(t *testing.T) {
 	clitable.NewTablePrinter().SetStyle(clitable.Compact).Print(data)
 	clitable.NewTablePrinter().SetStyle(clitable.Ascii).Print(data)
 	clitable.NewTablePrinter().SetStyle(clitable.Space).Print(data)
+	clitable.NewTablePrinter().SetStyle(clitable.CSV).Print(data)
 }
 
 func TestStringWidth(t *testing.T) {

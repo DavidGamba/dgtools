@@ -1,0 +1,8 @@
+= Changelog
+:toc:
+
+== v0.2.0: New feature
+
+* Add CSV Printer
+
+== v0.1.0: Initial Release

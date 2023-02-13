@@ -9,16 +9,16 @@
 /*
 Package clitable provides a tool to view data as a table on the cmdline.
 
-		┌──┬──┐
-		│  │  │
-		├──┼──┤
-		└──┴──┘
-
+	┌──┬──┐
+	│  │  │
+	├──┼──┤
+	└──┴──┘
 */
 package clitable
 
 import (
 	"bytes"
+	"encoding/csv"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -37,6 +37,8 @@ type TablePrinter struct {
 }
 
 type tableConfig struct {
+	Style Style
+
 	HasHeader bool
 
 	TopLine     bool
@@ -81,6 +83,7 @@ const (
 	Ascii
 	Compact
 	Space
+	CSV
 )
 
 func (tp *TablePrinter) HasHeader(b bool) *TablePrinter {
@@ -89,6 +92,8 @@ func (tp *TablePrinter) HasHeader(b bool) *TablePrinter {
 }
 
 func (tp *TablePrinter) SetStyle(s Style) *TablePrinter {
+	tp.tableConfig.Style = s
+
 	switch s {
 	case Full:
 		tp.tableConfig.TopLine = true
@@ -188,6 +193,9 @@ func (tp *TablePrinter) Print(t Table) error {
 }
 
 func (tp *TablePrinter) Fprint(w io.Writer, t Table) error {
+	if tp.tableConfig.Style == CSV {
+		return tp.fprintCSV(w, t)
+	}
 	tableInfo, err := GetTableInfo(t)
 	if err != nil {
 		return err
@@ -207,6 +215,18 @@ func (tp *TablePrinter) FprintCSVReader(w io.Writer, r io.Reader) error {
 	Logger.Printf("tableInfo: %s\n", tableInfo)
 	t = CSVTable{&readerCopy}
 	return tp.fprint(os.Stdout, t, tableInfo)
+}
+
+func (tp *TablePrinter) fprintCSV(w io.Writer, t Table) error {
+	csvw := csv.NewWriter(w)
+	defer csvw.Flush()
+	for row := range t.RowIterator() {
+		if row.Error != nil {
+			return row.Error
+		}
+		csvw.Write(row.Fields)
+	}
+	return nil
 }
 
 func (tp *TablePrinter) fprint(w io.Writer, t Table, tableInfo *TableInfo) error {
