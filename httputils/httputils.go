@@ -104,9 +104,6 @@ func GetURLToFile(url, fpath string, fns ...GetURLToFileOptionFn) error {
 		return err
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		return fmt.Errorf("URL failed with status code: %d", resp.StatusCode)
-	}
 
 	// Save output
 	out, err := os.Create(fpath)
@@ -117,6 +114,10 @@ func GetURLToFile(url, fpath string, fns ...GetURLToFileOptionFn) error {
 	_, err = io.Copy(out, resp.Body)
 	if err != nil {
 		return err
+	}
+
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("URL failed with status code: %d", resp.StatusCode)
 	}
 	return nil
 }
