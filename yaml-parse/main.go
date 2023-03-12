@@ -48,7 +48,8 @@ func program(args []string) int {
 Multiple keys allow to descend further.
 Indexes are positive integers.`))
 	opt.IntOptional("document", 1, opt.Description("Document number"), opt.Alias("d"), opt.ArgName("number"))
-	opt.HelpSynopsisArgs("<file>...")
+	opt.HelpSynopsisArg("<file>...", `File(s) containing YAML document(s).
+If '-' is given, read from STDIN.`)
 	opt.HelpCommand("help", opt.Alias("?"))
 	opt.SetCommandFn(Run)
 	remaining, err := opt.Parse(args[1:])

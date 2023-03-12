@@ -2,7 +2,7 @@ module github.com/DavidGamba/dgtools/yaml-parse
 
 require (
 	github.com/DavidGamba/dgtools/yamlutils v0.0.0-20230124052542-bdc68694a034
-	github.com/DavidGamba/go-getoptions v0.26.0
+	github.com/DavidGamba/go-getoptions v0.27.0
 )
 
 require (
