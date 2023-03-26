@@ -1,0 +1,51 @@
+= ChatGPT
+
+An OpenAI ChatGPT wrapper.
+
+Installation:
+
+`go install github.com/DavidGamba/dgtools/chatgpt@latest`
+
+== Usage
+
+Start the interactive shell: `chatgpt`
+
+=== Interactive Shell Commands
+
+NOTE: A shell command is interpreted from the first word in the input.
+
+* `quit`, `exit`, `.quit`, `.exit`: Exit the interactive shell.
+
+* `fg`: no-op, I seem to type this a lot in there.
+
+* `.help`: Show the help message.
+
+* `.reset`: Resets the session history.
+
+* `.image`: Change mode to image.
+
+* `.chat`: Change mode to chat (default).
+
+* `.output`: Save the current session (from the last `.reset`) to a file.
+
+== Roadmap
+
+NOTE: The commands should mirror/be inspired by the sqlite interactive shell.
+
+* Completion of the interactive shell commands.
+
+* Image output is displayed in the terminal using https://hpjansson.org/chafa/[Chafa].
+
+* Import session for context.
+
+* Save session:
+
+	- There are two types of session saves:
+
+		1. Save the entire session.
+		Using the `--output <file.json>` CLI option.
+		+
+		NOTE: This session file is not cleared when `.reset` is called.
+
+		2. Save the session from the last `.reset` call.
+		This should be provided as an interactive command, something like: `.output session.json`
