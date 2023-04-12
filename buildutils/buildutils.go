@@ -1,6 +1,6 @@
 // This file is part of buildutils.
 //
-// Copyright (C) 2021  David Gamba Rios
+// Copyright (C) 2021-2023  David Gamba Rios
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -51,7 +51,7 @@ func GitRepoName() (string, error) {
 
 func GetFileFromURL(url, outputFilename string) error {
 	dir := filepath.Dir(outputFilename)
-	err := os.MkdirAll(dir, 0755)
+	err := os.MkdirAll(dir, 0750)
 	if err != nil {
 		return fmt.Errorf("failed to create dir structure '%s': %s", dir, err)
 	}
@@ -75,4 +75,10 @@ func GetFileFromURL(url, outputFilename string) error {
 	}
 
 	return nil
+}
+
+// GoModDir - Gets the Go module directory, the root of the Go project.
+func GoModDir() (string, error) {
+	out, err := run.CMD("go", "list", "-m", "-f", "{{.Dir}}").STDOutOutput()
+	return strings.TrimSpace(string(out)), err
 }
