@@ -1,0 +1,9 @@
+= Changelog
+:toc:
+
+== v0.2.0: Add GoModDir function
+
+* Add GoModDir function to get the directory of the go.mod file.
+* Also change dir creation to `0750` for GetFileFromURL task.
+
+== v0.1.0: Initial release
