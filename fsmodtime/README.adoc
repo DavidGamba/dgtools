@@ -1,3 +1,29 @@
 = fsmodtime
 
 image:https://pkg.go.dev/badge/github.com/DavidGamba/dgtools/fsmodtime.svg[Go Reference, link="https://pkg.go.dev/github.com/DavidGamba/dgtools/fsmodtime"] link:fsmodtime[] - Provides functions to determine if you want to build targets from sources based on modification time.
+
+== Example
+
+Build a binary if any of the source files have been modified or if the binary does not yet exist.
+
+[source,go]
+----
+import (
+	"github.com/DavidGamba/dgtools/fsmodtime"
+	"github.com/DavidGamba/dgtools/run"
+)
+
+		files, modified, err := fsmodtime.Target(os.DirFS("."), []string{"binary_name"}, []string{"go.mod", "go.sum", "*.go"})
+		if err != nil {
+			return fmt.Errorf("failed to detect changes: %w", err)
+		}
+		if !modified {
+			return nil
+		}
+		Logger.Printf("Modified files: %v\n", files)
+
+		err = run.CMD("go", "build", "-o", "binary_name").Log().Run()
+		if err != nil {
+			return fmt.Errorf("failed to build go project: %w", err)
+		}
+----
