@@ -6,6 +6,8 @@ Installation:
 
 `go install github.com/DavidGamba/dgtools/chatgpt@latest`
 
+Then export your OpenAI API key as `OPENAI_API_KEY`.
+
 == Usage
 
 Start the interactive shell: `chatgpt`
