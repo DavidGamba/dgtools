@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -11,6 +12,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/DavidGamba/dgtools/run"
 	"github.com/DavidGamba/go-getoptions"
@@ -100,36 +102,58 @@ func Run(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 		}
 		Logger.Printf("%s resource: %s %s\n", fn, kkind, kname)
 
-		ph, err := os.Create(pn)
-		if err != nil {
-			return fmt.Errorf("failed to create patch file: %w", err)
-		}
 		dh, err := os.Create(dn)
 		if err != nil {
 			return fmt.Errorf("failed to create patch file: %w", err)
 		}
+		defer dh.Close()
 
 		cmd := []string{"kubectl", "get", "-o", "yaml", string(kkind), string(kname)}
 		if namespace != "" {
 			cmd = append(cmd, "-n", namespace)
 		}
-		err = run.CMD(cmd...).Log().Run(dh, os.Stderr)
+
+		// TODO: Use k8s apis directly
+		serr := ""
+		buf := bytes.NewBufferString(serr)
+		err = run.CMD(cmd...).Log().Run(dh, buf)
 		if err != nil {
-			return fmt.Errorf("failed to get dump for %s: %w", fn, err)
+			Logger.Printf("Output: %s\n", buf.String())
+			// Don't fail if resource needs to be created
+			if !strings.Contains(buf.String(), "Error from server (NotFound)") {
+				Logger.Printf("ERROR x: %s\n", err.Error())
+				return fmt.Errorf("failed to get dump for %s: %w", fn, err)
+			}
 		}
 
-		cmd = []string{"kubectl", "diff", "-f", fn}
-		if namespace != "" {
-			cmd = append(cmd, "-n", namespace)
-		}
-		err = run.CMD(cmd...).Log().Run(ph, os.Stderr)
-		if err != nil {
-			var eerr *exec.ExitError
-			if errors.As(err, &eerr) && eerr.ExitCode() == 1 {
-				Logger.Printf("%s diff changes found\n", fn)
-				continue
+		retries := 3
+		for i := 0; i < retries; i++ {
+			time.Sleep(time.Duration(i) * time.Second)
+			ph, err := os.Create(pn)
+			if err != nil {
+				return fmt.Errorf("failed to create patch file: %w", err)
 			}
-			return fmt.Errorf("failed to get diff for %s: %w", fn, err)
+			defer ph.Close()
+			cmd = []string{"kubectl", "diff", "-f", fn}
+			if namespace != "" {
+				cmd = append(cmd, "-n", namespace)
+			}
+			err = run.CMD(cmd...).Log().Run(ph, os.Stderr)
+			if err == nil {
+				break
+			}
+			if err != nil {
+				var eerr *exec.ExitError
+				if errors.As(err, &eerr) && eerr.ExitCode() == 1 {
+					Logger.Printf("%s diff changes found\n", fn)
+					break
+				}
+				if i+1 < retries {
+					Logger.Printf("RETRYING: failed to get diff for %s: %s", fn, err)
+					continue
+				}
+				return fmt.Errorf("failed to get diff for %s: %w", fn, err)
+			}
 		}
 	}
 
