@@ -4,4 +4,4 @@ go 1.18
 
 require github.com/DavidGamba/go-getoptions v0.25.3
 
-require golang.org/x/text v0.3.7 // indirect
+require golang.org/x/text v0.9.0
