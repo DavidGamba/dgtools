@@ -26,6 +26,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"image/png"
@@ -187,19 +188,39 @@ fg: no-op
 				}
 			}
 		}
-		printMessageHistoryContext(messageHistory)
+		err = printMessageHistoryContext(messageHistory)
+		if err != nil {
+			return fmt.Errorf("failed to print message history: %w", err)
+		}
+
 	}
 }
 
-func printMessageHistoryContext(messageHistory *[]openai.ChatCompletionMessage) {
-
+func printMessageHistoryContext(messageHistory *[]openai.ChatCompletionMessage) error {
 	size := 0
 	for _, message := range *messageHistory {
 		size += len(message.Content)
 	}
 
+	// append message to log file
+	logFile, err := os.OpenFile("chatgpt.log.json", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
+	if err != nil {
+		return fmt.Errorf("failed to open log file: %w", err)
+	}
+	defer logFile.Close()
+	messageHistoryJSON, err := json.Marshal(*messageHistory)
+	if err != nil {
+		return fmt.Errorf("failed to marshal history: %w", err)
+	}
+	_, err = logFile.Write(messageHistoryJSON)
+	if err != nil {
+		return fmt.Errorf("failed to write history: %w", err)
+	}
+	logFile.WriteString("\n")
+
 	historyContext := color.New(color.FgGreen)
 	historyContext.Printf("History Size: %d messages, %d bytes\n", len(*messageHistory), size)
+	return nil
 }
 
 func chat(ctx context.Context, messageHistory *[]openai.ChatCompletionMessage, message string) error {
