@@ -124,6 +124,9 @@ func Run(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 		}
 		color.Unset()
 
+		if len(input) == 0 {
+			continue
+		}
 		// Get first word from input
 		firstWord := strings.Fields(input)[0]
 		restOfInput := strings.TrimSpace(strings.TrimPrefix(input, firstWord))
@@ -138,6 +141,8 @@ func Run(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 		case ".reset":
 			// Reset chat context
 			messageHistory = &[]openai.ChatCompletionMessage{}
+		case ".clear", "clear":
+			fmt.Printf("\033[H\033[2J")
 		case ".image":
 			mode = "image"
 			color.New(color.FgBlue).Println("Changed mode to image")
@@ -160,6 +165,10 @@ func Run(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 
 .output: Save context to file
 .reset: Reset chat context
+
+fg: no-op
+
+.clear, clear: Clear the terminal
 
 .quit, .exit: Quit the program
 `)

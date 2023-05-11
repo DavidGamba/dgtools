@@ -30,6 +30,8 @@ NOTE: A shell command is interpreted from the first word in the input.
 
 * `.output`: Save the current session (from the last `.reset`) to a file.
 
+* `.clear`, `clear`: clear the screen.
+
 == Roadmap
 
 NOTE: The commands should mirror/be inspired by the sqlite interactive shell.
