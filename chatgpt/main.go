@@ -34,7 +34,9 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 
+	"github.com/DavidGamba/dgtools/run"
 	"github.com/DavidGamba/go-getoptions"
 	"github.com/chzyer/readline"
 	"github.com/fatih/color"
@@ -290,7 +292,10 @@ func image(ctx context.Context, messageHistory *[]openai.ChatCompletionMessage, 
 		return fmt.Errorf("PNG decode error: %v", err)
 	}
 
-	file, err := os.Create("example.png")
+	suffix := time.Now().Format("20060102-150405")
+	imageName := fmt.Sprintf("chatgpt-generated-%s.png", suffix)
+
+	file, err := os.Create(imageName)
 	if err != nil {
 		return fmt.Errorf("file creation error: %v", err)
 	}
@@ -300,7 +305,12 @@ func image(ctx context.Context, messageHistory *[]openai.ChatCompletionMessage, 
 		return fmt.Errorf("PNG encode error: %v", err)
 	}
 
-	fmt.Println("The image was saved as example.png")
+	err = run.CMD("chafa", imageName).Log().Run()
+	if err != nil {
+		return fmt.Errorf("failed to display image with chafa: %w", err)
+	}
+
+	fmt.Printf("The image was saved as %s\n", imageName)
 
 	return nil
 }
