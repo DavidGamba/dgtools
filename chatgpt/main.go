@@ -139,7 +139,7 @@ func Run(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 		case "quit", "exit", ".quit", ".exit":
 			fmt.Printf("%s\n", closingMessage)
 			return nil
-		case "fg":
+		case "fg", "ls":
 			fmt.Printf("No-op!\n")
 		case ".reset":
 			// Reset chat context

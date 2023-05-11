@@ -18,7 +18,7 @@ NOTE: A shell command is interpreted from the first word in the input.
 
 * `quit`, `exit`, `.quit`, `.exit`: Exit the interactive shell.
 
-* `fg`: no-op, I seem to type this a lot in there.
+* `fg`, `ls`: no-op, I seem to type this a lot in there.
 
 * `.help`: Show the help message.
 
@@ -32,13 +32,19 @@ NOTE: A shell command is interpreted from the first word in the input.
 
 * `.clear`, `clear`: clear the screen.
 
+== Features
+
+* Image output is displayed in the terminal using https://hpjansson.org/chafa/[Chafa].
+
+* Images are stored as `chatgpt-generated-<date-time>.png`.
+
+* Session records are stored to the `chatgpt.log.json` file.
+
 == Roadmap
 
 NOTE: The commands should mirror/be inspired by the sqlite interactive shell.
 
 * Completion of the interactive shell commands.
-
-* Image output is displayed in the terminal using https://hpjansson.org/chafa/[Chafa].
 
 * Import session for context.
 
