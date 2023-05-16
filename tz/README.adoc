@@ -1,0 +1,169 @@
+= tz: Time Zone CLI app
+
+image::https://github.com/DavidGamba/screenshots/blob/master/dgtools/tz/tz-default.png[]
+
+Show time zones based on user defined groups.
+The group members can be team members, family members, cities, etc.
+
+Place your config file in `~/.config/tz/config.cue`, `~/.tz.cue` or pass it as a CLI option.
+
+.config file
+[source, cue]
+----
+package tz
+
+default_group: "work"
+
+_miami: {city: "Miami", admin1: "Florida", country_code: "US"}
+_calgary: {city: "Calgary", country_code: "CA"}
+_san_jose: {city: "San Jose", admin1: "San Jose", country_code: "CR"}
+_palo_alto: {city: "Palo Alto", country_code: "US"}
+
+group: "work": {
+	member: "John": _palo_alto
+	member: "Alan": _palo_alto
+	member: "Mike": {city: "Rochester", country_code: "gb"}
+	member: "Steve": {time_zone: "Europe/London"}
+	member: "Patrick": {city: "Flint", time_zone: "America/Detroit"}
+}
+
+group: "family": {
+	member: "Brother": _miami
+	member: "David": _calgary
+	member: "Parents": _san_jose
+	member: "Bogota": {city: "Bogota", country_code: "CO", type: "city"}
+}
+----
+
+Run `tz` to see the time zones of your team members.
+
+image::https://github.com/DavidGamba/screenshots/blob/master/dgtools/tz/tz-default.png[]
+
+Use `tz -s` to see a short version.
+
+Use `tz -g family` to see your `family` group.
+
+Use `tz help` to see all options.
+
+== Finding the time zone for a city
+
+Run: `tz cities <city>` to find the time zone for a city.
+Narrow down results using the `-cc` flag.
+
+----
+$ tz cities rochester
+ Time               Name                                             Admin1                                    CC  TimeZone                        Population
+ 06/20 07:56 BST    Rochester                                        England                                   GB  Europe/London                   28,671
+ 06/20 01:56 CDT    Rochester                                        Minnesota                                 US  America/Chicago                 112,225
+ 06/20 02:56 EDT    Rochester                                        New Hampshire                             US  America/New_York                30,038
+ 06/20 02:56 EDT    Rochester                                        New York                                  US  America/New_York                209,802
+ 06/20 02:56 EDT    Rochester Hills                                  Michigan                                  US  America/Detroit                 73,424
+
+$ tz cities rochester -cc gb
+ Time               Name                                             Admin1                                    CC  TimeZone                        Population
+ 06/20 07:57 BST    Rochester                                        England                                   GB  Europe/London                   28,671
+----
+
+== Config file syntax
+
+The config file is a CUE file with the following syntax:
+
+[source, cue]
+----
+package tz
+
+default_group: "name"
+
+group: "name": {
+	member: "name": {city: "city", admin1: "admin1", country_code: "country_code", time_zone: "time_zone"}
+}
+----
+
+The `admin1` field is the Admin division 1 name as defined in the geonames database: state, province, etc.
+
+You can create reusable cities, for example:
+
+[source, cue]
+----
+_miami: {city: "Miami", admin1: "Florida", country_code: "US"}
+
+group: "family": {
+	member: "Brother": _miami
+}
+----
+
+Not all fields are required, as long as the provided fields uniquely identify a city or a time zone.
+
+Additionally, members can be labeled as `type: "city"` or `type: "country"` so they show up before other members (`type: "person"` by default).
+
+[source, cue]
+----
+member: "Palo_Alto": _palo_alto
+member: "Palo_Alto": {type: "city"}
+----
+
+== Installation
+
+Install using go:
+
+----
+go install github.com/DavidGamba/dgtools/tz@latest
+----
+
+Ensure your Go bin is in your PATH, then add the following to your `.bashrc` file for completion:
+
+----
+complete -o default -C tz tz
+----
+
+== Features
+
+* Show the time zone of your team members.
+
+* Show countries and cities in the same view as people but show them first for a faster lookup.
+
+* Use a config file to configure your time zone groups.
+
+* List all time zones by city so you can easily edit your config file.
+
+* Show the day next to the time to see -1/+1 days.
+
+== Motivation
+
+Replacement for my `date` based https://github.com/DavidGamba/bin/blob/96468fe1ebfdc81972dad0b56a11b8023f3f639b/tz[tz] script.
+
+== City time zone information
+
+Information obtained by going to http://download.geonames.org/export/dump/ and downloading the `cities15000.zip` file.
+
+Then a sqlite3 db is generated using the command:
+
+----
+sqlite3 cities.db < db.schema
+----
+
+Finally, the following query is used to generate an export:
+
+----
+sqlite3 cities.db ".headers off" ".mode tabs" "select distinct c.asciiname,a.asciiname,c.countrycode,c.timezone,c.population from cities as c left join admin1 as a on c.countrycode || '.' || c.admin1code = a.code;"  > cities-tz.tsv
+----
+
+The TSV is bundled in the binary (The resulting TSV is smaller than its CSV and JSON counterparts).
+
+== ROADMAP
+
+* Show google maps link to city
+
+* tz list shows a list of all timezone abbreviations
+
+* admin1 filter in cities list
+
+== LICENSE
+
+This file is part of tz.
+
+Copyright (C) 2023  David Gamba Rios
+
+This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at http://mozilla.org/MPL/2.0/.

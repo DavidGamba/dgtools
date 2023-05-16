@@ -1,0 +1,32 @@
+CREATE TABLE IF NOT EXISTS "cities" (
+	"geonameid" INTEGER,
+	"name" TEXT,
+	"asciiname" TEXT,
+	"alternatenames" TEXT,
+	"latitude" INTEGER,
+	"longitude" INTEGER,
+	"featureclass" TEXT,
+	"featurecode" TEXT,
+	"countrycode" TEXT,
+	"cc2" TEXT,
+	"admin1code" TEXT,
+	"admin2code" TEXT,
+	"admin3code" TEXT,
+	"admin4code" TEXT,
+	"population" INTEGER,
+	"elevation" TEXT,
+	"dem" TEXT,
+	"timezone" TEXT,
+	"modificationdate" TEXT
+);
+
+CREATE TABLE IF NOT EXISTS "admin1" (
+	"code" TEXT,
+	"name" TEXT,
+	"asciiname" TEXT,
+	"geonameid" TEXT
+);
+
+.mode tabs
+.import cities15000.txt cities
+.import admin1CodesASCII.txt admin1
