@@ -34,6 +34,7 @@ var Logger = log.New(ioutil.Discard, "clitable DEBUG ", log.LstdFlags)
 
 type TablePrinter struct {
 	tableConfig tableConfig
+	separator   rune
 }
 
 type tableConfig struct {
@@ -88,6 +89,11 @@ const (
 
 func (tp *TablePrinter) HasHeader(b bool) *TablePrinter {
 	tp.tableConfig.HasHeader = b
+	return tp
+}
+
+func (tp *TablePrinter) Separator(c rune) *TablePrinter {
+	tp.separator = c
 	return tp
 }
 
@@ -207,13 +213,19 @@ func (tp *TablePrinter) FprintCSVReader(w io.Writer, r io.Reader) error {
 	// TODO: I am sure I can make this simpler and maybe even not necessary
 	var readerCopy bytes.Buffer
 	reader := io.TeeReader(r, &readerCopy)
-	t := CSVTable{reader}
+	t := CSVTable{
+		Reader:    reader,
+		Separator: tp.separator,
+	}
 	tableInfo, err := GetTableInfo(t)
 	if err != nil {
 		return err
 	}
 	Logger.Printf("tableInfo: %s\n", tableInfo)
-	t = CSVTable{&readerCopy}
+	t = CSVTable{
+		Reader:    &readerCopy,
+		Separator: tp.separator,
+	}
 	return tp.fprint(os.Stdout, t, tableInfo)
 }
 

@@ -48,19 +48,23 @@ func SimpleRowIterator(data [][]string) <-chan Row {
 
 // CSVTable - Implements the table interface from an io.Reader to CSV data.
 type CSVTable struct {
-	Reader io.Reader
+	Reader    io.Reader
+	Separator rune
 }
 
 // RowIterator - Implements the Table interface.
 func (t CSVTable) RowIterator() <-chan Row {
-	return CSVRowIterator(t.Reader)
+	return CSVRowIterator(t.Reader, t.Separator)
 }
 
 // CSVRowIterator -
-func CSVRowIterator(reader io.Reader) <-chan Row {
+func CSVRowIterator(reader io.Reader, separator rune) <-chan Row {
 	c := make(chan Row)
 	go func() {
 		r := csv.NewReader(reader)
+		if separator != 0 {
+			r.Comma = separator
+		}
 		r.FieldsPerRecord = -1
 		for {
 			record, err := r.Read()

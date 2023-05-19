@@ -1,6 +1,10 @@
 = Changelog
 :toc:
 
+== v0.3.0: New feature
+
+* Add support for TSV data.
+
 == v0.2.0: New feature
 
 * Add CSV Printer

@@ -6,7 +6,9 @@ Pretty print Data as tables on the command line.
 
 The csvtable cli tool allows printing CSV data as a table:
 
-  go install github.com/DavidGamba/dgtools/clitable/cmd/csvtable
+  go install github.com/DavidGamba/dgtools/clitable/cmd/csvtable@v0.3.0
+
+To parse TSV data use the `--tsv` flag.
 
 == Library
 
@@ -39,6 +41,14 @@ For CSV from an `io.Reader`:
 ----
 r := strings.NewReader("Hello,1\nWorld,2\n")
 clitable.NewTablePrinter().FprintCSVReader(os.Stdout, r)
+----
+
+For TSV from an `io.Reader`:
+
+[source, go]
+----
+r := strings.NewReader("Hello	1\nWorld	2\n")
+clitable.NewTablePrinter().Separator('\t').FprintCSVReader(os.Stdout, r)
 ----
 
 ----

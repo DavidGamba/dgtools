@@ -9,11 +9,10 @@
 /*
 Package csvtable provides a tool to view csv files on the cmdline.
 
-		┌──┬──┐
-		│  │  │
-		├──┼──┤
-		└──┴──┘
-
+	┌──┬──┐
+	│  │  │
+	├──┼──┤
+	└──┴──┘
 */
 package main
 
@@ -23,15 +22,12 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"runtime/debug"
+	"time"
 
 	"github.com/DavidGamba/dgtools/clitable"
 	"github.com/DavidGamba/go-getoptions"
 )
-
-// BuildMetadata - Provides the metadata part of the version information.
-//
-//   go build -ldflags="-X main.BuildMetadata=`date +'%Y%m%d%H%M%S'`.`git rev-parse --short HEAD`"
-var BuildMetadata = "dev"
 
 const semVersion = "0.3.0"
 
@@ -52,6 +48,7 @@ func main() {
 	opt.Bool("help", false, opt.Alias("?"))
 	opt.Bool("debug", false)
 	opt.Bool("version", false, opt.Alias("V"))
+	opt.Bool("tsv", false)
 	header := opt.Bool("no-header", true)
 	opt.HelpSynopsisArgs("<csv_filename>")
 	remaining, err := opt.Parse(os.Args[1:])
@@ -65,7 +62,12 @@ func main() {
 		os.Exit(1)
 	}
 	if opt.Called("version") {
-		fmt.Printf("Version: %s+%s\n", semVersion, BuildMetadata)
+		v, err := version(semVersion)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
+			os.Exit(1)
+		}
+		fmt.Printf("Version: %s\n", v)
 		os.Exit(0)
 	}
 	if opt.Called("debug") {
@@ -98,9 +100,44 @@ func main() {
 		defer fh.Close()
 		reader = fh
 	}
-	err = clitable.NewTablePrinter().HasHeader(*header).FprintCSVReader(os.Stdout, reader)
+	tp := clitable.NewTablePrinter()
+	if opt.Called("tsv") {
+		tp.Separator('\t')
+	}
+	err = tp.HasHeader(*header).FprintCSVReader(os.Stdout, reader)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
 		os.Exit(1)
 	}
+}
+
+func version(semVersion string) (string, error) {
+	var revision, timeStr, modified string
+	info, ok := debug.ReadBuildInfo()
+	if ok {
+		for _, s := range info.Settings {
+			switch s.Key {
+			case "vcs.revision":
+				revision = s.Value
+			case "vcs.time":
+				vcsTime := s.Value
+				date, err := time.Parse("2006-01-02T15:04:05Z", vcsTime)
+				if err != nil {
+					return "", fmt.Errorf("failed to parse time: %w", err)
+				}
+				timeStr = date.Format("20060102_150405")
+			case "vcs.modified":
+				if s.Value == "true" {
+					modified = "modified"
+				}
+			}
+		}
+	}
+	if revision != "" && timeStr != "" {
+		semVersion += fmt.Sprintf("+%s.%s", revision, timeStr)
+		if modified != "" {
+			semVersion += fmt.Sprintf(".%s", modified)
+		}
+	}
+	return semVersion, nil
 }
