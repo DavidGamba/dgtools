@@ -31,7 +31,7 @@ import (
 	"github.com/DavidGamba/go-getoptions"
 )
 
-const semVersion = "0.3.0"
+const semVersion = "0.3.1"
 
 var Logger = log.New(ioutil.Discard, "", log.LstdFlags)
 

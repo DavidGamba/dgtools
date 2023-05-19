@@ -1,6 +1,10 @@
 = Changelog
 :toc:
 
+== v0.3.1: Go mod fix
+
+* Fix to get the right version printed.
+
 == v0.3.0: New feature
 
 * Add support for TSV data.
