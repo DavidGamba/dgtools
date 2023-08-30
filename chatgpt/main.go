@@ -145,7 +145,8 @@ func Run(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 			// Reset chat context
 			messageHistory = &[]openai.ChatCompletionMessage{}
 		case ".clear", "clear":
-			fmt.Printf("\033[H\033[2J")
+			// clear but save contents into scrollback
+			fmt.Printf("\033[H\033[22J")
 		case ".image":
 			mode = "image"
 			color.New(color.FgBlue).Println("Changed mode to image")
