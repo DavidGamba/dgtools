@@ -19,6 +19,8 @@ image:https://pkg.go.dev/badge/github.com/DavidGamba/dgtools/password-cache.svg[
 
 image:https://pkg.go.dev/badge/github.com/DavidGamba/dgtools/clitable.svg[Go Reference, link="https://pkg.go.dev/github.com/DavidGamba/dgtools/clitable"] link:clitable[] - Pretty print Data as tables on the command line.
 
+image:https://pkg.go.dev/badge/github.com/DavidGamba/dgtools/cueutils.svg[Go Reference, link="https://pkg.go.dev/github.com/DavidGamba/dgtools/cueutils"] link:cueutils[] - Provides helpers to work with CUE files.
+
 == Index of Tools
 
 link:cli-bookmarks[] - yet another tool to bookmark filesystem locations and access them in a fast and easy way.
@@ -35,8 +37,11 @@ link:joinlines[] - Simple utility to join lines from a cli command output.
 
 link:password-cache[] - Cache credentials using the Linux keyring in Go.
 
+link:tz[] - Show time zones based on user defined groups.
+
 link:yaml-parse[] - Parse and extract data from YAML files.
 
 link:reverseproxy[] - Creates a very simple reverse proxy that allows to proxy multiple local services at different base paths dynamically with CLI args.
 
 link:clitable[csvtable] - Pretty print csv input as a table.
+
