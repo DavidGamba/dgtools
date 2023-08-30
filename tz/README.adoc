@@ -104,15 +104,34 @@ member: "Palo_Alto": {type: "city"}
 
 == Installation
 
-Install using go:
-
+* Install using go:
++
 ----
 go install github.com/DavidGamba/dgtools/tz@latest
 ----
++
+Ensure your Go bin is in your PATH.
 
-Ensure your Go bin is in your PATH, then add the following to your `.bashrc` file for completion:
+* Install using homebrew:
++
+----
+brew tap DavidGamba/dgtools https://github.com/DavidGamba/dgtools
+brew install DavidGamba/dgtools/tz
+----
+
+=== Completion
+
+Add the following to your `.bashrc` file for completion:
 
 ----
+complete -o default -C tz tz
+----
+
+Or for `zsh`:
+
+----
+autoload bashcompinit
+bashcompinit
 complete -o default -C tz tz
 ----
 
