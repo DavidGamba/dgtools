@@ -1,4 +1,4 @@
- class TZ < Formula
+ class Tz < Formula
    desc "Show time zones based on user defined groups"
    homepage "https://github.com/DavidGamba/dgtools/tree/master/tz"
    url "https://github.com/DavidGamba/dgtools/archive/refs/tags/tz/v0.1.0.tar.gz"
