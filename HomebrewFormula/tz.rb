@@ -16,7 +16,11 @@ class Tz < Formula
       inreplace "completions.zsh", "tool", "tz"
       ohai "Installing bash completion..."
       bash_completion.install "completions.bash" => "dgtools.tz.bash"
-      ohai "Installing zsh completion... (requires bashcompinit)"
+      ohai %{Installing zsh completion...
+      To enable zsh completion add this to your ~/.zshrc
+
+      \tsource #{zsh_completion.sub prefix, HOMEBREW_PREFIX}/dgtools.tz.zsh
+      }
       zsh_completion.install "completions.zsh" => "dgtools.tz.zsh"
     end
   end
