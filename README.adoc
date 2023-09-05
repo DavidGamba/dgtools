@@ -45,6 +45,8 @@ link:reverseproxy[] - Creates a very simple reverse proxy that allows to proxy m
 
 link:clitable[csvtable] - Pretty print csv input as a table.
 
+=== Homebrew
+
 Some tools are published with homebrew:
 
 ----
@@ -52,16 +54,10 @@ brew tap DavidGamba/dgtools https://github.com/DavidGamba/dgtools
 brew install DavidGamba/dgtools/<tool>
 ----
 
-Then add the following to your `.bashrc` file for completion:
+Bash completions are installed by default.
+
+For `zsh` completions, an additional step is required, add the following to your `.zshrc` per tool:
 
 ----
-complete -o default -C <tool> <tool>
-----
-
-Or for `zsh`:
-
-----
-autoload bashcompinit
-bashcompinit
-complete -o default -C <tool> <tool>
+source /opt/homebrew/share/zsh/site-functions/dgtools.<tool>.zsh
 ----
