@@ -1,7 +1,7 @@
-class Tz < Formula
-  desc "Show time zones based on user defined groups"
+class Bt < Formula
+  desc "A no commitments Terraform wrapper that provides build caching functionality"
 
-  tool_name = "tz"
+  tool_name = "bt"
 
   homepage "https://github.com/DavidGamba/dgtools/tree/master/#{tool_name}"
   head "https://github.com/DavidGamba/dgtools.git", branch: "master"
@@ -9,7 +9,7 @@ class Tz < Formula
   depends_on "go" => :build
 
   def install
-    tool_name = "tz"
+    tool_name = "bt"
 
     cd "#{tool_name}" do
       system "go", "get"
