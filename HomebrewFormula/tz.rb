@@ -1,4 +1,4 @@
-load './tool.rb'
+load './helper/tool.rb'
 
 class Tz < Formula
   @@tool = Tool.new("tz", "Show time zones based on user defined groups", "tz")

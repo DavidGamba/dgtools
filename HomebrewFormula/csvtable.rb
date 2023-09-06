@@ -1,4 +1,4 @@
-load './tool.rb'
+load './helper/tool.rb'
 
 class Csvtable < Formula
   @@tool = Tool.new("csvtable", "Pretty print CSV/TSV data", "clitable/cmd/csvtable")

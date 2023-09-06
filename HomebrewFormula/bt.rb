@@ -1,4 +1,4 @@
-load './tool.rb'
+load './helper/tool.rb'
 
 class Bt < Formula
   @@tool = Tool.new("bt", "A no commitments Terraform wrapper that provides build caching functionality", "bt")
