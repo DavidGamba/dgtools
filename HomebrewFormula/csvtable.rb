@@ -1,36 +1,36 @@
-load './helper/tool.rb'
-
 class Csvtable < Formula
-  @@tool = Tool.new("csvtable", "Pretty print CSV/TSV data", "clitable/cmd/csvtable")
+  @@tool_name = "csvtable"
+  @@tool_desc = "Pretty print CSV/TSV data"
+  @@tool_path = "clitable/cmd/csvtable"
 
-  desc "#{@@tool.desc}"
-  homepage "https://github.com/DavidGamba/dgtools/tree/master/#{@@tool.name}"
+  desc "#{@@tool_desc}"
+  homepage "https://github.com/DavidGamba/dgtools/tree/master/#{@@tool_name}"
   head "https://github.com/DavidGamba/dgtools.git", branch: "master"
 
   depends_on "go" => :build
 
   def install
-    cd "#{@@tool.path}" do
+    cd "#{@@tool_path}" do
       system "go", "get"
       system "go", "build"
-      bin.install "#{@@tool.name}"
+      bin.install "#{@@tool_name}"
     end
     cd "HomebrewFormula" do
-      inreplace "completions.bash", "tool", "#{@@tool.name}"
-      inreplace "completions.zsh", "tool", "#{@@tool.name}"
+      inreplace "completions.bash", "tool", "#{@@tool_name}"
+      inreplace "completions.zsh", "tool", "#{@@tool_name}"
       ohai "Installing bash completion..."
-      bash_completion.install "completions.bash" => "dgtools.#{@@tool.name}.bash"
+      bash_completion.install "completions.bash" => "dgtools.#{@@tool_name}.bash"
       ohai %{Installing zsh completion...
       To enable zsh completion add this to your ~/.zshrc
 
-      \tsource #{zsh_completion.sub prefix, HOMEBREW_PREFIX}/dgtools.#{@@tool.name}.zsh
+      \tsource #{zsh_completion.sub prefix, HOMEBREW_PREFIX}/dgtools.#{@@tool_name}.zsh
       }
-      zsh_completion.install "completions.zsh" => "dgtools.#{@@tool.name}.zsh"
-      ohai "Installed #{@@tool.name} from #{@@tool.path} dir"
+      zsh_completion.install "completions.zsh" => "dgtools.#{@@tool_name}.zsh"
+      ohai "Installed #{@@tool_name} from #{@@tool_path} dir"
     end
   end
 
   test do
-    assert_match /Use '#{@@tool.name} help[^']*' for extra details/, shell_output("#{bin}/#{@@tool.name} --help")
+    assert_match /Use '#{@@tool_name} help[^']*' for extra details/, shell_output("#{bin}/#{@@tool_name} --help")
   end
 end
