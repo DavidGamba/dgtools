@@ -51,6 +51,7 @@ Some tools are published with homebrew:
 
 ----
 brew tap DavidGamba/dgtools https://github.com/DavidGamba/dgtools
+brew search DavidGamba/dgtools
 brew install DavidGamba/dgtools/<tool>
 ----
 
@@ -59,5 +60,5 @@ Bash completions are installed by default.
 For `zsh` completions, an additional step is required, add the following to your `.zshrc` per tool:
 
 ----
-source /opt/homebrew/share/zsh/site-functions/dgtools.<tool>.zsh
+source "$(brew --prefix)/share/zsh/site-functions/dgtools.<tool>.zsh"
 ----
