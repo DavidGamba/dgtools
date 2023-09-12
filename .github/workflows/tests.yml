@@ -40,7 +40,7 @@ jobs:
           go build -v .
           dir=$(basename $PWD)
           echo "dir: $dir"
-          echo "::set-output name=binary::$dir"
+          echo "binary=$dir" >> $GITHUB_OUTPUT
         working-directory: ${{ matrix.tool }}
         shell: bash
 
@@ -81,7 +81,7 @@ jobs:
           go build -v .
           dir=$(basename $PWD)
           echo "dir: $dir"
-          echo "::set-output name=binary::$dir"
+          echo "binary=$dir" >> $GITHUB_OUTPUT
         working-directory: ${{ matrix.tool }}
         shell: bash
 
