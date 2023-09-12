@@ -19,11 +19,17 @@ jobs:
           - cssh/cscp
           - cssh/cssh
           - clitable/cmd/csvtable
+          - diffdir
           - grepp
           - joinlines
+          - kdecode
           - password-cache/cmd/password-cache
+          - patch-seam
+          - reverseproxy
+          - tz
           - webserve
           - yaml-parse
+          - yaml-seam
     steps:
       - name: Check out code into the Go module directory
         uses: actions/checkout@v4
@@ -103,7 +109,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
         go: ["1.21", "1.20"]
-        tool: [buildutils, fsmodtime, run]
+        tool: [buildutils, cueutils, fsmodtime, run]
     steps:
       - name: Check out code into the Go module directory
         uses: actions/checkout@v4
