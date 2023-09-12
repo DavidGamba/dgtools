@@ -47,14 +47,14 @@ jobs:
           - cli-bookmarks
           - ffind
     steps:
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v4
+
       - name: Set up Go 1.x
         uses: actions/setup-go@v4
         with:
           go-version: 1.x
           cache-dependency-path: "**/go.sum"
-
-      - name: Check out code into the Go module directory
-        uses: actions/checkout@v4
 
       - id: build
         name: Build
