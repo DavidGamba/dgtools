@@ -35,6 +35,8 @@ link:cssh[] - cssh & cscp: ssh and scp wrappers to connect to multiple servers.
 
 link:joinlines[] - Simple utility to join lines from a cli command output.
 
+link:kdecode[] - Decodes K8s secret's data block.
+
 link:password-cache[] - Cache credentials using the Linux keyring in Go.
 
 link:tz[] - Show time zones based on user defined groups.

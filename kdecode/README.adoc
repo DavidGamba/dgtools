@@ -1,0 +1,22 @@
+= kdecode
+
+Decodes K8s secret's data block.
+
+Cluster selection can be done using the `--cluster` flag to avoid having to change the current context when comparing multiple clusters.
+
+== Installation
+
+* Install using go:
++
+----
+go install github.com/DavidGamba/dgtools/kdecode@latest
+----
++
+Ensure your Go bin is in your PATH.
+
+* Install using homebrew:
++
+----
+brew tap DavidGamba/dgtools https://github.com/DavidGamba/dgtools
+brew install DavidGamba/dgtools/kdecode
+----
