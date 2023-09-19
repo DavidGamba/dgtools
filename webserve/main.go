@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -12,7 +12,7 @@ import (
 	"github.com/DavidGamba/go-getoptions"
 )
 
-var logger = log.New(ioutil.Discard, "", log.LstdFlags)
+var logger = log.New(io.Discard, "", log.LstdFlags)
 
 func main() {
 	os.Exit(program(os.Args))
