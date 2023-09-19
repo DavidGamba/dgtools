@@ -48,6 +48,16 @@ func (fn invalidatePlan) successFunction(ws string) {
 	os.Remove(planFile)
 }
 
+type noOp struct{}
+
+func (fn noOp) cmdFunction(ws string) []string {
+	return []string{}
+}
+
+func (fn noOp) errorFunction(ws string) {}
+
+func (fn noOp) successFunction(ws string) {}
+
 func varFileCMDRun(fn VarFileCMDer, cmd ...string) getoptions.CommandFn {
 	return func(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 		varFiles := opt.Value("var-file").([]string)

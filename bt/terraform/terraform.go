@@ -30,12 +30,13 @@ func NewCommand(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetO
 
 	// workspace selection
 	applyCMD(ctx, opt)
+	consoleCMD(ctx, opt)
 	forceUnlockCMD(ctx, opt)
-	statePushCMD(ctx, opt)
-	statePullCMD(ctx, opt)
-	showPlanCMD(ctx, opt)
 	outputCMD(ctx, opt)
 	showCMD(ctx, opt)
+	showPlanCMD(ctx, opt)
+	statePullCMD(ctx, opt)
+	statePushCMD(ctx, opt)
 	taintCMD(ctx, opt)
 	untaintCMD(ctx, opt)
 
