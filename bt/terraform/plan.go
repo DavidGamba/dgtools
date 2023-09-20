@@ -6,11 +6,14 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"strings"
 
 	"github.com/DavidGamba/dgtools/bt/config"
 	"github.com/DavidGamba/dgtools/fsmodtime"
 	"github.com/DavidGamba/dgtools/run"
 	"github.com/DavidGamba/go-getoptions"
+	"github.com/hashicorp/terraform-config-inspect/tfconfig"
 	"github.com/mattn/go-isatty"
 )
 
@@ -71,17 +74,65 @@ func planRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 		planFile = fmt.Sprintf(".tf.plan-%s", ws)
 	}
 
-	files, modified, err := fsmodtime.Target(os.DirFS("."),
-		[]string{planFile},
-		append(append([]string{".tf.init"}, defaultVarFiles...), varFiles...))
+	cwd, err := os.Getwd()
 	if err != nil {
-		Logger.Printf("failed to check changes for: '%s'\n", ".tf.init")
+		return fmt.Errorf("failed to get current dir: %w", err)
+	}
+
+	moduleFiles := []string{}
+	moduleInfo, diags := tfconfig.LoadModule(".")
+	if diags.HasErrors() {
+		return fmt.Errorf("failed to load module: %w", diags)
+	}
+	for module, moduleCall := range moduleInfo.ModuleCalls {
+		source := moduleCall.Source
+		if _, err := os.Stat(filepath.Join(".", source)); os.IsNotExist(err) {
+			Logger.Printf("remote module: %s, %s\n", module, source)
+			continue
+		}
+		// Logger.Printf("local module: %s, %s\n", module, source)
+		// include all files in module dir, these could be included templates or scripts.
+		moduleFiles = append(moduleFiles, filepath.Join(cwd, source, "*"))
+	}
+
+	sources := append(append(append([]string{".tf.init"}, defaultVarFiles...), varFiles...), moduleFiles...)
+	sources = append(sources, "./*") // include all files in current dir, these could be included templates or scripts.
+	relSources := []string{}
+	for _, s := range sources {
+		if strings.HasPrefix(s, "/") {
+			relSources = append(relSources, filepath.Join("./", s))
+		} else {
+			relSources = append(relSources, filepath.Join("./", cwd, s))
+		}
+	}
+	// Logger.Printf("sources: %v, relSources: %v\n", sources, relSources)
+
+	// fsmodtime.Logger = Logger
+
+	// Paths tested with fs.FS can't start with "/". See https://pkg.go.dev/io/fs#ValidPath
+	files, modified, err := fsmodtime.Target(os.DirFS("/"),
+		[]string{filepath.Join("./", cwd, planFile)},
+		relSources)
+	if err != nil {
+		Logger.Printf("failed to check changes for: '%s'\n", planFile)
 	}
 	if !ignoreCache && !modified {
 		Logger.Printf("no changes: skipping plan\n")
 		return nil
 	}
-	Logger.Printf("modified: %v\n", files)
+	if len(files) > 0 {
+		modifiedFiles := []string{}
+		for _, f := range files {
+			rel, err := filepath.Rel(cwd, "/"+f)
+			if err != nil {
+				rel = f
+			}
+			modifiedFiles = append(modifiedFiles, rel)
+		}
+		Logger.Printf("modified: %v\n", modifiedFiles)
+	} else {
+		Logger.Printf("missing target: %v\n", planFile)
+	}
 
 	cmd := []string{"terraform", "plan", "-out", planFile}
 	for _, v := range defaultVarFiles {
