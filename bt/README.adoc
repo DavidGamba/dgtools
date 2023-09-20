@@ -1,25 +1,47 @@
 = bt: Build Terraform
 
 A no commitments Terraform wrapper that provides build caching functionality.
+It also makes working with workspaces a breeze.
 
 == Install
 
-Install the binary into your `~/go/bin`:
 
+* Install using homebrew:
++
+----
+brew tap DavidGamba/dgtools https://github.com/DavidGamba/dgtools
+brew install DavidGamba/dgtools/tz
+----
++
+[NOTE]
+====
+Completion is auto setup for bash.
+
+For `zsh` completions, an additional step is required, add the following to your `.zshrc`:
+
+----
+source "$(brew --prefix)/share/zsh/site-functions/dgtools.bt.zsh"
+----
+====
+
+* Install using go:
++
+Install the binary into your `~/go/bin`:
++
 ----
 go install github.com/DavidGamba/dgtools/bt@latest
 ----
-
++
 Then setup the completion.
-
++
 For bash:
-
++
 ----
 complete -o default -C bt bt
 ----
-
++
 For zsh:
-
++
 ----
 autoload bashcompinit
 bashcompinit
@@ -41,7 +63,7 @@ terraform: {
 		backend_config: ["backend.tfvars"]
 	}
 	plan: {
-		var_file: ["vars.tfvars"]
+		var_file: ["~/auth.tfvars"]
 	}
 	workspaces: {
 		enabled: true
@@ -52,7 +74,13 @@ terraform: {
 
 == Usage
 
-== Caching Internals
+. Run `bt terraform init` to initialize your config.
+
+. Run `bt terraform build` to generate a plan.
+
+. Run `bt terraform build --apply` to apply the generated plan.
+
+=== Caching Internals
 
 After running `terraform init` it will save a `.tf.init` file.
 It will use that file to determine if any files have changed and if re-running is required.
@@ -62,3 +90,51 @@ It will use that file to determine if the plan already exists of if needs to be 
 
 After running `terraform apply` it will save a `.tf.apply` or `.tf.apply-<workspace>` file.
 It will use that file to determine if the apply has already been made.
+
+=== Backend Config / Var File helpers
+
+Given the config setting for `backend_config` for init and `var_file` for plan, it will automatically include those files to the command.
+
+For example, running `bt terraform init` with the example config file will be the same as running:
+
+----
+terraform init -backend-config backend.tfvars
+----
+
+In the same way, running `bt terraform plan` with the example config file will be the same as running:
+
+----
+terraform plan -out .tf.plan -var-file ~/auth.tfvars
+----
+
+Finally, running `bt terraform apply` with the example config file will be the same as running:
+
+----
+terraform apply -input .tf.plan
+----
+
+== Workspaces helpers
+
+Setting workspaces to `enabled: true` in the config file will enable the workspace helpers.
+What the helpers do is to assume any `.tfvars` or `.tfvars.json` file in the `dir` folder is a workspace.
+
+If a workspace has been selected, bt will automatically include the `<dir>/<workspace>.tfvars` or `<dir>/<workspace>.tfvars.json` file to the command.
+
+If a workspace hasn't been selected, passing the `--ws` option will select the workspace by exporting the `TF_WORKSPACE` environment variable and will add the corresponging `<dir>/<workspace>.tfvars` or `<dir>/<workspace>.tfvars.json` file to the command.
+
+For example, running `bt terraform build --ws=dev` with the example config file will be the same as running:
+
+----
+export TF_WORKSPACE=dev
+terraform plan -out .tf.plan -var-file ~/auth.tfvars -var-file envs/dev.tfvars
+----
+
+And then running `bt terraform build --ws=dev --apply`:
+
+----
+export TF_WORKSPACE=dev
+terraform apply -input .tf.plan
+----
+
+IMPORTANT: Because `bt` uses the `TF_WORKSPACE` environment variable rather than selecting the workspace,
+it is possible to work with multiple workspaces at the same time on different terminals.
