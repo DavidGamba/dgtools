@@ -78,18 +78,22 @@ terraform: {
 
 . Run `bt terraform build` to generate a plan.
 
+. Run `bt terraform build --ic` to generate a plan even when it detects there are no file changes.
+
+. Run `bt terraform build --show` to view the generated plan.
+
 . Run `bt terraform build --apply` to apply the generated plan.
 
 === Caching Internals
 
-After running `terraform init` it will save a `.tf.init` file.
-It will use that file to determine if any files have changed and if re-running is required.
+After running `bt terraform init` it will save a `.tf.init` file.
 
-After running `terraform plan` it will save a `.tf.plan` or `.tf.plan-<workspace>` file.
-It will use that file to determine if the plan already exists of if needs to be run.
+After running `bt terraform build` it will save a `.tf.plan` or `.tf.plan-<workspace>` file.
+It will check the time stamp of the `.tf.init` file and if it is newer than the `.tf.plan` file, a new plan needs to be generated.
+It will also compare the `.tf.plan` file against any file changes in the current dir or any of the module dirs to determine if a new plan needs to be generated.
 
 After running `terraform apply` it will save a `.tf.apply` or `.tf.apply-<workspace>` file.
-It will use that file to determine if the apply has already been made.
+It will use that file and compare it to the `.tf.plan` time stamp to determine if the apply has already been made.
 
 === Backend Config / Var File helpers
 
@@ -101,13 +105,13 @@ For example, running `bt terraform init` with the example config file will be th
 terraform init -backend-config backend.tfvars
 ----
 
-In the same way, running `bt terraform plan` with the example config file will be the same as running:
+In the same way, running `bt terraform build` with the example config file will be the same as running:
 
 ----
 terraform plan -out .tf.plan -var-file ~/auth.tfvars
 ----
 
-Finally, running `bt terraform apply` with the example config file will be the same as running:
+Finally, running `bt terraform build --apply` with the example config file will be the same as running:
 
 ----
 terraform apply -input .tf.plan
