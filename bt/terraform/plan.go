@@ -105,6 +105,20 @@ func planRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 			relSources = append(relSources, filepath.Join("./", cwd, s))
 		}
 	}
+
+	filteredSources := []string{}
+	globs, _, err := fsmodtime.Glob(os.DirFS("/"), false, relSources)
+	if err != nil {
+		return fmt.Errorf("failed to glob sources: %w", err)
+	}
+
+	for _, g := range globs {
+		// Logger.Printf("glob: %s\n", g)
+		if !strings.Contains(g, "/.tf.plan") && !strings.Contains(g, "/.tf.apply") && !strings.Contains(g, "/.terraform/") && !strings.Contains(g, "/.terraform.lock.hcl") {
+			filteredSources = append(filteredSources, g)
+		}
+	}
+
 	// Logger.Printf("sources: %v, relSources: %v\n", sources, relSources)
 
 	// fsmodtime.Logger = Logger
@@ -112,7 +126,7 @@ func planRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	// Paths tested with fs.FS can't start with "/". See https://pkg.go.dev/io/fs#ValidPath
 	files, modified, err := fsmodtime.Target(os.DirFS("/"),
 		[]string{filepath.Join("./", cwd, planFile)},
-		relSources)
+		filteredSources)
 	if err != nil {
 		Logger.Printf("failed to check changes for: '%s'\n", planFile)
 	}
