@@ -23,6 +23,13 @@ For `zsh` completions, an additional step is required, add the following to your
 source "$(brew --prefix)/share/zsh/site-functions/dgtools.bt.zsh"
 ----
 ====
++
+Upgrade with:
++
+----
+brew update
+brew reinstall bt
+----
 
 * Install using go:
 +

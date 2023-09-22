@@ -60,6 +60,13 @@ brew search DavidGamba/dgtools
 brew install --HEAD DavidGamba/dgtools/<tool>
 ----
 
+Upgrade with:
+
+----
+brew update
+brew reinstall <tool>
+----
+
 Bash completions are installed by default.
 
 For `zsh` completions, an additional step is required, add the following to your `.zshrc` per tool:
