@@ -35,8 +35,11 @@ func NewCommand(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetO
 	outputCMD(ctx, opt)
 	showCMD(ctx, opt)
 	showPlanCMD(ctx, opt)
+	stateListCMD(ctx, opt)
 	statePullCMD(ctx, opt)
 	statePushCMD(ctx, opt)
+	stateRMCMD(ctx, opt)
+	stateShowCMD(ctx, opt)
 	taintCMD(ctx, opt)
 	untaintCMD(ctx, opt)
 
