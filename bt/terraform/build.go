@@ -23,6 +23,7 @@ func buildCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt
 	opt.Bool("ignore-cache", false, opt.Description("ignore the cache and re-run the plan"), opt.Alias("ic"))
 	opt.StringSlice("target", 1, 99)
 	opt.Bool("apply", false, opt.Description("apply Terraform plan"))
+	opt.Bool("show", false, opt.Description("show Terraform plan"))
 
 	wss, err := validWorkspaces(cfg)
 	if err != nil {
@@ -35,6 +36,7 @@ func buildCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt
 
 func buildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	apply := opt.Value("apply").(bool)
+	show := opt.Value("show").(bool)
 	detailedExitcode := opt.Value("detailed-exitcode").(bool)
 	ws := opt.Value("ws").(string)
 	ws, err := updateWSIfSelected(ws)
@@ -67,10 +69,16 @@ func buildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	if apply {
 		tm.Add("apply", applyRun)
 	}
+	if show {
+		tm.Add("show", showPlanRun)
+	}
 
 	g := dag.NewGraph("build")
 	g.TaskDependensOn(tm.Get("plan"), tm.Get("init"))
 
+	if show {
+		g.TaskDependensOn(tm.Get("show"), tm.Get("plan"))
+	}
 	if apply {
 		g.TaskDependensOn(tm.Get("apply"), tm.Get("plan"))
 	}
