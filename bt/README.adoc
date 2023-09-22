@@ -10,7 +10,7 @@ It also makes working with workspaces a breeze.
 +
 ----
 brew tap DavidGamba/dgtools https://github.com/DavidGamba/dgtools
-brew install DavidGamba/dgtools/tz
+brew install --HEAD DavidGamba/dgtools/bt
 ----
 +
 [NOTE]

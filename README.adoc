@@ -57,7 +57,7 @@ Some tools are published with homebrew:
 ----
 brew tap DavidGamba/dgtools https://github.com/DavidGamba/dgtools
 brew search DavidGamba/dgtools
-brew install DavidGamba/dgtools/<tool>
+brew install --HEAD DavidGamba/dgtools/<tool>
 ----
 
 Bash completions are installed by default.
