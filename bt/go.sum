@@ -6,8 +6,8 @@ github.com/DavidGamba/dgtools/fsmodtime v0.1.0 h1:aoKDoKesWyDL06dDtRaTNOZqcUPRgQ
 github.com/DavidGamba/dgtools/fsmodtime v0.1.0/go.mod h1:ruwqMvW2pWDbSQlAupP7F0QaojfbuXPyUOUKR4Ev3pQ=
 github.com/DavidGamba/dgtools/run v0.7.0 h1:ENTskNQvBM1/n/b42PxqJktU9EzQVqPZRGUBtVdEVdE=
 github.com/DavidGamba/dgtools/run v0.7.0/go.mod h1:3P1fMJupTWqsiE8IXsXrk2HtgkZBTCFRLbaTjRlmDe0=
-github.com/DavidGamba/go-getoptions v0.27.0 h1:hldKJSwO9SwvR+z9pe6ojhEcYECrRiO/bar9B7MnBKA=
-github.com/DavidGamba/go-getoptions v0.27.0/go.mod h1:qLaLSYeQ8sUVOfKuu5JT5qKKS3OCwyhkYSJnoG+ggmo=
+github.com/DavidGamba/go-getoptions v0.28.0 h1:18wgEvfZdrlfIhVDGEBO3Dl0fkOyXqXLa0tLMCKxM1c=
+github.com/DavidGamba/go-getoptions v0.28.0/go.mod h1:zE97E3PR9P3BI/HKyNYgdMlYxodcuiC6W68KIgeYT84=
 github.com/agext/levenshtein v1.2.1/go.mod h1:JEDfjyjHDjOF/1e4FlBE/PkbqA9OfWu2ki2W0IB5558=
 github.com/agext/levenshtein v1.2.2 h1:0S/Yg6LYmFJ5stwQeRp6EeOcCbj7xiqQSdNelsXvaqE=
 github.com/agext/levenshtein v1.2.2/go.mod h1:JEDfjyjHDjOF/1e4FlBE/PkbqA9OfWu2ki2W0IB5558=
