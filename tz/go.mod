@@ -6,6 +6,7 @@ require (
 	github.com/DavidGamba/dgtools/cueutils v0.0.0-20230519032228-3ebd3c501587
 	github.com/DavidGamba/go-getoptions v0.27.0
 	github.com/charmbracelet/lipgloss v0.7.1
+	golang.org/x/text v0.13.0
 )
 
 require (
@@ -21,8 +22,7 @@ require (
 	github.com/muesli/termenv v0.15.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
-	golang.org/x/net v0.10.0 // indirect
-	golang.org/x/sys v0.8.0 // indirect
-	golang.org/x/text v0.9.0 // indirect
+	golang.org/x/net v0.17.0 // indirect
+	golang.org/x/sys v0.13.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
