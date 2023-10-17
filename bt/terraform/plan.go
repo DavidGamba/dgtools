@@ -114,7 +114,11 @@ func planRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 
 	for _, g := range globs {
 		// Logger.Printf("glob: %s\n", g)
-		if !strings.Contains(g, "/.tf.plan") && !strings.Contains(g, "/.tf.apply") && !strings.Contains(g, "/.terraform/") && !strings.Contains(g, "/.terraform.lock.hcl") {
+		if !strings.Contains(g, "/.tf.plan") &&
+			!strings.Contains(g, "/.tf.check") &&
+			!strings.Contains(g, "/.tf.apply") &&
+			!strings.Contains(g, "/.terraform/") &&
+			!strings.Contains(g, "/.terraform.lock.hcl") {
 			filteredSources = append(filteredSources, g)
 		}
 	}
@@ -186,5 +190,81 @@ func planRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 		os.Remove(planFile)
 		return fmt.Errorf("failed to run: %w", err)
 	}
+	return nil
+}
+
+func checksRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
+	varFiles := opt.Value("var-file").([]string)
+	ws := opt.Value("ws").(string)
+	ws, err := updateWSIfSelected(ws)
+	if err != nil {
+		return err
+	}
+
+	cfg := config.ConfigFromContext(ctx)
+
+	ws, err = getWorkspace(cfg, ws, varFiles)
+	if err != nil {
+		return err
+	}
+
+	planFile := ""
+	checkFile := ""
+	if ws == "" {
+		planFile = ".tf.plan"
+		checkFile = ".tf.check"
+	} else {
+		planFile = fmt.Sprintf(".tf.plan-%s", ws)
+		checkFile = fmt.Sprintf(".tf.check-%s", ws)
+	}
+	jsonPlan := planFile + ".json"
+
+	_, modified, err := fsmodtime.Target(os.DirFS("."),
+		[]string{checkFile},
+		[]string{planFile})
+	if err != nil {
+		Logger.Printf("failed to check changes for: '%s'\n", jsonPlan)
+	}
+	Logger.Printf("plan in json format: %v\n", jsonPlan)
+
+	if !modified {
+		Logger.Printf("no changes: skipping check\n")
+		return nil
+	}
+
+	cmd := []string{"terraform", "show", "-json", planFile}
+	ri := run.CMD(cmd...).Ctx(ctx).Stdin().Log()
+	out, err := ri.STDOutOutput()
+	if err != nil {
+		return fmt.Errorf("failed to get plan json output: %w", err)
+	}
+
+	err = os.WriteFile(jsonPlan, out, 0600)
+	if err != nil {
+		return fmt.Errorf("failed to write json plan: %w", err)
+	}
+	Logger.Printf("plan json written to: %s\n", jsonPlan)
+
+	for _, cmd := range cfg.Terraform.PreApplyChecks.Commands {
+		Logger.Printf("running check: %s\n", cmd.Name)
+		os.Setenv("TERRAFORM_JSON_PLAN", jsonPlan)
+		os.Setenv("CONFIG_ROOT", cfg.ConfigRoot)
+		exp, err := fsmodtime.ExpandEnv(cmd.Command)
+		if err != nil {
+			return fmt.Errorf("failed to expand: %w", err)
+		}
+		ri := run.CMD(exp...).Ctx(ctx).Stdin().Log()
+		err = ri.Run()
+		if err != nil {
+			return fmt.Errorf("failed to run: %w", err)
+		}
+	}
+
+	fh, err := os.Create(checkFile)
+	if err != nil {
+		return fmt.Errorf("failed to create file: %w", err)
+	}
+	fh.Close()
+
 	return nil
 }

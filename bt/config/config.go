@@ -28,16 +28,36 @@ type Config struct {
 			Enabled bool
 			Dir     string
 		}
+		PreApplyChecks struct {
+			Enabled  bool
+			Commands []Command
+		} `json:"pre_apply_checks"`
 	}
+	ConfigRoot string `json:"config_root"`
+}
+
+type Command struct {
+	Name    string
+	Command []string
 }
 
 func (c *Config) String() string {
-	return fmt.Sprintf("backend_config files: %v, var files: %v, workspaces enabled: %t, ws dir: '%s'",
+
+	output := fmt.Sprintf("backend_config files: %v, var files: %v, workspaces enabled: %t, ws dir: '%s'",
 		c.Terraform.Init.BackendConfig,
 		c.Terraform.Plan.VarFile,
 		c.Terraform.Workspaces.Enabled,
 		c.Terraform.Workspaces.Dir,
 	)
+	if c.Terraform.PreApplyChecks.Enabled {
+		output += ", pre_apply_checks: "
+		names := []string{}
+		for _, cmd := range c.Terraform.PreApplyChecks.Commands {
+			names = append(names, cmd.Name)
+		}
+		output += fmt.Sprintf("%v", names)
+	}
+	return output
 }
 
 type contextKey string
@@ -65,6 +85,7 @@ func Get(ctx context.Context, filename string) (*Config, string, error) {
 	if err != nil {
 		return &Config{}, f, fmt.Errorf("failed to read config: %w", err)
 	}
+	cfg.ConfigRoot = filepath.Dir(f)
 	return cfg, f, nil
 }
 

@@ -66,6 +66,9 @@ func buildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	tm := dag.NewTaskMap()
 	tm.Add("init", initFn)
 	tm.Add("plan", planRun)
+	if cfg.Terraform.PreApplyChecks.Enabled {
+		tm.Add("checks", checksRun)
+	}
 	if apply {
 		tm.Add("apply", applyRun)
 	}
@@ -75,6 +78,9 @@ func buildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 
 	g := dag.NewGraph("build")
 	g.TaskDependensOn(tm.Get("plan"), tm.Get("init"))
+	if cfg.Terraform.PreApplyChecks.Enabled {
+		g.TaskDependensOn(tm.Get("checks"), tm.Get("plan"))
+	}
 
 	if show {
 		g.TaskDependensOn(tm.Get("show"), tm.Get("plan"))

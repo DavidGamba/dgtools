@@ -5,7 +5,6 @@ It also makes working with workspaces a breeze.
 
 == Install
 
-
 * Install using homebrew:
 +
 ----
@@ -19,7 +18,9 @@ Completion is auto setup for bash.
 
 For `zsh` completions, an additional step is required, add the following to your `.zshrc`:
 
+[source, zsh]
 ----
+export ZSHELL="true"
 source "$(brew --prefix)/share/zsh/site-functions/dgtools.bt.zsh"
 ----
 ====
@@ -49,9 +50,11 @@ complete -o default -C bt bt
 +
 For zsh:
 +
+[source, zsh]
 ----
-autoload bashcompinit
-bashcompinit
+export ZSHELL="true"
+autoload -U +X compinit && compinit
+autoload -U +X bashcompinit && bashcompinit
 complete -o default -C bt bt
 ----
 
@@ -76,6 +79,12 @@ terraform: {
 		enabled: true
 		dir: "envs"
 	}
+	pre_apply_checks: {
+		enabled: true
+		commands: [
+			{name: "conftest", command: ["conftest", "test", "$TERRAFORM_JSON_PLAN"]},
+		]
+	}
 }
 ----
 
@@ -98,6 +107,9 @@ After running `bt terraform init` it will save a `.tf.init` file.
 After running `bt terraform build` it will save a `.tf.plan` or `.tf.plan-<workspace>` file.
 It will check the time stamp of the `.tf.init` file and if it is newer than the `.tf.plan` file, a new plan needs to be generated.
 It will also compare the `.tf.plan` file against any file changes in the current dir or any of the module dirs to determine if a new plan needs to be generated.
+
+If `pre_apply_checks` are enabled, it will run the checks specified by passing the rendered json plan to the command.
+For example, conftest policy checks.
 
 After running `terraform apply` it will save a `.tf.apply` or `.tf.apply-<workspace>` file.
 It will use that file and compare it to the `.tf.plan` time stamp to determine if the apply has already been made.
@@ -149,3 +161,10 @@ terraform apply -input .tf.plan
 
 IMPORTANT: Because `bt` uses the `TF_WORKSPACE` environment variable rather than selecting the workspace,
 it is possible to work with multiple workspaces at the same time on different terminals.
+
+== Pre Apply Checks
+
+Pre apply check commands get the following Env vars exported:
+
+* `CONFIG_ROOT`: The dir of the config file.
+* `TERRAFORM_JSON_PLAN`: The path to the rendered json plan.

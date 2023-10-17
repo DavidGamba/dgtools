@@ -11,4 +11,13 @@ package bt
 		enabled: bool
 		dir: string
 	}
+	pre_apply_checks?: {
+		enabled: bool
+		commands: [...#Command]
+	}
+}
+
+#Command: {
+	name: string
+	command: [...string]
 }
