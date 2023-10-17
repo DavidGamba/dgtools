@@ -71,6 +71,8 @@ Bash completions are installed by default.
 
 For `zsh` completions, an additional step is required, add the following to your `.zshrc` per tool:
 
+[source, zsh]
 ----
+export ZSHELL="true"
 source "$(brew --prefix)/share/zsh/site-functions/dgtools.<tool>.zsh"
 ----
