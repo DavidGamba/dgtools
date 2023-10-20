@@ -37,14 +37,14 @@ package fsmodtime
 
 import (
 	"fmt"
+	"io"
 	"io/fs"
-	"io/ioutil"
 	"log"
 	"path"
 	"path/filepath"
 )
 
-var Logger = log.New(ioutil.Discard, "", log.LstdFlags)
+var Logger = log.New(io.Discard, "", log.LstdFlags)
 
 var (
 	ErrInvalidPath = fmt.Errorf("invalid path")
