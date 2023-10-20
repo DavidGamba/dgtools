@@ -51,8 +51,7 @@ func ExpandEnv(lines []string) ([]string, error) {
 // Glob syntax described here: https://golang.org/pkg/path/filepath/#Match
 //
 // Returns the list of matches, a bool indicating if there is a pattern that had no matches and an error
-func Glob(fsys fs.FS, stop bool, patterns []string) ([]string, bool, error) {
-	matches := []string{}
+func Glob(fsys fs.FS, stop bool, patterns []string) (matches []string, stopped bool, err error) {
 	for _, p := range patterns {
 		m, err := fs.Glob(fsys, p)
 		if err != nil {
