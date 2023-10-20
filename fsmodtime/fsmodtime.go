@@ -47,8 +47,9 @@ import (
 var Logger = log.New(ioutil.Discard, "", log.LstdFlags)
 
 var (
-	ErrorInvalidPath = fmt.Errorf("invalid path")
-	ErrorInvalidFS   = fmt.Errorf("invalid fs")
+	ErrInvalidPath = fmt.Errorf("invalid path")
+	ErrInvalidFS   = fmt.Errorf("invalid fs")
+	ErrNotFound    = fmt.Errorf("not found")
 )
 
 // Last - given a list of paths, it finds the file with the latest modTime and returns it.
@@ -112,7 +113,7 @@ func First(fsys fs.FS, paths []string) (filepath string, fileInfo fs.FileInfo, e
 
 func walkPaths(fsys fs.FS, paths []string, fn fileInfoFn) error {
 	if fsys == nil {
-		return ErrorInvalidFS
+		return ErrInvalidFS
 	}
 
 	for _, path := range paths {
@@ -120,7 +121,7 @@ func walkPaths(fsys fs.FS, paths []string, fn fileInfoFn) error {
 
 		// validate path
 		if path == "" {
-			return fmt.Errorf("%w: '%s'", ErrorInvalidPath, path)
+			return fmt.Errorf("%w: '%s'", ErrInvalidPath, path)
 		}
 		fi, err := fs.Stat(fsys, path)
 		if err != nil {

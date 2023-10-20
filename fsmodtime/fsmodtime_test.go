@@ -31,12 +31,12 @@ type fswrap struct {
 }
 
 var (
-	errorReadDir = fmt.Errorf("read dir error")
-	errorInfo    = fmt.Errorf("info error")
+	errReadDir = fmt.Errorf("read dir error")
+	errInfo    = fmt.Errorf("info error")
 )
 
 func (fsw fswrap) ReadDir(name string) ([]fs.DirEntry, error) {
-	return nil, errorReadDir
+	return nil, errReadDir
 }
 
 type deWrap struct{}
@@ -81,7 +81,7 @@ func TestFirstLast(t *testing.T) {
 			t.Log(buf.String())
 			t.Fatalf("expected error, nothing found")
 		}
-		if !errors.Is(err, ErrorInvalidPath) {
+		if !errors.Is(err, ErrInvalidPath) {
 			t.Errorf("unexpected error: %v", err)
 		}
 		t.Log(buf.String())
@@ -107,7 +107,7 @@ func TestFirstLast(t *testing.T) {
 			t.Log(buf.String())
 			t.Fatalf("expected error, nothing found")
 		}
-		if !errors.Is(err, ErrorInvalidFS) {
+		if !errors.Is(err, ErrInvalidFS) {
 			t.Errorf("unexpected error: %v", err)
 		}
 		_, _, err = First(nil, []string{"a", "b", "c", "d"})
@@ -115,7 +115,7 @@ func TestFirstLast(t *testing.T) {
 			t.Log(buf.String())
 			t.Fatalf("expected error, nothing found")
 		}
-		if !errors.Is(err, ErrorInvalidFS) {
+		if !errors.Is(err, ErrInvalidFS) {
 			t.Errorf("unexpected error: %v", err)
 		}
 		t.Log(buf.String())
@@ -173,7 +173,7 @@ func TestFirstLast(t *testing.T) {
 			t.Log(buf.String())
 			t.Fatalf("expected error, nothing found")
 		}
-		if !errors.Is(err, errorReadDir) {
+		if !errors.Is(err, errReadDir) {
 			t.Errorf("unexpected error: %v", err)
 		}
 		t.Log(buf.String())

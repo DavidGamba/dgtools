@@ -18,8 +18,6 @@ import (
 	"time"
 )
 
-var ErrNotFound = fmt.Errorf("not found")
-
 // ExpandEnv - like os.ExpandEnv on many lines, except that it reports error if any of the env vars is
 // not found.
 func ExpandEnv(lines []string) ([]string, error) {
