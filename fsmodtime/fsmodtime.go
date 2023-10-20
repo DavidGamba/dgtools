@@ -52,6 +52,25 @@ var (
 	ErrNotFound    = fmt.Errorf("not found")
 )
 
+type WalkOpts struct {
+	recursive      bool
+	followSymlinks bool
+}
+
+type WalkOpt func(*WalkOpts)
+
+func Recursive(enabled bool) WalkOpt {
+	return func(opts *WalkOpts) {
+		opts.recursive = enabled
+	}
+}
+
+func FollowSymlinks(enabled bool) WalkOpt {
+	return func(opts *WalkOpts) {
+		opts.followSymlinks = enabled
+	}
+}
+
 // Last - given a list of paths, it finds the file with the latest modTime and returns it.
 //
 //	root := "."

@@ -26,6 +26,25 @@ func setupLogging() *bytes.Buffer {
 	return buf
 }
 
+func TestWalkOpts(t *testing.T) {
+	opts := WalkOpts{}
+	if opts.recursive {
+		t.Errorf("expected recursive to be false")
+	}
+	if opts.followSymlinks {
+		t.Errorf("expected followSymlinks to be false")
+	}
+
+	Recursive(true)(&opts)
+	FollowSymlinks(true)(&opts)
+	if !opts.recursive {
+		t.Errorf("expected recursive to be true")
+	}
+	if !opts.followSymlinks {
+		t.Errorf("expected followSymlinks to be true")
+	}
+}
+
 type fswrap struct {
 	fs.ReadDirFS
 }
