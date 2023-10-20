@@ -19,20 +19,20 @@
 //
 // Requirements:
 //
-// * Targets might not exist yet.
-//   In that case, build them.
-// * All declared targets must exist.
-//   Rebuild otherwise.
-// * Not all sources are required to exist.
-//   For example, I might want a blank *.jpg and *.png in my build system but some image types might not exist.
-// * ExpandEnv but don't fail silently if my Env Var expansions fail.
-// * Allow for globs.
+//   - Targets might not exist yet.
+//     In that case, build them.
+//   - All declared targets must exist.
+//     Rebuild otherwise.
+//   - Not all sources are required to exist.
+//     For example, I might want a blank *.jpg and *.png in my build system but some image types might not exist.
+//   - ExpandEnv but don't fail silently if my Env Var expansions fail.
+//   - Allow for globs.
 //
 // Example:
 //
-//   targets := []string{"$outputs_dir/doc.pdf", "$outputs_dir/*.html"}
-//   sources := []string{"$src_dir/*.adoc", "$images_dir/*.jpg", "$images_dir/*.png"}
-//   paths, modified, err := Target(os.DirFS("."), targets, sources)
+//	targets := []string{"$outputs_dir/doc.pdf", "$outputs_dir/*.html"}
+//	sources := []string{"$src_dir/*.adoc", "$images_dir/*.jpg", "$images_dir/*.png"}
+//	paths, modified, err := Target(os.DirFS("."), targets, sources)
 package fsmodtime
 
 import (
@@ -46,14 +46,16 @@ import (
 
 var Logger = log.New(ioutil.Discard, "", log.LstdFlags)
 
-var ErrorInvalidPath = fmt.Errorf("invalid path")
-var ErrorInvalidFS = fmt.Errorf("invalid fs")
+var (
+	ErrorInvalidPath = fmt.Errorf("invalid path")
+	ErrorInvalidFS   = fmt.Errorf("invalid fs")
+)
 
 // Last - given a list of paths, it finds the file with the latest modTime and returns it.
 //
-//   root := "."
-//   fileSystem := os.DirFS(root)
-//   path, fi, err := Last(fileSystem, paths)
+//	root := "."
+//	fileSystem := os.DirFS(root)
+//	path, fi, err := Last(fileSystem, paths)
 func Last(fsys fs.FS, paths []string) (filepath string, fileInfo fs.FileInfo, err error) {
 	// TODO: Add option to skip descending into dirs.
 	// TODO: Add option to follow symlinks.
@@ -82,9 +84,9 @@ func Last(fsys fs.FS, paths []string) (filepath string, fileInfo fs.FileInfo, er
 
 // First - given a list of paths, it finds the file with the earliest modTime and returns it.
 //
-//   root := "."
-//   fileSystem := os.DirFS(root)
-//   path, fi, err := First(fileSystem, paths)
+//	root := "."
+//	fileSystem := os.DirFS(root)
+//	path, fi, err := First(fileSystem, paths)
 func First(fsys fs.FS, paths []string) (filepath string, fileInfo fs.FileInfo, err error) {
 	beforeFn := func(root string, fi fs.FileInfo) error {
 		Logger.Printf("fn: %s\n", path.Join(root, fi.Name()))

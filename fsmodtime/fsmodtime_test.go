@@ -30,47 +30,48 @@ type fswrap struct {
 	fs.ReadDirFS
 }
 
-var errorReadDir = fmt.Errorf("read dir error")
-var errorInfo = fmt.Errorf("info error")
+var (
+	errorReadDir = fmt.Errorf("read dir error")
+	errorInfo    = fmt.Errorf("info error")
+)
 
 func (fsw fswrap) ReadDir(name string) ([]fs.DirEntry, error) {
 	return nil, errorReadDir
 }
 
-type deWrap struct {
-}
+type deWrap struct{}
 
 func TestFirstLast(t *testing.T) {
 	m := make(fstest.MapFS)
 	m["a/a.txt"] = &fstest.MapFile{
-		Mode:    0666,
+		Mode:    0o666,
 		ModTime: time.Date(3, time.January, 1, 0, 0, 0, 0, time.UTC),
 	}
 	m["a/aa/aa.txt"] = &fstest.MapFile{
-		Mode:    0666,
+		Mode:    0o666,
 		ModTime: time.Date(4, time.January, 1, 0, 0, 0, 0, time.UTC),
 	}
 	m["a/aa/ab.txt"] = &fstest.MapFile{
-		Mode:    0666,
+		Mode:    0o666,
 		ModTime: time.Date(6, time.January, 1, 0, 0, 0, 0, time.UTC),
 	}
 	m["a/aa/ac.txt"] = &fstest.MapFile{
-		Mode:    0666,
+		Mode:    0o666,
 		ModTime: time.Date(5, time.January, 1, 0, 0, 0, 0, time.UTC),
 	}
 	m["b/b.txt"] = &fstest.MapFile{
-		Mode:    0666,
+		Mode:    0o666,
 		ModTime: time.Date(2, time.January, 1, 0, 0, 0, 0, time.UTC),
 	}
 	m["b/bb/bb.txt"] = &fstest.MapFile{
-		Mode:    0666,
+		Mode:    0o666,
 		ModTime: time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC),
 	}
 	m["c"] = &fstest.MapFile{
-		Mode: 0777 | fs.ModeDir,
+		Mode: 0o777 | fs.ModeDir,
 	}
 	m["d/dd"] = &fstest.MapFile{
-		Mode: 0777 | fs.ModeDir,
+		Mode: 0o777 | fs.ModeDir,
 	}
 
 	t.Run("empty path", func(t *testing.T) {

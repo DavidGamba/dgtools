@@ -47,9 +47,13 @@ func TestExpandEnv(t *testing.T) {
 		{"no env", []string{"hello world"}, nil, []string{"hello world"}, nil},
 		{"env", []string{"hello $_world"}, map[string]string{"_world": "mundo"}, []string{"hello mundo"}, nil},
 		{"env", []string{"hello ${_world}"}, map[string]string{"_world": "mundo"}, []string{"hello mundo"}, nil},
-		{"env", []string{"hello ${_world}", "/$_world$_home"},
+		{
+			"env",
+			[]string{"hello ${_world}", "/$_world$_home"},
 			map[string]string{"_world": "mundo", "_home": "/home/david"},
-			[]string{"hello mundo", "/mundo/home/david"}, nil},
+			[]string{"hello mundo", "/mundo/home/david"},
+			nil,
+		},
 		{"error", []string{"hello $_world"}, nil, []string{"hello "}, ErrNotFound},
 		{"error", []string{"hello $_world$_home"}, nil, []string{"hello "}, ErrNotFound},
 	}
@@ -71,27 +75,27 @@ func TestTarget(t *testing.T) {
 	// We only care about *.adoc and *.jpg files, so the metadata.yml files should be ignored.
 	m := make(fstest.MapFS)
 	m["src/a.adoc"] = &fstest.MapFile{
-		Mode:    0666,
+		Mode:    0o666,
 		ModTime: time.Date(3, time.January, 1, 0, 0, 0, 0, time.UTC),
 	}
 	m["src/b.adoc"] = &fstest.MapFile{
-		Mode:    0666,
+		Mode:    0o666,
 		ModTime: time.Date(4, time.January, 1, 0, 0, 0, 0, time.UTC),
 	}
 	m["src/metadata.yml"] = &fstest.MapFile{
-		Mode:    0666,
+		Mode:    0o666,
 		ModTime: time.Date(99, time.January, 1, 0, 0, 0, 0, time.UTC),
 	}
 	m["images/a.jpg"] = &fstest.MapFile{
-		Mode:    0666,
+		Mode:    0o666,
 		ModTime: time.Date(5, time.January, 1, 0, 0, 0, 0, time.UTC),
 	}
 	m["images/b.jpg"] = &fstest.MapFile{
-		Mode:    0666,
+		Mode:    0o666,
 		ModTime: time.Date(6, time.January, 1, 0, 0, 0, 0, time.UTC),
 	}
 	m["images/metadata.yml"] = &fstest.MapFile{
-		Mode:    0666,
+		Mode:    0o666,
 		ModTime: time.Date(99, time.January, 1, 0, 0, 0, 0, time.UTC),
 	}
 
@@ -119,19 +123,19 @@ func TestTarget(t *testing.T) {
 	t.Run("old targets", func(t *testing.T) {
 		buf := setupLogging()
 		m["outputs/doc.pdf"] = &fstest.MapFile{
-			Mode:    0666,
+			Mode:    0o666,
 			ModTime: time.Date(2, time.January, 1, 0, 0, 0, 0, time.UTC),
 		}
 		m["outputs/index.html"] = &fstest.MapFile{
-			Mode:    0666,
+			Mode:    0o666,
 			ModTime: time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC),
 		}
 		m["outputs/a.html"] = &fstest.MapFile{
-			Mode:    0666,
+			Mode:    0o666,
 			ModTime: time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC),
 		}
 		m["outputs/b.html"] = &fstest.MapFile{
-			Mode:    0666,
+			Mode:    0o666,
 			ModTime: time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC),
 		}
 		paths, modified, err := Target(m, targets, sources)
@@ -150,19 +154,19 @@ func TestTarget(t *testing.T) {
 	t.Run("current targets", func(t *testing.T) {
 		buf := setupLogging()
 		m["outputs/doc.pdf"] = &fstest.MapFile{
-			Mode:    0666,
+			Mode:    0o666,
 			ModTime: time.Date(51, time.January, 1, 0, 0, 0, 0, time.UTC),
 		}
 		m["outputs/index.html"] = &fstest.MapFile{
-			Mode:    0666,
+			Mode:    0o666,
 			ModTime: time.Date(50, time.January, 1, 0, 0, 0, 0, time.UTC),
 		}
 		m["outputs/a.html"] = &fstest.MapFile{
-			Mode:    0666,
+			Mode:    0o666,
 			ModTime: time.Date(50, time.January, 1, 0, 0, 0, 0, time.UTC),
 		}
 		m["outputs/b.html"] = &fstest.MapFile{
-			Mode:    0666,
+			Mode:    0o666,
 			ModTime: time.Date(50, time.January, 1, 0, 0, 0, 0, time.UTC),
 		}
 		paths, modified, err := Target(m, targets, sources)
@@ -181,7 +185,7 @@ func TestTarget(t *testing.T) {
 	t.Run("bad sources", func(t *testing.T) {
 		buf := setupLogging()
 		m["target"] = &fstest.MapFile{
-			Mode:    0666,
+			Mode:    0o666,
 			ModTime: time.Date(51, time.January, 1, 0, 0, 0, 0, time.UTC),
 		}
 		paths, modified, err := Target(m, []string{"target"}, []string{"source"})
