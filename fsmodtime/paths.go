@@ -19,7 +19,7 @@ import (
 )
 
 // ExpandEnv - like os.ExpandEnv on many lines, except that it reports error if any of the env vars is
-// not found.
+// not found. It also expands ~/ to $HOME/
 func ExpandEnv(lines []string) ([]string, error) {
 	expanded := []string{}
 	var err error
@@ -32,6 +32,10 @@ func ExpandEnv(lines []string) ([]string, error) {
 		return ""
 	}
 	for _, line := range lines {
+		if strings.HasPrefix(line, "~/") {
+			line = strings.Replace(line, "~/", "$HOME/", 1)
+		}
+		line = strings.ReplaceAll(line, " ~/", " $HOME/")
 		expanded = append(expanded, os.Expand(line, mappingFn))
 	}
 	if len(notFound) > 0 {

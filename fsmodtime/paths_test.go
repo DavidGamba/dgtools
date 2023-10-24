@@ -45,6 +45,10 @@ func TestExpandEnv(t *testing.T) {
 	}{
 		{"empty", []string{}, nil, []string{}, nil},
 		{"no env", []string{"hello world"}, nil, []string{"hello world"}, nil},
+		{"env", []string{"home $HOME"}, map[string]string{"HOME": "test"}, []string{"home test"}, nil},
+		{"env", []string{"home $HOME/hello"}, map[string]string{"HOME": "test"}, []string{"home test/hello"}, nil},
+		{"env", []string{"home ~/hello"}, map[string]string{"HOME": "test"}, []string{"home test/hello"}, nil},
+		{"env", []string{"~/hello"}, map[string]string{"HOME": "test"}, []string{"test/hello"}, nil},
 		{"env", []string{"hello $_world"}, map[string]string{"_world": "mundo"}, []string{"hello mundo"}, nil},
 		{"env", []string{"hello ${_world}"}, map[string]string{"_world": "mundo"}, []string{"hello mundo"}, nil},
 		{
