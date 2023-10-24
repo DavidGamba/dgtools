@@ -201,6 +201,11 @@ func checksRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error
 		return err
 	}
 
+	cwd, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("failed to get current dir: %w", err)
+	}
+
 	cfg := config.ConfigFromContext(ctx)
 
 	ws, err = getWorkspace(cfg, ws, varFiles)
@@ -218,10 +223,32 @@ func checksRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error
 		checkFile = fmt.Sprintf(".tf.check-%s", ws)
 	}
 	jsonPlan := planFile + ".json"
+	os.Setenv("TERRAFORM_JSON_PLAN", jsonPlan)
+	os.Setenv("CONFIG_ROOT", cfg.ConfigRoot)
 
-	_, modified, err := fsmodtime.Target(os.DirFS("."),
-		[]string{checkFile},
-		[]string{planFile})
+	cmdFiles := []string{}
+	for _, cmd := range cfg.Terraform.PreApplyChecks.Commands {
+		exp, err := fsmodtime.ExpandEnv(cmd.Files)
+		if err != nil {
+			return fmt.Errorf("failed to expand: %w", err)
+		}
+		for _, f := range exp {
+			if strings.HasPrefix(f, "/") {
+				cmdFiles = append(cmdFiles, filepath.Join("./", f))
+			} else {
+				cmdFiles = append(cmdFiles, filepath.Join("./", cwd, f))
+			}
+		}
+	}
+	globs, _, err := fsmodtime.Glob(os.DirFS("/"), false, cmdFiles)
+	if err != nil {
+		return fmt.Errorf("failed to glob sources: %w", err)
+	}
+
+	// Paths tested with fs.FS can't start with "/". See https://pkg.go.dev/io/fs#ValidPath
+	files, modified, err := fsmodtime.Target(os.DirFS("/"),
+		[]string{filepath.Join("./", cwd, checkFile)},
+		append(globs, filepath.Join("./", cwd, planFile)))
 	if err != nil {
 		Logger.Printf("failed to check changes for: '%s'\n", jsonPlan)
 	}
@@ -230,6 +257,19 @@ func checksRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error
 	if !modified {
 		Logger.Printf("no changes: skipping check\n")
 		return nil
+	}
+	if len(files) > 0 {
+		modifiedFiles := []string{}
+		for _, f := range files {
+			rel, err := filepath.Rel(cwd, "/"+f)
+			if err != nil {
+				rel = f
+			}
+			modifiedFiles = append(modifiedFiles, rel)
+		}
+		Logger.Printf("modified: %v\n", modifiedFiles)
+	} else {
+		Logger.Printf("missing target: %v\n", planFile)
 	}
 
 	cmd := []string{"terraform", "show", "-json", planFile}
@@ -247,8 +287,6 @@ func checksRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error
 
 	for _, cmd := range cfg.Terraform.PreApplyChecks.Commands {
 		Logger.Printf("running check: %s\n", cmd.Name)
-		os.Setenv("TERRAFORM_JSON_PLAN", jsonPlan)
-		os.Setenv("CONFIG_ROOT", cfg.ConfigRoot)
 		exp, err := fsmodtime.ExpandEnv(cmd.Command)
 		if err != nil {
 			return fmt.Errorf("failed to expand: %w", err)

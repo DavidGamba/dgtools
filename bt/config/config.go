@@ -39,6 +39,7 @@ type Config struct {
 type Command struct {
 	Name    string
 	Command []string
+	Files   []string
 }
 
 func (c *Config) String() string {
