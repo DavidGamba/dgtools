@@ -76,11 +76,15 @@ func Recursive(enabled bool) WalkOpt {
 //
 //	root := "."
 //	fileSystem := os.DirFS(root)
-//	path, fi, err := Last(fileSystem, paths)
-func Last(fsys fs.FS, paths []string) (filepath string, fileInfo fs.FileInfo, err error) {
-	// TODO: Add option to skip descending into dirs.
-	// TODO: Add option to follow symlinks.
-	// TODO: Add variadic option definitions.
+//	path, fi, err := fsmodtime.Last(fileSystem, paths, fsmodtime.Recursive(true))
+//
+// Use fsmodtime.Recursive(true) to recurse into directories.
+func Last(fsys fs.FS, paths []string, opts ...WalkOpt) (filepath string, fileInfo fs.FileInfo, err error) {
+	wo := &WalkOpts{}
+	for _, opt := range opts {
+		opt(wo)
+	}
+
 	afterFn := func(root string, fi fs.FileInfo) error {
 		Logger.Printf("fn: %s\n", path.Join(root, fi.Name()))
 		if fileInfo == nil {
@@ -95,9 +99,13 @@ func Last(fsys fs.FS, paths []string) (filepath string, fileInfo fs.FileInfo, er
 		return nil
 	}
 
-	err = walkPaths(fsys, paths, afterFn)
+	err = walkPaths(fsys, paths, wo, afterFn)
 	if err != nil {
 		return "", nil, err
+	}
+
+	if fileInfo == nil {
+		return "", nil, fmt.Errorf("%w: %q", ErrNotFound, paths)
 	}
 
 	return filepath, fileInfo, nil
@@ -107,8 +115,15 @@ func Last(fsys fs.FS, paths []string) (filepath string, fileInfo fs.FileInfo, er
 //
 //	root := "."
 //	fileSystem := os.DirFS(root)
-//	path, fi, err := First(fileSystem, paths)
-func First(fsys fs.FS, paths []string) (filepath string, fileInfo fs.FileInfo, err error) {
+//	path, fi, err := fsmodtime.First(fileSystem, paths, fsmodtime.Recursive(true))
+//
+// Use fsmodtime.Recursive(true) to recurse into directories.
+func First(fsys fs.FS, paths []string, opts ...WalkOpt) (filepath string, fileInfo fs.FileInfo, err error) {
+	wo := &WalkOpts{}
+	for _, opt := range opts {
+		opt(wo)
+	}
+
 	beforeFn := func(root string, fi fs.FileInfo) error {
 		Logger.Printf("fn: %s\n", path.Join(root, fi.Name()))
 		if fileInfo == nil {
@@ -123,15 +138,19 @@ func First(fsys fs.FS, paths []string) (filepath string, fileInfo fs.FileInfo, e
 		return nil
 	}
 
-	err = walkPaths(fsys, paths, beforeFn)
+	err = walkPaths(fsys, paths, wo, beforeFn)
 	if err != nil {
 		return "", nil, err
+	}
+
+	if fileInfo == nil {
+		return "", nil, fmt.Errorf("%w: %q", ErrNotFound, paths)
 	}
 
 	return filepath, fileInfo, nil
 }
 
-func walkPaths(fsys fs.FS, paths []string, fn fileInfoFn) error {
+func walkPaths(fsys fs.FS, paths []string, wo *WalkOpts, fn fileInfoFn) error {
 	if fsys == nil {
 		return ErrInvalidFS
 	}
@@ -148,7 +167,7 @@ func walkPaths(fsys fs.FS, paths []string, fn fileInfoFn) error {
 			return err
 		}
 
-		err = fileInfoIterate(fsys, filepath.Dir(path), fs.FileInfoToDirEntry(fi), fn)
+		err = fileInfoIterate(fsys, filepath.Dir(path), fs.FileInfoToDirEntry(fi), fn, 1, wo)
 		if err != nil {
 			return err
 		}
@@ -164,8 +183,12 @@ type fileInfoFn func(root string, fi fs.FileInfo) error
 // NOTE: It doesn't run fn on dirs.
 //
 // TODO: It doesn't follow symlinks
-func fileInfoIterate(fsys fs.FS, root string, de fs.DirEntry, fn fileInfoFn) (err error) {
+func fileInfoIterate(fsys fs.FS, root string, de fs.DirEntry, fn fileInfoFn, depth int, wo *WalkOpts) error {
 	if de.IsDir() {
+		Logger.Printf("depth: %d\n", depth)
+		if !wo.recursive {
+			return nil
+		}
 		dir := path.Join(root, de.Name())
 		Logger.Printf("expand: %s\n", dir)
 		dirEntries, err := fs.ReadDir(fsys, dir)
@@ -173,7 +196,7 @@ func fileInfoIterate(fsys fs.FS, root string, de fs.DirEntry, fn fileInfoFn) (er
 			return err
 		}
 		for _, de := range dirEntries {
-			err := fileInfoIterate(fsys, dir, de, fn)
+			err := fileInfoIterate(fsys, dir, de, fn, depth+1, wo)
 			if err != nil {
 				return err
 			}
@@ -188,5 +211,5 @@ func fileInfoIterate(fsys fs.FS, root string, de fs.DirEntry, fn fileInfoFn) (er
 	if err != nil {
 		return err
 	}
-	return
+	return nil
 }

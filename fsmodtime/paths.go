@@ -69,7 +69,9 @@ func Glob(fsys fs.FS, stop bool, patterns []string) (matches []string, stopped b
 
 // Target - Given a list of targets it indicates whether or not the sources have modifications past the targets last.
 // The first return is the file modified.
-func Target(fsys fs.FS, targets []string, sources []string) ([]string, bool, error) {
+//
+// Use fsmodtime.Recursive(true) to recurse into directories.
+func Target(fsys fs.FS, targets []string, sources []string, opts ...WalkOpt) ([]string, bool, error) {
 	targets, err := ExpandEnv(targets)
 	if err != nil {
 		return nil, false, err
@@ -83,17 +85,19 @@ func Target(fsys fs.FS, targets []string, sources []string) ([]string, bool, err
 		return []string{}, true, nil
 	}
 	Logger.Printf("targets: %q\n", targets)
-	p, fi, err := Last(fsys, targets)
+	p, fi, err := Last(fsys, targets, opts...)
 	if err != nil {
 		return nil, false, err
 	}
 	Logger.Printf("last target: %q\n", path.Join(p, fi.Name()))
-	return TargetTime(fsys, fi.ModTime(), sources)
+	return TargetTime(fsys, fi.ModTime(), sources, opts...)
 }
 
 // TargetTime - Given a time it indicates whether or not the sources have modifications past the time.
 // The first return is the file modified.
-func TargetTime(fsys fs.FS, targetTime time.Time, sources []string) ([]string, bool, error) {
+//
+// Use fsmodtime.Recursive(true) to recurse into directories.
+func TargetTime(fsys fs.FS, targetTime time.Time, sources []string, opts ...WalkOpt) ([]string, bool, error) {
 	sources, err := ExpandEnv(sources)
 	if err != nil {
 		return nil, false, err
@@ -104,7 +108,7 @@ func TargetTime(fsys fs.FS, targetTime time.Time, sources []string) ([]string, b
 	}
 	Logger.Printf("sources: %q\n", sources)
 	// TODO: This is the wrong implementation, I don't need the times of all files, only one newer than targetTime
-	p, fi, err := Last(fsys, sources)
+	p, fi, err := Last(fsys, sources, opts...)
 	if err != nil {
 		return nil, false, err
 	}

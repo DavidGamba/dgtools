@@ -76,7 +76,7 @@ func TestExpandEnv(t *testing.T) {
 
 func TestTarget(t *testing.T) {
 	// Given two input dirs, src and images, we want to validate that our outputs are newer than any of the inputs.
-	// We only care about *.adoc and *.jpg files, so the metadata.yml files should be ignored.
+	// We only care about *.adoc and *.jpg files, so the metadata.yaml files should be ignored.
 	m := make(fstest.MapFS)
 	m["src/a.adoc"] = &fstest.MapFile{
 		Mode:    0o666,
@@ -86,32 +86,41 @@ func TestTarget(t *testing.T) {
 		Mode:    0o666,
 		ModTime: time.Date(4, time.January, 1, 0, 0, 0, 0, time.UTC),
 	}
-	m["src/metadata.yml"] = &fstest.MapFile{
+	m["src/c/d.adoc"] = &fstest.MapFile{
+		Mode:    0o666,
+		ModTime: time.Date(5, time.January, 1, 0, 0, 0, 0, time.UTC),
+	}
+	m["src/metadata.yaml"] = &fstest.MapFile{
 		Mode:    0o666,
 		ModTime: time.Date(99, time.January, 1, 0, 0, 0, 0, time.UTC),
 	}
 	m["images/a.jpg"] = &fstest.MapFile{
 		Mode:    0o666,
-		ModTime: time.Date(5, time.January, 1, 0, 0, 0, 0, time.UTC),
+		ModTime: time.Date(6, time.January, 1, 0, 0, 0, 0, time.UTC),
 	}
 	m["images/b.jpg"] = &fstest.MapFile{
 		Mode:    0o666,
-		ModTime: time.Date(6, time.January, 1, 0, 0, 0, 0, time.UTC),
+		ModTime: time.Date(7, time.January, 1, 0, 0, 0, 0, time.UTC),
 	}
-	m["images/metadata.yml"] = &fstest.MapFile{
+	m["images/c/d.jpg"] = &fstest.MapFile{
+		Mode:    0o666,
+		ModTime: time.Date(8, time.January, 1, 0, 0, 0, 0, time.UTC),
+	}
+	m["images/metadata.yaml"] = &fstest.MapFile{
 		Mode:    0o666,
 		ModTime: time.Date(99, time.January, 1, 0, 0, 0, 0, time.UTC),
 	}
 
 	targets := []string{"$_outputs_dir/doc.pdf", "$_outputs_dir/*.html"}
-	sources := []string{"$_src_dir/*.adoc", "$_images_dir/*.jpg", "$_images_dir/*.png"}
+	sources := []string{"$_src_dir/*.adoc", "$_images_dir/*.jpg", "$_images_dir/*.png", "$_templates_dir/*"}
 	os.Setenv("_outputs_dir", "outputs")
 	os.Setenv("_src_dir", "src")
 	os.Setenv("_images_dir", "images")
+	os.Setenv("_templates_dir", "templates")
 
 	t.Run("missing targets", func(t *testing.T) {
 		buf := setupLogging()
-		paths, modified, err := Target(m, targets, sources)
+		paths, modified, err := Target(m, targets, sources, Recursive(true))
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}
@@ -155,6 +164,100 @@ func TestTarget(t *testing.T) {
 		t.Log(buf.String())
 	})
 
+	t.Run("old targets recursive", func(t *testing.T) {
+		buf := setupLogging()
+		m["outputs/doc.pdf"] = &fstest.MapFile{
+			Mode:    0o666,
+			ModTime: time.Date(2, time.January, 1, 0, 0, 0, 0, time.UTC),
+		}
+		m["outputs/index.html"] = &fstest.MapFile{
+			Mode:    0o666,
+			ModTime: time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC),
+		}
+		m["outputs/a.html"] = &fstest.MapFile{
+			Mode:    0o666,
+			ModTime: time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC),
+		}
+		m["outputs/b.html"] = &fstest.MapFile{
+			Mode:    0o666,
+			ModTime: time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC),
+		}
+		m["templates/a.html"] = &fstest.MapFile{
+			Mode:    0o666,
+			ModTime: time.Date(9, time.January, 1, 0, 0, 0, 0, time.UTC),
+		}
+		m["templates/b.yaml"] = &fstest.MapFile{
+			Mode:    0o666,
+			ModTime: time.Date(10, time.January, 1, 0, 0, 0, 0, time.UTC),
+		}
+		m["templates/c/d.html"] = &fstest.MapFile{
+			Mode:    0o666,
+			ModTime: time.Date(11, time.January, 1, 0, 0, 0, 0, time.UTC),
+		}
+		m["templates/e/f.yaml"] = &fstest.MapFile{
+			Mode:    0o666,
+			ModTime: time.Date(12, time.January, 1, 0, 0, 0, 0, time.UTC),
+		}
+		paths, modified, err := Target(m, targets, sources, Recursive(true))
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		if !reflect.DeepEqual(paths, []string{"templates/e/f.yaml"}) {
+			t.Errorf("unexpected paths: %v", paths)
+		}
+		if !modified {
+			t.Errorf("unexpected modified: %v", modified)
+		}
+		t.Log(buf.String())
+	})
+
+	t.Run("old targets not recursive", func(t *testing.T) {
+		buf := setupLogging()
+		m["outputs/doc.pdf"] = &fstest.MapFile{
+			Mode:    0o666,
+			ModTime: time.Date(2, time.January, 1, 0, 0, 0, 0, time.UTC),
+		}
+		m["outputs/index.html"] = &fstest.MapFile{
+			Mode:    0o666,
+			ModTime: time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC),
+		}
+		m["outputs/a.html"] = &fstest.MapFile{
+			Mode:    0o666,
+			ModTime: time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC),
+		}
+		m["outputs/b.html"] = &fstest.MapFile{
+			Mode:    0o666,
+			ModTime: time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC),
+		}
+		m["templates/a.html"] = &fstest.MapFile{
+			Mode:    0o666,
+			ModTime: time.Date(9, time.January, 1, 0, 0, 0, 0, time.UTC),
+		}
+		m["templates/b.yaml"] = &fstest.MapFile{
+			Mode:    0o666,
+			ModTime: time.Date(10, time.January, 1, 0, 0, 0, 0, time.UTC),
+		}
+		m["templates/c/d.html"] = &fstest.MapFile{
+			Mode:    0o666,
+			ModTime: time.Date(11, time.January, 1, 0, 0, 0, 0, time.UTC),
+		}
+		m["templates/e/f.yaml"] = &fstest.MapFile{
+			Mode:    0o666,
+			ModTime: time.Date(12, time.January, 1, 0, 0, 0, 0, time.UTC),
+		}
+		paths, modified, err := Target(m, targets, sources, Recursive(false))
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		if !reflect.DeepEqual(paths, []string{"templates/b.yaml"}) {
+			t.Errorf("unexpected paths: %v", paths)
+		}
+		if !modified {
+			t.Errorf("unexpected modified: %v", modified)
+		}
+		t.Log(buf.String())
+	})
+
 	t.Run("current targets", func(t *testing.T) {
 		buf := setupLogging()
 		m["outputs/doc.pdf"] = &fstest.MapFile{
@@ -174,6 +277,100 @@ func TestTarget(t *testing.T) {
 			ModTime: time.Date(50, time.January, 1, 0, 0, 0, 0, time.UTC),
 		}
 		paths, modified, err := Target(m, targets, sources)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		if !reflect.DeepEqual(paths, []string{}) {
+			t.Errorf("unexpected paths: %v", paths)
+		}
+		if modified {
+			t.Errorf("unexpected modified: %v", modified)
+		}
+		t.Log(buf.String())
+	})
+
+	t.Run("current targets recursive", func(t *testing.T) {
+		buf := setupLogging()
+		m["outputs/doc.pdf"] = &fstest.MapFile{
+			Mode:    0o666,
+			ModTime: time.Date(51, time.January, 1, 0, 0, 0, 0, time.UTC),
+		}
+		m["outputs/index.html"] = &fstest.MapFile{
+			Mode:    0o666,
+			ModTime: time.Date(50, time.January, 1, 0, 0, 0, 0, time.UTC),
+		}
+		m["outputs/a.html"] = &fstest.MapFile{
+			Mode:    0o666,
+			ModTime: time.Date(50, time.January, 1, 0, 0, 0, 0, time.UTC),
+		}
+		m["outputs/b.html"] = &fstest.MapFile{
+			Mode:    0o666,
+			ModTime: time.Date(50, time.January, 1, 0, 0, 0, 0, time.UTC),
+		}
+		m["templates/a.html"] = &fstest.MapFile{
+			Mode:    0o666,
+			ModTime: time.Date(9, time.January, 1, 0, 0, 0, 0, time.UTC),
+		}
+		m["templates/b.yaml"] = &fstest.MapFile{
+			Mode:    0o666,
+			ModTime: time.Date(10, time.January, 1, 0, 0, 0, 0, time.UTC),
+		}
+		m["templates/c/d.html"] = &fstest.MapFile{
+			Mode:    0o666,
+			ModTime: time.Date(11, time.January, 1, 0, 0, 0, 0, time.UTC),
+		}
+		m["templates/e/f.yaml"] = &fstest.MapFile{
+			Mode:    0o666,
+			ModTime: time.Date(12, time.January, 1, 0, 0, 0, 0, time.UTC),
+		}
+		paths, modified, err := Target(m, targets, sources, Recursive(true))
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		if !reflect.DeepEqual(paths, []string{}) {
+			t.Errorf("unexpected paths: %v", paths)
+		}
+		if modified {
+			t.Errorf("unexpected modified: %v", modified)
+		}
+		t.Log(buf.String())
+	})
+
+	t.Run("current targets not recursive", func(t *testing.T) {
+		buf := setupLogging()
+		m["outputs/doc.pdf"] = &fstest.MapFile{
+			Mode:    0o666,
+			ModTime: time.Date(51, time.January, 1, 0, 0, 0, 0, time.UTC),
+		}
+		m["outputs/index.html"] = &fstest.MapFile{
+			Mode:    0o666,
+			ModTime: time.Date(50, time.January, 1, 0, 0, 0, 0, time.UTC),
+		}
+		m["outputs/a.html"] = &fstest.MapFile{
+			Mode:    0o666,
+			ModTime: time.Date(50, time.January, 1, 0, 0, 0, 0, time.UTC),
+		}
+		m["outputs/b.html"] = &fstest.MapFile{
+			Mode:    0o666,
+			ModTime: time.Date(50, time.January, 1, 0, 0, 0, 0, time.UTC),
+		}
+		m["templates/a.html"] = &fstest.MapFile{
+			Mode:    0o666,
+			ModTime: time.Date(9, time.January, 1, 0, 0, 0, 0, time.UTC),
+		}
+		m["templates/b.yaml"] = &fstest.MapFile{
+			Mode:    0o666,
+			ModTime: time.Date(10, time.January, 1, 0, 0, 0, 0, time.UTC),
+		}
+		m["templates/c/d.html"] = &fstest.MapFile{
+			Mode:    0o666,
+			ModTime: time.Date(51, time.January, 1, 0, 0, 0, 0, time.UTC),
+		}
+		m["templates/e/f.yaml"] = &fstest.MapFile{
+			Mode:    0o666,
+			ModTime: time.Date(52, time.January, 1, 0, 0, 0, 0, time.UTC),
+		}
+		paths, modified, err := Target(m, targets, sources, Recursive(false))
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}

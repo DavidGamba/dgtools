@@ -142,7 +142,8 @@ func TestFirstLast(t *testing.T) {
 
 	t.Run("walkPaths error", func(t *testing.T) {
 		buf := setupLogging()
-		err := walkPaths(m, []string{"a", "b", "c", "d"}, func(root string, fi fs.FileInfo) error {
+		wo := &WalkOpts{recursive: true}
+		err := walkPaths(m, []string{"a", "b", "c", "d"}, wo, func(root string, fi fs.FileInfo) error {
 			return fmt.Errorf("oops")
 		})
 		if err == nil {
@@ -154,7 +155,7 @@ func TestFirstLast(t *testing.T) {
 
 	t.Run("last", func(t *testing.T) {
 		buf := setupLogging()
-		path, fi, err := Last(m, []string{"a", "b", "c", "d"})
+		path, fi, err := Last(m, []string{"a", "b", "c", "d"}, Recursive(true))
 		if err != nil {
 			t.Log(buf.String())
 			t.Fatalf(err.Error())
@@ -168,9 +169,19 @@ func TestFirstLast(t *testing.T) {
 		t.Log(buf.String())
 	})
 
+	t.Run("last not recursive", func(t *testing.T) {
+		buf := setupLogging()
+		path, fi, err := Last(m, []string{"a", "b", "c", "d"}, Recursive(false))
+		if err == nil {
+			t.Log(buf.String())
+			t.Fatalf("expected error, nothing found: %s, %v", path, fi)
+		}
+		t.Log(buf.String())
+	})
+
 	t.Run("first", func(t *testing.T) {
 		buf := setupLogging()
-		path, fi, err := First(m, []string{"a", "b", "c", "d"})
+		path, fi, err := First(m, []string{"a", "b", "c", "d"}, Recursive(true))
 		if err != nil {
 			t.Log(buf.String())
 			t.Fatalf(err.Error())
@@ -184,10 +195,20 @@ func TestFirstLast(t *testing.T) {
 		t.Log(buf.String())
 	})
 
+	t.Run("first not recursive", func(t *testing.T) {
+		buf := setupLogging()
+		path, fi, err := First(m, []string{"a", "b", "c", "d"}, Recursive(false))
+		if err == nil {
+			t.Log(buf.String())
+			t.Fatalf("expected error, nothing found: %s, %v", path, fi)
+		}
+		t.Log(buf.String())
+	})
+
 	t.Run("fs error", func(t *testing.T) {
 		buf := setupLogging()
 		fsw := fswrap{m}
-		_, _, err := Last(fsw, []string{"a", "b", "c", "d"})
+		_, _, err := Last(fsw, []string{"a", "b", "c", "d"}, Recursive(true))
 		if err == nil {
 			t.Log(buf.String())
 			t.Fatalf("expected error, nothing found")
