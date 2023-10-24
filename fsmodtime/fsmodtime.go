@@ -53,8 +53,8 @@ var (
 )
 
 type WalkOpts struct {
-	recursive      bool
-	followSymlinks bool
+	recursive bool
+	// followSymlinks bool
 }
 
 type WalkOpt func(*WalkOpts)
@@ -65,11 +65,12 @@ func Recursive(enabled bool) WalkOpt {
 	}
 }
 
-func FollowSymlinks(enabled bool) WalkOpt {
-	return func(opts *WalkOpts) {
-		opts.followSymlinks = enabled
-	}
-}
+// TODO: Add option to follow symlinks.
+// func FollowSymlinks(enabled bool) WalkOpt {
+// 	return func(opts *WalkOpts) {
+// 		opts.followSymlinks = enabled
+// 	}
+// }
 
 // Last - given a list of paths, it finds the file with the latest modTime and returns it.
 //
