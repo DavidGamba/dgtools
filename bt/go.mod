@@ -3,7 +3,7 @@ module github.com/DavidGamba/dgtools/bt
 go 1.21
 
 require (
-	github.com/DavidGamba/dgtools/cueutils v0.0.0-20231024064559-8afb586e2feb
+	github.com/DavidGamba/dgtools/cueutils v0.0.0-20231102044115-1c78440f1676
 	github.com/DavidGamba/dgtools/fsmodtime v0.2.0
 	github.com/DavidGamba/dgtools/run v0.7.0
 	github.com/DavidGamba/go-getoptions v0.28.0

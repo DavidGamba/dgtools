@@ -1,7 +1,7 @@
 cuelang.org/go v0.6.0 h1:dJhgKCog+FEZt7OwAYV1R+o/RZPmE8aqFoptmxSWyr8=
 cuelang.org/go v0.6.0/go.mod h1:9CxOX8aawrr3BgSdqPj7V0RYoXo7XIb+yDFC6uESrOQ=
-github.com/DavidGamba/dgtools/cueutils v0.0.0-20231024064559-8afb586e2feb h1:yLpixkoL8wuP+8X/e6icjYt3ayd7pj/SA6huGr98BCQ=
-github.com/DavidGamba/dgtools/cueutils v0.0.0-20231024064559-8afb586e2feb/go.mod h1:Ccl14sr0J7MOMsP0JcmBzZbjaxobN2/2nRzd+AV2NBA=
+github.com/DavidGamba/dgtools/cueutils v0.0.0-20231102044115-1c78440f1676 h1:q0RHD95FfkIpFTsVMadw4VTQDwOG9tVWk1uBJJtYvMA=
+github.com/DavidGamba/dgtools/cueutils v0.0.0-20231102044115-1c78440f1676/go.mod h1:ZRBRLIcp6jfL1JV8FIHd0ri8m/XG2yALl7kGSubOWRM=
 github.com/DavidGamba/dgtools/fsmodtime v0.2.0 h1:2GnxhUIsaNzCj1LLrxhKA3wWv9z0KKrY68tIVcXo/QY=
 github.com/DavidGamba/dgtools/fsmodtime v0.2.0/go.mod h1:ruwqMvW2pWDbSQlAupP7F0QaojfbuXPyUOUKR4Ev3pQ=
 github.com/DavidGamba/dgtools/run v0.7.0 h1:ENTskNQvBM1/n/b42PxqJktU9EzQVqPZRGUBtVdEVdE=
