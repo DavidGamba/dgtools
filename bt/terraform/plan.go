@@ -26,6 +26,7 @@ func planCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt 
 	opt.Bool("detailed-exitcode", false)
 	opt.Bool("ignore-cache", false, opt.Description("ignore the cache and re-run the plan"), opt.Alias("ic"))
 	opt.StringSlice("target", 1, 99)
+	opt.StringSlice("replace", 1, 99)
 	opt.SetCommandFn(planRun)
 
 	wss, err := validWorkspaces(cfg)
@@ -43,6 +44,7 @@ func planRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	ignoreCache := opt.Value("ignore-cache").(bool)
 	varFiles := opt.Value("var-file").([]string)
 	targets := opt.Value("target").([]string)
+	replacements := opt.Value("replace").([]string)
 	ws := opt.Value("ws").(string)
 	ws, err := updateWSIfSelected(ws)
 	if err != nil {
@@ -167,6 +169,9 @@ func planRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	}
 	for _, t := range targets {
 		cmd = append(cmd, "-target", t)
+	}
+	for _, r := range replacements {
+		cmd = append(cmd, "-replace", r)
 	}
 	if !isatty.IsTerminal(os.Stdout.Fd()) {
 		cmd = append(cmd, "-no-color")
