@@ -201,6 +201,12 @@ func planRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 func checksRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	varFiles := opt.Value("var-file").([]string)
 	ws := opt.Value("ws").(string)
+	nc := opt.Value("no-checks").(bool)
+	if nc {
+		Logger.Printf("WARNING: no-checks flag passed. Skipping pre-apply checks.\n")
+		return nil
+	}
+
 	ws, err := updateWSIfSelected(ws)
 	if err != nil {
 		return err

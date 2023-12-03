@@ -20,11 +20,12 @@ func buildCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt
 	opt.StringSlice("var-file", 1, 1)
 	opt.Bool("destroy", false)
 	opt.Bool("detailed-exitcode", false)
-	opt.Bool("ignore-cache", false, opt.Description("ignore the cache and re-run the plan"), opt.Alias("ic"))
+	opt.Bool("ignore-cache", false, opt.Description("Ignore the cache and re-run the plan"), opt.Alias("ic"))
+	opt.Bool("no-checks", false, opt.Description("Do not run pre-apply checks"), opt.Alias("nc"))
 	opt.StringSlice("target", 1, 99)
 	opt.StringSlice("replace", 1, 99)
-	opt.Bool("apply", false, opt.Description("apply Terraform plan"))
-	opt.Bool("show", false, opt.Description("show Terraform plan"))
+	opt.Bool("apply", false, opt.Description("Apply Terraform plan"))
+	opt.Bool("show", false, opt.Description("Show Terraform plan"))
 
 	wss, err := validWorkspaces(cfg)
 	if err != nil {
@@ -88,6 +89,9 @@ func buildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	}
 	if apply {
 		g.TaskDependensOn(tm.Get("apply"), tm.Get("plan"))
+		if cfg.Terraform.PreApplyChecks.Enabled {
+			g.TaskDependensOn(tm.Get("apply"), tm.Get("checks"))
+		}
 	}
 	err = g.Validate(tm)
 	if err != nil {
