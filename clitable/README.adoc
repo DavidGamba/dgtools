@@ -6,9 +6,11 @@ Pretty print Data as tables on the command line.
 
 The csvtable cli tool allows printing CSV data as a table:
 
-  go install github.com/DavidGamba/dgtools/clitable/cmd/csvtable@v0.3.0
+  go install github.com/DavidGamba/dgtools/clitable/cmd/csvtable@latest
 
 To parse TSV data use the `--tsv` flag.
+
+To normalize CSV data use the `--normalize` flag.
 
 == Library
 
