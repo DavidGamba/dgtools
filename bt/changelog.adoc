@@ -1,9 +1,9 @@
 = bt
 
-= v0.2.0: New features and bug fixes
+== v0.2.0: New features and bug fixes
 
 * Bug fix: ensure pre-apply checks run before the apply
 
 * New feature: add --no-checks flag
 
-= v0.1.0: Initial release
+== v0.1.0: Initial release
