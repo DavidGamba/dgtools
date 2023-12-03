@@ -168,3 +168,5 @@ Pre apply check commands get the following Env vars exported:
 
 * `CONFIG_ROOT`: The dir of the config file.
 * `TERRAFORM_JSON_PLAN`: The path to the rendered json plan.
+
+If pre-apply checks are enabled in the config file, they can be disabled for the current run using the `--no-checks` option.
