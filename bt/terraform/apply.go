@@ -64,7 +64,7 @@ func applyRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	}
 	Logger.Printf("modified: %v\n", files)
 
-	cmd := []string{"terraform", "apply"}
+	cmd := []string{cfg.Terraform.BinaryName, "apply"}
 	cmd = append(cmd, "-input", planFile)
 	if !isatty.IsTerminal(os.Stdout.Fd()) {
 		cmd = append(cmd, "-no-color")

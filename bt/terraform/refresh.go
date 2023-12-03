@@ -25,5 +25,9 @@ func refreshCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetO
 
 func refreshRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	i := invalidatePlan{}
-	return varFileCMDRun(i, "terraform", "refresh")(ctx, opt, args)
+
+	cfg := config.ConfigFromContext(ctx)
+	Logger.Printf("cfg: %s\n", cfg)
+
+	return varFileCMDRun(i, cfg.Terraform.BinaryName, "refresh")(ctx, opt, args)
 }

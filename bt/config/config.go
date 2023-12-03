@@ -32,6 +32,7 @@ type Config struct {
 			Enabled  bool
 			Commands []Command
 		} `json:"pre_apply_checks"`
+		BinaryName string `json:"binary_name"`
 	}
 	ConfigRoot string `json:"config_root"`
 }
@@ -44,7 +45,8 @@ type Command struct {
 
 func (c *Config) String() string {
 
-	output := fmt.Sprintf("backend_config files: %v, var files: %v, workspaces enabled: %t, ws dir: '%s'",
+	output := fmt.Sprintf("%s backend_config files: %v, var files: %v, workspaces enabled: %t, ws dir: '%s'",
+		c.Terraform.BinaryName,
 		c.Terraform.Init.BackendConfig,
 		c.Terraform.Plan.VarFile,
 		c.Terraform.Workspaces.Enabled,
@@ -87,6 +89,9 @@ func Get(ctx context.Context, filename string) (*Config, string, error) {
 		return &Config{}, f, fmt.Errorf("failed to read config: %w", err)
 	}
 	cfg.ConfigRoot = filepath.Dir(f)
+	if cfg.Terraform.BinaryName == "" {
+		cfg.Terraform.BinaryName = "terraform"
+	}
 	return cfg, f, nil
 }
 

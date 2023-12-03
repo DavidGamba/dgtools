@@ -44,7 +44,7 @@ func showPlanRun(ctx context.Context, opt *getoptions.GetOpt, args []string) err
 		}
 	}
 
-	cmd := []string{"terraform", "show"}
+	cmd := []string{cfg.Terraform.BinaryName, "show"}
 	cmd = append(cmd, args...)
 	// possitional arg goes at the end
 	if ws == "" {

@@ -23,7 +23,7 @@ func initRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	cfg := config.ConfigFromContext(ctx)
 	Logger.Printf("cfg: %s\n", cfg)
 
-	cmd := []string{"terraform", "init"}
+	cmd := []string{cfg.Terraform.BinaryName, "init"}
 
 	for _, bvars := range cfg.Terraform.Init.BackendConfig {
 		b := strings.ReplaceAll(bvars, "~", "$HOME")

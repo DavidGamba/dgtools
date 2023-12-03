@@ -25,5 +25,9 @@ func consoleCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetO
 
 func consoleRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	i := noOp{}
-	return varFileCMDRun(i, "terraform", "console")(ctx, opt, args)
+
+	cfg := config.ConfigFromContext(ctx)
+	Logger.Printf("cfg: %s\n", cfg)
+
+	return varFileCMDRun(i, cfg.Terraform.BinaryName, "console")(ctx, opt, args)
 }

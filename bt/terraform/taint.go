@@ -35,7 +35,10 @@ func taintRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	address := args[0]
 	args = slices.Delete(args, 0, 1)
 
-	cmd := []string{"terraform", "taint", address}
+	cfg := config.ConfigFromContext(ctx)
+	Logger.Printf("cfg: %s\n", cfg)
+
+	cmd := []string{cfg.Terraform.BinaryName, "taint", address}
 	return wsCMDRun(cmd...)(ctx, opt, args)
 }
 
@@ -64,6 +67,9 @@ func untaintRun(ctx context.Context, opt *getoptions.GetOpt, args []string) erro
 	address := args[0]
 	args = slices.Delete(args, 0, 1)
 
-	cmd := []string{"terraform", "untaint", address}
+	cfg := config.ConfigFromContext(ctx)
+	Logger.Printf("cfg: %s\n", cfg)
+
+	cmd := []string{cfg.Terraform.BinaryName, "untaint", address}
 	return wsCMDRun(cmd...)(ctx, opt, args)
 }

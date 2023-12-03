@@ -35,6 +35,9 @@ func forceUnlockRun(ctx context.Context, opt *getoptions.GetOpt, args []string) 
 	lockID := args[0]
 	args = slices.Delete(args, 0, 1)
 
-	cmd := []string{"terraform", "force-unlock", "-force", lockID}
+	cfg := config.ConfigFromContext(ctx)
+	Logger.Printf("cfg: %s\n", cfg)
+
+	cmd := []string{cfg.Terraform.BinaryName, "force-unlock", "-force", lockID}
 	return wsCMDRun(cmd...)(ctx, opt, args)
 }

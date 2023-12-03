@@ -154,7 +154,7 @@ func planRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 		Logger.Printf("missing target: %v\n", planFile)
 	}
 
-	cmd := []string{"terraform", "plan", "-out", planFile}
+	cmd := []string{cfg.Terraform.BinaryName, "plan", "-out", planFile}
 	for _, v := range defaultVarFiles {
 		cmd = append(cmd, "-var-file", v)
 	}
@@ -283,7 +283,7 @@ func checksRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error
 		Logger.Printf("missing target: %v\n", planFile)
 	}
 
-	cmd := []string{"terraform", "show", "-json", planFile}
+	cmd := []string{cfg.Terraform.BinaryName, "show", "-json", planFile}
 	ri := run.CMD(cmd...).Ctx(ctx).Stdin().Log()
 	out, err := ri.STDOutOutput()
 	if err != nil {

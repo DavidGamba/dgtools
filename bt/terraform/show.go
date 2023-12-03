@@ -23,6 +23,9 @@ func showCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt 
 }
 
 func showRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
-	cmd := []string{"terraform", "show"}
+	cfg := config.ConfigFromContext(ctx)
+	Logger.Printf("cfg: %s\n", cfg)
+
+	cmd := []string{cfg.Terraform.BinaryName, "show"}
 	return wsCMDRun(cmd...)(ctx, opt, args)
 }

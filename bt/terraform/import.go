@@ -25,5 +25,9 @@ func importCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOp
 
 func importRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	i := invalidatePlan{}
-	return varFileCMDRun(i, "terraform", "import")(ctx, opt, args)
+
+	cfg := config.ConfigFromContext(ctx)
+	Logger.Printf("cfg: %s\n", cfg)
+
+	return varFileCMDRun(i, cfg.Terraform.BinaryName, "import")(ctx, opt, args)
 }

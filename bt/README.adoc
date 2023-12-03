@@ -1,6 +1,6 @@
 = bt: Build Terraform
 
-A no commitments Terraform wrapper that provides build caching functionality.
+A no commitments Terraform/Tofu wrapper that provides build caching functionality.
 It also makes working with workspaces a breeze.
 
 == Install
@@ -69,6 +69,7 @@ Example:
 [source, cue]
 ----
 terraform: {
+	binary_name: "terraform"
 	init: {
 		backend_config: ["backend.tfvars"]
 	}

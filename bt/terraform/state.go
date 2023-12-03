@@ -26,7 +26,10 @@ func stateListCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.Ge
 }
 
 func stateListRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
-	cmd := []string{"terraform", "state", "list"}
+	cfg := config.ConfigFromContext(ctx)
+	Logger.Printf("cfg: %s\n", cfg)
+
+	cmd := []string{cfg.Terraform.BinaryName, "state", "list"}
 	return wsCMDRun(cmd...)(ctx, opt, args)
 }
 
@@ -55,7 +58,10 @@ func statePushRun(ctx context.Context, opt *getoptions.GetOpt, args []string) er
 	stateFile := args[0]
 	args = slices.Delete(args, 0, 1)
 
-	cmd := []string{"terraform", "state", "push", stateFile}
+	cfg := config.ConfigFromContext(ctx)
+	Logger.Printf("cfg: %s\n", cfg)
+
+	cmd := []string{cfg.Terraform.BinaryName, "state", "push", stateFile}
 	return wsCMDRun(cmd...)(ctx, opt, args)
 }
 
@@ -75,7 +81,10 @@ func statePullCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.Ge
 }
 
 func statePullRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
-	cmd := []string{"terraform", "state", "pull"}
+	cfg := config.ConfigFromContext(ctx)
+	Logger.Printf("cfg: %s\n", cfg)
+
+	cmd := []string{cfg.Terraform.BinaryName, "state", "pull"}
 	return wsCMDRun(cmd...)(ctx, opt, args)
 }
 
@@ -95,7 +104,10 @@ func stateRMCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetO
 }
 
 func stateRMRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
-	cmd := []string{"terraform", "state", "rm"}
+	cfg := config.ConfigFromContext(ctx)
+	Logger.Printf("cfg: %s\n", cfg)
+
+	cmd := []string{cfg.Terraform.BinaryName, "state", "rm"}
 	return wsCMDRun(cmd...)(ctx, opt, args)
 }
 
@@ -115,6 +127,9 @@ func stateShowCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.Ge
 }
 
 func stateShowRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
-	cmd := []string{"terraform", "state", "show"}
+	cfg := config.ConfigFromContext(ctx)
+	Logger.Printf("cfg: %s\n", cfg)
+
+	cmd := []string{cfg.Terraform.BinaryName, "state", "show"}
 	return wsCMDRun(cmd...)(ctx, opt, args)
 }
