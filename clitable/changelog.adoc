@@ -1,6 +1,10 @@
 = Changelog
 :toc:
 
+== v0.4.0: New feature
+
+* Add --normalize flag to fix broken CSV files before you feed them to other tools.
+
 == v0.3.1: Go mod fix
 
 * Fix to get the right version printed.

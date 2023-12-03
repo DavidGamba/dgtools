@@ -199,12 +199,12 @@ func (tp *TablePrinter) Print(t Table) error {
 }
 
 func (tp *TablePrinter) Fprint(w io.Writer, t Table) error {
-	if tp.tableConfig.Style == CSV {
-		return tp.fprintCSV(w, t)
-	}
 	tableInfo, err := GetTableInfo(t)
 	if err != nil {
 		return err
+	}
+	if tp.tableConfig.Style == CSV {
+		return tp.fprintCSV(w, t, tableInfo)
 	}
 	return tp.fprint(w, t, tableInfo)
 }
@@ -226,17 +226,23 @@ func (tp *TablePrinter) FprintCSVReader(w io.Writer, r io.Reader) error {
 		Reader:    &readerCopy,
 		Separator: tp.separator,
 	}
+	if tp.tableConfig.Style == CSV {
+		return tp.fprintCSV(os.Stdout, t, tableInfo)
+	}
 	return tp.fprint(os.Stdout, t, tableInfo)
 }
 
-func (tp *TablePrinter) fprintCSV(w io.Writer, t Table) error {
+func (tp *TablePrinter) fprintCSV(w io.Writer, t Table, tableInfo *TableInfo) error {
 	csvw := csv.NewWriter(w)
 	defer csvw.Flush()
+
 	for row := range t.RowIterator() {
+		r := make([]string, tableInfo.Columns)
 		if row.Error != nil {
 			return row.Error
 		}
-		csvw.Write(row.Fields)
+		copy(r, row.Fields)
+		csvw.Write(r)
 	}
 	return nil
 }

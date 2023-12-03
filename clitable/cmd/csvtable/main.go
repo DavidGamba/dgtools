@@ -21,7 +21,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"runtime/debug"
@@ -31,9 +30,9 @@ import (
 	"github.com/DavidGamba/go-getoptions"
 )
 
-const semVersion = "0.3.1"
+const semVersion = "0.4.0."
 
-var Logger = log.New(ioutil.Discard, "", log.LstdFlags)
+var Logger = log.New(io.Discard, "", log.LstdFlags)
 
 func main() {
 	os.Exit(program(os.Args))
@@ -54,10 +53,11 @@ func examples() {
 
 func program(args []string) int {
 	opt := getoptions.New()
-	opt.Bool("debug", false)
+	opt.Bool("debug", false, opt.Description("Print debug output"))
 	opt.Bool("version", false, opt.Alias("V"))
-	opt.Bool("tsv", false)
-	opt.Bool("no-header", true)
+	opt.Bool("tsv", false, opt.Description("Read TSV file"))
+	opt.Bool("no-header", true, opt.Description("Data has no header"))
+	opt.Bool("normalize", false, opt.Description("normalize csv data"))
 	opt.HelpSynopsisArg("<filename>", "CSV|TSV file to read")
 
 	opt.SetCommandFn(Run)
@@ -103,6 +103,7 @@ func program(args []string) int {
 
 func Run(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	header := opt.Value("no-header").(bool)
+	normalize := opt.Value("normalize").(bool)
 
 	var reader io.Reader
 	if len(args) < 1 {
@@ -130,6 +131,9 @@ func Run(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	tp := clitable.NewTablePrinter()
 	if opt.Called("tsv") {
 		tp.Separator('\t')
+	}
+	if normalize {
+		tp.SetStyle(clitable.CSV)
 	}
 	err := tp.HasHeader(header).FprintCSVReader(os.Stdout, reader)
 	if err != nil {
