@@ -60,6 +60,7 @@ func (fn noOp) successFunction(ws string) {}
 
 func varFileCMDRun(fn VarFileCMDer, cmd ...string) getoptions.CommandFn {
 	return func(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
+		profile := opt.Value("profile").(string)
 		varFiles := opt.Value("var-file").([]string)
 		ws := opt.Value("ws").(string)
 		ws, err := updateWSIfSelected(ws)
@@ -68,19 +69,19 @@ func varFileCMDRun(fn VarFileCMDer, cmd ...string) getoptions.CommandFn {
 		}
 
 		cfg := config.ConfigFromContext(ctx)
-		Logger.Printf("cfg: %s\n", cfg)
+		Logger.Printf("cfg: %s\n", cfg.Terraform[profile])
 
-		ws, err = getWorkspace(cfg, ws, varFiles)
+		ws, err = getWorkspace(cfg, profile, ws, varFiles)
 		if err != nil {
 			return err
 		}
 
-		defaultVarFiles, err := getDefaultVarFiles(cfg)
+		defaultVarFiles, err := getDefaultVarFiles(cfg, profile)
 		if err != nil {
 			return err
 		}
 
-		varFiles, err = AddVarFileIfWorkspaceSelected(cfg, ws, varFiles)
+		varFiles, err = AddVarFileIfWorkspaceSelected(cfg, profile, ws, varFiles)
 		if err != nil {
 			return err
 		}

@@ -8,12 +8,14 @@ import (
 )
 
 func outputCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
+	profile := parent.Value("profile").(string)
+
 	cfg := config.ConfigFromContext(ctx)
 
 	opt := parent.NewCommand("output", "")
 	opt.SetCommandFn(outputRun)
 
-	wss, err := validWorkspaces(cfg)
+	wss, err := validWorkspaces(cfg, profile)
 	if err != nil {
 		Logger.Printf("WARNING: failed to list workspaces: %s\n", err)
 	}
@@ -23,9 +25,10 @@ func outputCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOp
 }
 
 func outputRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
+	profile := opt.Value("profile").(string)
 	cfg := config.ConfigFromContext(ctx)
-	Logger.Printf("cfg: %s\n", cfg)
+	Logger.Printf("cfg: %s\n", cfg.Terraform[profile])
 
-	cmd := []string{cfg.Terraform.BinaryName, "output"}
+	cmd := []string{cfg.Terraform[profile].BinaryName, "output"}
 	return wsCMDRun(cmd...)(ctx, opt, args)
 }

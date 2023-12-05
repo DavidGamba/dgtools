@@ -13,12 +13,14 @@ import (
 )
 
 func applyCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
+	profile := parent.Value("profile").(string)
+
 	cfg := config.ConfigFromContext(ctx)
 
 	opt := parent.NewCommand("apply", "")
 	opt.SetCommandFn(applyRun)
 
-	wss, err := validWorkspaces(cfg)
+	wss, err := validWorkspaces(cfg, profile)
 	if err != nil {
 		Logger.Printf("WARNING: failed to list workspaces: %s\n", err)
 	}
@@ -29,15 +31,16 @@ func applyCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt
 
 func applyRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	ws := opt.Value("ws").(string)
+	profile := opt.Value("profile").(string)
 	ws, err := updateWSIfSelected(ws)
 	if err != nil {
 		return err
 	}
 
 	cfg := config.ConfigFromContext(ctx)
-	Logger.Printf("cfg: %s\n", cfg)
+	Logger.Printf("cfg: %s\n", cfg.Terraform[profile])
 
-	if cfg.Terraform.Workspaces.Enabled {
+	if cfg.Terraform[profile].Workspaces.Enabled {
 		if !workspaceSelected() {
 			if ws == "" {
 				return fmt.Errorf("running in workspace mode but no workspace selected or --ws given")
@@ -64,7 +67,7 @@ func applyRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	}
 	Logger.Printf("modified: %v\n", files)
 
-	cmd := []string{cfg.Terraform.BinaryName, "apply"}
+	cmd := []string{cfg.Terraform[profile].BinaryName, "apply"}
 	cmd = append(cmd, "-input", planFile)
 	if !isatty.IsTerminal(os.Stdout.Fd()) {
 		cmd = append(cmd, "-no-color")

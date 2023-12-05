@@ -20,12 +20,14 @@ func initCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt 
 }
 
 func initRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
+	profile := opt.Value("profile").(string)
+
 	cfg := config.ConfigFromContext(ctx)
-	Logger.Printf("cfg: %s\n", cfg)
+	Logger.Printf("cfg: %s\n", cfg.Terraform[profile])
 
-	cmd := []string{cfg.Terraform.BinaryName, "init"}
+	cmd := []string{cfg.Terraform[profile].BinaryName, "init"}
 
-	for _, bvars := range cfg.Terraform.Init.BackendConfig {
+	for _, bvars := range cfg.Terraform[profile].Init.BackendConfig {
 		b := strings.ReplaceAll(bvars, "~", "$HOME")
 		bb, err := fsmodtime.ExpandEnv([]string{b})
 		if err != nil {

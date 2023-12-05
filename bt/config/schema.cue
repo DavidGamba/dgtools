@@ -1,6 +1,11 @@
 package bt
 
 #Terraform: {
+	[ID=_]: #TerraformProfile & {id: ID}
+}
+
+#TerraformProfile: {
+	id: string
 	init?: {
 		backend_config: [...string]
 	}

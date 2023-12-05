@@ -13,6 +13,8 @@ import (
 )
 
 func buildCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
+	profile := parent.Value("profile").(string)
+
 	cfg := config.ConfigFromContext(ctx)
 
 	opt := parent.NewCommand("build", "Wraps init, plan and apply into a single operation with a cache")
@@ -27,7 +29,7 @@ func buildCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt
 	opt.Bool("apply", false, opt.Description("Apply Terraform plan"))
 	opt.Bool("show", false, opt.Description("Show Terraform plan"))
 
-	wss, err := validWorkspaces(cfg)
+	wss, err := validWorkspaces(cfg, profile)
 	if err != nil {
 		Logger.Printf("WARNING: failed to list workspaces: %s\n", err)
 	}
@@ -37,6 +39,7 @@ func buildCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt
 }
 
 func buildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
+	profile := opt.Value("profile").(string)
 	apply := opt.Value("apply").(bool)
 	show := opt.Value("show").(bool)
 	detailedExitcode := opt.Value("detailed-exitcode").(bool)
@@ -47,9 +50,9 @@ func buildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	}
 
 	cfg := config.ConfigFromContext(ctx)
-	Logger.Printf("cfg: %s\n", cfg)
+	Logger.Printf("cfg: %s\n", cfg.Terraform[profile])
 
-	if cfg.Terraform.Workspaces.Enabled {
+	if cfg.Terraform[profile].Workspaces.Enabled {
 		if !workspaceSelected() {
 			if ws == "" {
 				return fmt.Errorf("running in workspace mode but no workspace selected or --ws given")
@@ -68,7 +71,7 @@ func buildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	tm := dag.NewTaskMap()
 	tm.Add("init", initFn)
 	tm.Add("plan", planRun)
-	if cfg.Terraform.PreApplyChecks.Enabled {
+	if cfg.Terraform[profile].PreApplyChecks.Enabled {
 		tm.Add("checks", checksRun)
 	}
 	if apply {
@@ -80,7 +83,7 @@ func buildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 
 	g := dag.NewGraph("build")
 	g.TaskDependensOn(tm.Get("plan"), tm.Get("init"))
-	if cfg.Terraform.PreApplyChecks.Enabled {
+	if cfg.Terraform[profile].PreApplyChecks.Enabled {
 		g.TaskDependensOn(tm.Get("checks"), tm.Get("plan"))
 	}
 
@@ -89,7 +92,7 @@ func buildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	}
 	if apply {
 		g.TaskDependensOn(tm.Get("apply"), tm.Get("plan"))
-		if cfg.Terraform.PreApplyChecks.Enabled {
+		if cfg.Terraform[profile].PreApplyChecks.Enabled {
 			g.TaskDependensOn(tm.Get("apply"), tm.Get("checks"))
 		}
 	}

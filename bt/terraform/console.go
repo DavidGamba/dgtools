@@ -8,13 +8,15 @@ import (
 )
 
 func consoleCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
+	profile := parent.Value("profile").(string)
+
 	cfg := config.ConfigFromContext(ctx)
 
 	opt := parent.NewCommand("console", "")
 	opt.StringSlice("var-file", 1, 1)
 	opt.SetCommandFn(consoleRun)
 
-	wss, err := validWorkspaces(cfg)
+	wss, err := validWorkspaces(cfg, profile)
 	if err != nil {
 		Logger.Printf("WARNING: failed to list workspaces: %s\n", err)
 	}
@@ -24,10 +26,11 @@ func consoleCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetO
 }
 
 func consoleRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
+	profile := opt.Value("profile").(string)
 	i := noOp{}
 
 	cfg := config.ConfigFromContext(ctx)
-	Logger.Printf("cfg: %s\n", cfg)
+	Logger.Printf("cfg: %s\n", cfg.Terraform[profile])
 
-	return varFileCMDRun(i, cfg.Terraform.BinaryName, "console")(ctx, opt, args)
+	return varFileCMDRun(i, cfg.Terraform[profile].BinaryName, "console")(ctx, opt, args)
 }

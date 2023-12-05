@@ -18,6 +18,8 @@ import (
 )
 
 func planCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
+	profile := parent.Value("profile").(string)
+
 	cfg := config.ConfigFromContext(ctx)
 
 	opt := parent.NewCommand("plan", "")
@@ -29,7 +31,7 @@ func planCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt 
 	opt.StringSlice("replace", 1, 99)
 	opt.SetCommandFn(planRun)
 
-	wss, err := validWorkspaces(cfg)
+	wss, err := validWorkspaces(cfg, profile)
 	if err != nil {
 		Logger.Printf("WARNING: failed to list workspaces: %s\n", err)
 	}
@@ -39,6 +41,7 @@ func planCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt 
 }
 
 func planRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
+	profile := opt.Value("profile").(string)
 	destroy := opt.Value("destroy").(bool)
 	detailedExitcode := opt.Value("detailed-exitcode").(bool)
 	ignoreCache := opt.Value("ignore-cache").(bool)
@@ -52,19 +55,19 @@ func planRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	}
 
 	cfg := config.ConfigFromContext(ctx)
-	Logger.Printf("cfg: %s\n", cfg)
+	Logger.Printf("cfg: %s\n", cfg.Terraform[profile])
 
-	ws, err = getWorkspace(cfg, ws, varFiles)
+	ws, err = getWorkspace(cfg, profile, ws, varFiles)
 	if err != nil {
 		return err
 	}
 
-	defaultVarFiles, err := getDefaultVarFiles(cfg)
+	defaultVarFiles, err := getDefaultVarFiles(cfg, profile)
 	if err != nil {
 		return err
 	}
 
-	varFiles, err = AddVarFileIfWorkspaceSelected(cfg, ws, varFiles)
+	varFiles, err = AddVarFileIfWorkspaceSelected(cfg, profile, ws, varFiles)
 	if err != nil {
 		return err
 	}
@@ -154,7 +157,7 @@ func planRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 		Logger.Printf("missing target: %v\n", planFile)
 	}
 
-	cmd := []string{cfg.Terraform.BinaryName, "plan", "-out", planFile}
+	cmd := []string{cfg.Terraform[profile].BinaryName, "plan", "-out", planFile}
 	for _, v := range defaultVarFiles {
 		cmd = append(cmd, "-var-file", v)
 	}
@@ -199,6 +202,7 @@ func planRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 }
 
 func checksRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
+	profile := opt.Value("profile").(string)
 	varFiles := opt.Value("var-file").([]string)
 	ws := opt.Value("ws").(string)
 	nc := opt.Value("no-checks").(bool)
@@ -219,7 +223,7 @@ func checksRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error
 
 	cfg := config.ConfigFromContext(ctx)
 
-	ws, err = getWorkspace(cfg, ws, varFiles)
+	ws, err = getWorkspace(cfg, profile, ws, varFiles)
 	if err != nil {
 		return err
 	}
@@ -238,7 +242,7 @@ func checksRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error
 	os.Setenv("CONFIG_ROOT", cfg.ConfigRoot)
 
 	cmdFiles := []string{}
-	for _, cmd := range cfg.Terraform.PreApplyChecks.Commands {
+	for _, cmd := range cfg.Terraform[profile].PreApplyChecks.Commands {
 		exp, err := fsmodtime.ExpandEnv(cmd.Files)
 		if err != nil {
 			return fmt.Errorf("failed to expand: %w", err)
@@ -283,7 +287,7 @@ func checksRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error
 		Logger.Printf("missing target: %v\n", planFile)
 	}
 
-	cmd := []string{cfg.Terraform.BinaryName, "show", "-json", planFile}
+	cmd := []string{cfg.Terraform[profile].BinaryName, "show", "-json", planFile}
 	ri := run.CMD(cmd...).Ctx(ctx).Stdin().Log()
 	out, err := ri.STDOutOutput()
 	if err != nil {
@@ -296,7 +300,7 @@ func checksRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error
 	}
 	Logger.Printf("plan json written to: %s\n", jsonPlan)
 
-	for _, cmd := range cfg.Terraform.PreApplyChecks.Commands {
+	for _, cmd := range cfg.Terraform[profile].PreApplyChecks.Commands {
 		Logger.Printf("running check: %s\n", cmd.Name)
 		exp, err := fsmodtime.ExpandEnv(cmd.Command)
 		if err != nil {

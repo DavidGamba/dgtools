@@ -19,6 +19,7 @@ var Logger = log.New(os.Stderr, "", log.LstdFlags)
 
 func NewCommand(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
 	opt := parent.NewCommand("terraform", "terraform related tasks")
+	opt.String("profile", "default", opt.Description("BT Terraform Profile to use"), opt.GetEnv("BT_TERRAFORM_PROFILE"))
 
 	// backend-config
 	initCMD(ctx, opt)
@@ -50,9 +51,9 @@ func NewCommand(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetO
 
 // Retrieves workspaces assuming a convention where the .tfvars[.json] file matches the name of the workspace
 // It only lists files, it doesn't query Terraform for a 'proper' list of workspaces.
-func getWorkspaces(cfg *config.Config) ([]string, error) {
+func getWorkspaces(cfg *config.Config, profile string) ([]string, error) {
 	wss := []string{}
-	glob := fmt.Sprintf("%s/*.tfvars*", cfg.Terraform.Workspaces.Dir)
+	glob := fmt.Sprintf("%s/*.tfvars*", cfg.Terraform[profile].Workspaces.Dir)
 	ff, _, err := fsmodtime.Glob(os.DirFS("."), true, []string{glob})
 	if err != nil {
 		return wss, fmt.Errorf("failed to glob ws files: %w", err)
@@ -66,11 +67,11 @@ func getWorkspaces(cfg *config.Config) ([]string, error) {
 	return wss, nil
 }
 
-func validWorkspaces(cfg *config.Config) ([]string, error) {
+func validWorkspaces(cfg *config.Config, profile string) ([]string, error) {
 	wss := []string{}
-	if cfg.Terraform.Workspaces.Enabled {
+	if cfg.Terraform[profile].Workspaces.Enabled {
 		if _, err := os.Stat(".terraform/environment"); os.IsNotExist(err) {
-			wss, err = getWorkspaces(cfg)
+			wss, err = getWorkspaces(cfg, profile)
 			if err != nil {
 				return wss, err
 			}
@@ -108,8 +109,8 @@ func updateWSIfSelected(ws string) (string, error) {
 }
 
 // If there is no workspace selected, check the given var files and use the first one as the workspace then return the ws env var
-func getWorkspace(cfg *config.Config, ws string, varFiles []string) (string, error) {
-	if cfg.Terraform.Workspaces.Enabled {
+func getWorkspace(cfg *config.Config, profile, ws string, varFiles []string) (string, error) {
+	if cfg.Terraform[profile].Workspaces.Enabled {
 		if !workspaceSelected() {
 			if ws != "" {
 				return ws, nil
@@ -127,9 +128,9 @@ func getWorkspace(cfg *config.Config, ws string, varFiles []string) (string, err
 
 // If a workspace is selected automatically insert a var file matching the workspace.
 // If the var file is already present then don't add it again.
-func AddVarFileIfWorkspaceSelected(cfg *config.Config, ws string, varFiles []string) ([]string, error) {
+func AddVarFileIfWorkspaceSelected(cfg *config.Config, profile, ws string, varFiles []string) ([]string, error) {
 	if ws != "" {
-		glob := fmt.Sprintf("%s/%s.tfvars*", cfg.Terraform.Workspaces.Dir, ws)
+		glob := fmt.Sprintf("%s/%s.tfvars*", cfg.Terraform[profile].Workspaces.Dir, ws)
 		Logger.Printf("ws: %s, glob: %s\n", ws, glob)
 		ff, _, err := fsmodtime.Glob(os.DirFS("."), true, []string{glob})
 		if err != nil {
@@ -145,9 +146,9 @@ func AddVarFileIfWorkspaceSelected(cfg *config.Config, ws string, varFiles []str
 	return varFiles, nil
 }
 
-func getDefaultVarFiles(cfg *config.Config) ([]string, error) {
+func getDefaultVarFiles(cfg *config.Config, profile string) ([]string, error) {
 	varFiles := []string{}
-	for _, vars := range cfg.Terraform.Plan.VarFile {
+	for _, vars := range cfg.Terraform[profile].Plan.VarFile {
 		v := strings.ReplaceAll(vars, "~", "$HOME")
 		vv, err := fsmodtime.ExpandEnv([]string{v})
 		if err != nil {

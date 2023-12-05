@@ -12,12 +12,14 @@ import (
 )
 
 func showPlanCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
+	profile := parent.Value("profile").(string)
+
 	cfg := config.ConfigFromContext(ctx)
 
 	opt := parent.NewCommand("show-plan", "")
 	opt.SetCommandFn(showPlanRun)
 
-	wss, err := validWorkspaces(cfg)
+	wss, err := validWorkspaces(cfg, profile)
 	if err != nil {
 		Logger.Printf("WARNING: failed to list workspaces: %s\n", err)
 	}
@@ -27,6 +29,7 @@ func showPlanCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.Get
 }
 
 func showPlanRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
+	profile := opt.Value("profile").(string)
 	ws := opt.Value("ws").(string)
 	ws, err := updateWSIfSelected(ws)
 	if err != nil {
@@ -34,9 +37,9 @@ func showPlanRun(ctx context.Context, opt *getoptions.GetOpt, args []string) err
 	}
 
 	cfg := config.ConfigFromContext(ctx)
-	Logger.Printf("cfg: %s\n", cfg)
+	Logger.Printf("cfg: %s\n", cfg.Terraform[profile])
 
-	if cfg.Terraform.Workspaces.Enabled {
+	if cfg.Terraform[profile].Workspaces.Enabled {
 		if !workspaceSelected() {
 			if ws == "" {
 				return fmt.Errorf("running in workspace mode but no workspace selected or --ws given")
@@ -44,7 +47,7 @@ func showPlanRun(ctx context.Context, opt *getoptions.GetOpt, args []string) err
 		}
 	}
 
-	cmd := []string{cfg.Terraform.BinaryName, "show"}
+	cmd := []string{cfg.Terraform[profile].BinaryName, "show"}
 	cmd = append(cmd, args...)
 	// possitional arg goes at the end
 	if ws == "" {

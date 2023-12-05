@@ -4,6 +4,7 @@ import (
 	"context"
 	"embed"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -17,24 +18,27 @@ var f embed.FS
 var Logger = log.New(os.Stderr, "", log.LstdFlags)
 
 type Config struct {
-	Terraform struct {
-		Init struct {
-			BackendConfig []string `json:"backend_config"`
-		}
-		Plan struct {
-			VarFile []string `json:"var_file"`
-		}
-		Workspaces struct {
-			Enabled bool
-			Dir     string
-		}
-		PreApplyChecks struct {
-			Enabled  bool
-			Commands []Command
-		} `json:"pre_apply_checks"`
-		BinaryName string `json:"binary_name"`
+	Terraform  map[string]*TerraformProfile `json:"terraform"`
+	ConfigRoot string                       `json:"config_root"`
+}
+
+type TerraformProfile struct {
+	ID   string
+	Init struct {
+		BackendConfig []string `json:"backend_config"`
 	}
-	ConfigRoot string `json:"config_root"`
+	Plan struct {
+		VarFile []string `json:"var_file"`
+	}
+	Workspaces struct {
+		Enabled bool
+		Dir     string
+	}
+	PreApplyChecks struct {
+		Enabled  bool
+		Commands []Command
+	} `json:"pre_apply_checks"`
+	BinaryName string `json:"binary_name"`
 }
 
 type Command struct {
@@ -43,19 +47,19 @@ type Command struct {
 	Files   []string
 }
 
-func (c *Config) String() string {
+func (t *TerraformProfile) String() string {
 
 	output := fmt.Sprintf("%s backend_config files: %v, var files: %v, workspaces enabled: %t, ws dir: '%s'",
-		c.Terraform.BinaryName,
-		c.Terraform.Init.BackendConfig,
-		c.Terraform.Plan.VarFile,
-		c.Terraform.Workspaces.Enabled,
-		c.Terraform.Workspaces.Dir,
+		t.BinaryName,
+		t.Init.BackendConfig,
+		t.Plan.VarFile,
+		t.Workspaces.Enabled,
+		t.Workspaces.Dir,
 	)
-	if c.Terraform.PreApplyChecks.Enabled {
+	if t.PreApplyChecks.Enabled {
 		output += ", pre_apply_checks: "
 		names := []string{}
-		for _, cmd := range c.Terraform.PreApplyChecks.Commands {
+		for _, cmd := range t.PreApplyChecks.Commands {
 			names = append(names, cmd.Name)
 		}
 		output += fmt.Sprintf("%v", names)
@@ -84,18 +88,37 @@ func Get(ctx context.Context, filename string) (*Config, string, error) {
 	if err != nil {
 		return &Config{}, f, fmt.Errorf("failed to find config file: %w", err)
 	}
-	cfg, err := Read(ctx, f)
+
+	configFH, err := os.Open(f)
+	if err != nil {
+		return &Config{}, f, fmt.Errorf("failed to open config file '%s': %w", f, err)
+	}
+	defer configFH.Close()
+
+	cfg, err := Read(ctx, f, configFH)
 	if err != nil {
 		return &Config{}, f, fmt.Errorf("failed to read config: %w", err)
 	}
-	cfg.ConfigRoot = filepath.Dir(f)
-	if cfg.Terraform.BinaryName == "" {
-		cfg.Terraform.BinaryName = "terraform"
+	err = SetDefaults(ctx, cfg, f)
+	if err != nil {
+		return &Config{}, f, fmt.Errorf("failed to set config defaults: %w", err)
 	}
+
 	return cfg, f, nil
 }
 
-func Read(ctx context.Context, filename string) (*Config, error) {
+func SetDefaults(ctx context.Context, cfg *Config, filename string) error {
+	cfg.ConfigRoot = filepath.Dir(filename)
+	for k, v := range cfg.Terraform {
+		if v.BinaryName == "" {
+			v.BinaryName = "terraform"
+			cfg.Terraform[k] = v
+		}
+	}
+	return nil
+}
+
+func Read(ctx context.Context, filename string, configFH io.Reader) (*Config, error) {
 	configs := []cueutils.CueConfigFile{}
 
 	schemaFilename := "schema.cue"
@@ -106,11 +129,6 @@ func Read(ctx context.Context, filename string) (*Config, error) {
 	defer schemaFH.Close()
 	configs = append(configs, cueutils.CueConfigFile{Data: schemaFH, Name: schemaFilename})
 
-	configFH, err := os.Open(filename)
-	if err != nil {
-		return nil, fmt.Errorf("failed to open '%s': %w", filename, err)
-	}
-	defer configFH.Close()
 	configs = append(configs, cueutils.CueConfigFile{Data: configFH, Name: filename})
 
 	c := Config{}
