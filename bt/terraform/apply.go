@@ -38,9 +38,9 @@ func applyRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	}
 
 	cfg := config.ConfigFromContext(ctx)
-	Logger.Printf("cfg: %s\n", cfg.Terraform[profile])
+	Logger.Printf("cfg: %s\n", cfg.TFProfile[profile])
 
-	if cfg.Terraform[profile].Workspaces.Enabled {
+	if cfg.TFProfile[profile].Workspaces.Enabled {
 		if !workspaceSelected() {
 			if ws == "" {
 				return fmt.Errorf("running in workspace mode but no workspace selected or --ws given")
@@ -67,7 +67,7 @@ func applyRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	}
 	Logger.Printf("modified: %v\n", files)
 
-	cmd := []string{cfg.Terraform[profile].BinaryName, "apply"}
+	cmd := []string{cfg.TFProfile[profile].BinaryName, "apply"}
 	cmd = append(cmd, "-input", planFile)
 	if !isatty.IsTerminal(os.Stdout.Fd()) {
 		cmd = append(cmd, "-no-color")

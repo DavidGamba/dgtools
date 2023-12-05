@@ -55,7 +55,7 @@ func planRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	}
 
 	cfg := config.ConfigFromContext(ctx)
-	Logger.Printf("cfg: %s\n", cfg.Terraform[profile])
+	Logger.Printf("cfg: %s\n", cfg.TFProfile[profile])
 
 	ws, err = getWorkspace(cfg, profile, ws, varFiles)
 	if err != nil {
@@ -157,7 +157,7 @@ func planRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 		Logger.Printf("missing target: %v\n", planFile)
 	}
 
-	cmd := []string{cfg.Terraform[profile].BinaryName, "plan", "-out", planFile}
+	cmd := []string{cfg.TFProfile[profile].BinaryName, "plan", "-out", planFile}
 	for _, v := range defaultVarFiles {
 		cmd = append(cmd, "-var-file", v)
 	}
@@ -244,7 +244,7 @@ func checksRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error
 	os.Setenv("CONFIG_ROOT", cfg.ConfigRoot)
 
 	cmdFiles := []string{}
-	for _, cmd := range cfg.Terraform[profile].PreApplyChecks.Commands {
+	for _, cmd := range cfg.TFProfile[profile].PreApplyChecks.Commands {
 		exp, err := fsmodtime.ExpandEnv(cmd.Files)
 		if err != nil {
 			return fmt.Errorf("failed to expand: %w", err)
@@ -289,7 +289,7 @@ func checksRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error
 		Logger.Printf("missing target: %v\n", planFile)
 	}
 
-	cmd := []string{cfg.Terraform[profile].BinaryName, "show", "-json", planFile}
+	cmd := []string{cfg.TFProfile[profile].BinaryName, "show", "-json", planFile}
 	dataDir := fmt.Sprintf("TF_DATA_DIR=.terraform-%s", profile)
 	Logger.Printf("export %s\n", dataDir)
 	ri := run.CMD(cmd...).Ctx(ctx).Stdin().Log().Env(dataDir)
@@ -304,7 +304,7 @@ func checksRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error
 	}
 	Logger.Printf("plan json written to: %s\n", jsonPlan)
 
-	for _, cmd := range cfg.Terraform[profile].PreApplyChecks.Commands {
+	for _, cmd := range cfg.TFProfile[profile].PreApplyChecks.Commands {
 		Logger.Printf("running check: %s\n", cmd.Name)
 		exp, err := fsmodtime.ExpandEnv(cmd.Command)
 		if err != nil {

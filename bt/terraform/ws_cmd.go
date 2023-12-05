@@ -21,9 +21,9 @@ func wsCMDRun(cmd ...string) getoptions.CommandFn {
 		}
 
 		cfg := config.ConfigFromContext(ctx)
-		Logger.Printf("cfg: %s\n", cfg.Terraform[profile])
+		Logger.Printf("cfg: %s\n", cfg.TFProfile[profile])
 
-		if cfg.Terraform[profile].Workspaces.Enabled {
+		if cfg.TFProfile[profile].Workspaces.Enabled {
 			if !workspaceSelected() {
 				if ws == "" {
 					return fmt.Errorf("running in workspace mode but no workspace selected or --ws given")

@@ -37,9 +37,9 @@ func showPlanRun(ctx context.Context, opt *getoptions.GetOpt, args []string) err
 	}
 
 	cfg := config.ConfigFromContext(ctx)
-	Logger.Printf("cfg: %s\n", cfg.Terraform[profile])
+	Logger.Printf("cfg: %s\n", cfg.TFProfile[profile])
 
-	if cfg.Terraform[profile].Workspaces.Enabled {
+	if cfg.TFProfile[profile].Workspaces.Enabled {
 		if !workspaceSelected() {
 			if ws == "" {
 				return fmt.Errorf("running in workspace mode but no workspace selected or --ws given")
@@ -47,7 +47,7 @@ func showPlanRun(ctx context.Context, opt *getoptions.GetOpt, args []string) err
 		}
 	}
 
-	cmd := []string{cfg.Terraform[profile].BinaryName, "show"}
+	cmd := []string{cfg.TFProfile[profile].BinaryName, "show"}
 	cmd = append(cmd, args...)
 	// possitional arg goes at the end
 	if ws == "" {

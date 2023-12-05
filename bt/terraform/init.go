@@ -23,11 +23,11 @@ func initRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	profile := opt.Value("profile").(string)
 
 	cfg := config.ConfigFromContext(ctx)
-	Logger.Printf("cfg: %s\n", cfg.Terraform[profile])
+	Logger.Printf("cfg: %s\n", cfg.TFProfile[profile])
 
-	cmd := []string{cfg.Terraform[profile].BinaryName, "init"}
+	cmd := []string{cfg.TFProfile[profile].BinaryName, "init"}
 
-	for _, bvars := range cfg.Terraform[profile].Init.BackendConfig {
+	for _, bvars := range cfg.TFProfile[profile].Init.BackendConfig {
 		b := strings.ReplaceAll(bvars, "~", "$HOME")
 		bb, err := fsmodtime.ExpandEnv([]string{b})
 		if err != nil {

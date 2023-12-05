@@ -1,7 +1,11 @@
 package bt
 
-#Terraform: {
-	[ID=_]: #TerraformProfile & {id: ID}
+config: #Config
+terraform_profile: [ID=_]: #TerraformProfile & {id: ID}
+
+#Config: {
+	default_terraform_profile: string | *"default"
+	terraform_profile_env_var: string | *"BT_TERRAFORM_PROFILE"
 }
 
 #TerraformProfile: {
@@ -20,9 +24,11 @@ package bt
 		enabled: bool
 		commands: [...#Command]
 	}
+	binary_name: string | *"terraform"
 }
 
 #Command: {
 	name: string
 	command: [...string]
+	files: [...string]
 }

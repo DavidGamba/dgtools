@@ -69,7 +69,7 @@ func varFileCMDRun(fn VarFileCMDer, cmd ...string) getoptions.CommandFn {
 		}
 
 		cfg := config.ConfigFromContext(ctx)
-		Logger.Printf("cfg: %s\n", cfg.Terraform[profile])
+		Logger.Printf("cfg: %s\n", cfg.TFProfile[profile])
 
 		ws, err = getWorkspace(cfg, profile, ws, varFiles)
 		if err != nil {

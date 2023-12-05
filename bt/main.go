@@ -23,7 +23,11 @@ func program(args []string) int {
 	defer func() { cancel(); <-done }()
 
 	// Read config and store it in context
-	cfg, _, _ := config.Get(ctx, ".bt.cue")
+	cfg, _, err := config.Get(ctx, ".bt.cue")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
+		return 1
+	}
 	ctx = config.NewConfigContext(ctx, cfg)
 
 	opt := getoptions.New()

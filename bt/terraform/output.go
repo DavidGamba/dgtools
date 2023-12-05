@@ -27,8 +27,8 @@ func outputCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOp
 func outputRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	profile := opt.Value("profile").(string)
 	cfg := config.ConfigFromContext(ctx)
-	Logger.Printf("cfg: %s\n", cfg.Terraform[profile])
+	Logger.Printf("cfg: %s\n", cfg.TFProfile[profile])
 
-	cmd := []string{cfg.Terraform[profile].BinaryName, "output"}
+	cmd := []string{cfg.TFProfile[profile].BinaryName, "output"}
 	return wsCMDRun(cmd...)(ctx, opt, args)
 }

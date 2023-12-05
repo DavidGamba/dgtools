@@ -68,7 +68,11 @@ Example:
 .Config file .bt.cue
 [source, cue]
 ----
-terraform: {
+config: {
+	default_terraform_profile: "default"
+	terraform_profile_env_var: "BT_TERRAFORM_PROFILE"
+}
+terraform_profile: {
 	default: {
 		binary_name: "terraform"
 		init: {

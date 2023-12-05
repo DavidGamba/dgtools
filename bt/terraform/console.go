@@ -30,7 +30,7 @@ func consoleRun(ctx context.Context, opt *getoptions.GetOpt, args []string) erro
 	i := noOp{}
 
 	cfg := config.ConfigFromContext(ctx)
-	Logger.Printf("cfg: %s\n", cfg.Terraform[profile])
+	Logger.Printf("cfg: %s\n", cfg.TFProfile[profile])
 
-	return varFileCMDRun(i, cfg.Terraform[profile].BinaryName, "console")(ctx, opt, args)
+	return varFileCMDRun(i, cfg.TFProfile[profile].BinaryName, "console")(ctx, opt, args)
 }

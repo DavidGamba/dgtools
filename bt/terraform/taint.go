@@ -38,9 +38,9 @@ func taintRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	args = slices.Delete(args, 0, 1)
 
 	cfg := config.ConfigFromContext(ctx)
-	Logger.Printf("cfg: %s\n", cfg.Terraform[profile])
+	Logger.Printf("cfg: %s\n", cfg.TFProfile[profile])
 
-	cmd := []string{cfg.Terraform[profile].BinaryName, "taint", address}
+	cmd := []string{cfg.TFProfile[profile].BinaryName, "taint", address}
 	return wsCMDRun(cmd...)(ctx, opt, args)
 }
 
@@ -72,8 +72,8 @@ func untaintRun(ctx context.Context, opt *getoptions.GetOpt, args []string) erro
 	args = slices.Delete(args, 0, 1)
 
 	cfg := config.ConfigFromContext(ctx)
-	Logger.Printf("cfg: %s\n", cfg.Terraform[profile])
+	Logger.Printf("cfg: %s\n", cfg.TFProfile[profile])
 
-	cmd := []string{cfg.Terraform[profile].BinaryName, "untaint", address}
+	cmd := []string{cfg.TFProfile[profile].BinaryName, "untaint", address}
 	return wsCMDRun(cmd...)(ctx, opt, args)
 }

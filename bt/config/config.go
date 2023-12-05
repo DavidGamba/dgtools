@@ -18,12 +18,16 @@ var f embed.FS
 var Logger = log.New(os.Stderr, "", log.LstdFlags)
 
 type Config struct {
-	Terraform  map[string]*TerraformProfile `json:"terraform"`
-	ConfigRoot string                       `json:"config_root"`
+	Config struct {
+		DefaultTerraformProfile string `json:"default_terraform_profile"`
+		TerraformProfileEnvVar  string `json:"terraform_profile_env_var"`
+	} `json:"config"`
+	TFProfile  map[string]TerraformProfile `json:"terraform_profile"`
+	ConfigRoot string                      `json:"config_root"`
 }
 
 type TerraformProfile struct {
-	ID   string
+	ID   string `json:"id"`
 	Init struct {
 		BackendConfig []string `json:"backend_config"`
 	}
@@ -47,8 +51,7 @@ type Command struct {
 	Files   []string
 }
 
-func (t *TerraformProfile) String() string {
-
+func (t TerraformProfile) String() string {
 	output := fmt.Sprintf("%s backend_config files: %v, var files: %v, workspaces enabled: %t, ws dir: '%s'",
 		t.BinaryName,
 		t.Init.BackendConfig,
@@ -109,12 +112,6 @@ func Get(ctx context.Context, filename string) (*Config, string, error) {
 
 func SetDefaults(ctx context.Context, cfg *Config, filename string) error {
 	cfg.ConfigRoot = filepath.Dir(filename)
-	for k, v := range cfg.Terraform {
-		if v.BinaryName == "" {
-			v.BinaryName = "terraform"
-			cfg.Terraform[k] = v
-		}
-	}
 	return nil
 }
 
