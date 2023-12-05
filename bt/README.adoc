@@ -69,22 +69,24 @@ Example:
 [source, cue]
 ----
 terraform: {
-	binary_name: "terraform"
-	init: {
-		backend_config: ["backend.tfvars"]
-	}
-	plan: {
-		var_file: ["~/auth.tfvars"]
-	}
-	workspaces: {
-		enabled: true
-		dir: "envs"
-	}
-	pre_apply_checks: {
-		enabled: true
-		commands: [
-			{name: "conftest", command: ["conftest", "test", "$TERRAFORM_JSON_PLAN"]},
-		]
+	default: {
+		binary_name: "terraform"
+		init: {
+			backend_config: ["backend.tfvars"]
+		}
+		plan: {
+			var_file: ["~/auth.tfvars"]
+		}
+		workspaces: {
+			enabled: true
+			dir: "envs"
+		}
+		pre_apply_checks: {
+			enabled: true
+			commands: [
+				{name: "conftest", command: ["conftest", "test", "$TERRAFORM_JSON_PLAN"]},
+			]
+		}
 	}
 }
 ----
@@ -171,3 +173,13 @@ Pre apply check commands get the following Env vars exported:
 * `TERRAFORM_JSON_PLAN`: The path to the rendered json plan.
 
 If pre-apply checks are enabled in the config file, they can be disabled for the current run using the `--no-checks` option.
+
+== Profiles
+
+Multiple terraform config profiles can be defined.
+By default, the `default` profile is used.
+
+To use a different profile, use the `--profile` option or export the `BT_TERRAFORM_PROFILE` environment variable.
+
+Each profile will have its own `TF_DATA_DIR` and the terraform data will be saved under `.terraform-<profile>/`.
+This allows to work with multiple profiles pointing to different backends under the same workspace directory without conflicts.
