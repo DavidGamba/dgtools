@@ -3,7 +3,7 @@ module github.com/DavidGamba/dgtools/bt
 go 1.21
 
 require (
-	github.com/DavidGamba/dgtools/cueutils v0.0.0-20231203015453-c9bc83b912c8
+	github.com/DavidGamba/dgtools/cueutils v0.0.0-20231205054544-4ad77b60f561
 	github.com/DavidGamba/dgtools/fsmodtime v0.2.0
 	github.com/DavidGamba/dgtools/run v0.7.0
 	github.com/DavidGamba/go-getoptions v0.29.0
@@ -12,7 +12,7 @@ require (
 )
 
 require (
-	cuelang.org/go v0.6.0 // indirect
+	cuelang.org/go v0.7.0-rc.1 // indirect
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
 	github.com/cockroachdb/apd/v3 v3.2.1 // indirect
