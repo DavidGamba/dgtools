@@ -2,34 +2,7 @@
 
 == v0.3.0: Breaking changes
 
-* Terraform config has been updated to support multiple profiles.
-
-Wrap the terraform config under the `default` profile to get similar behaviour.
-
-[source, diff]
-----
-  terraform: {
-+ 	default: {
-  		binary_name: "terraform"
-  		init: {
-  			backend_config: ["backend.tfvars"]
-  		}
-  		plan: {
-  			var_file: ["~/auth.tfvars"]
-  		}
-  		workspaces: {
-  			enabled: true
-  			dir: "envs"
-  		}
-  		pre_apply_checks: {
-  			enabled: true
-  			commands: [
-  				{name: "conftest", command: ["conftest", "test", "$TERRAFORM_JSON_PLAN"]},
-  			]
-  		}
-+ 	}
-  }
-----
+Terraform config has been updated to support multiple profiles.
 
 Additionally, the terraform data is no longer saved at the default `.terraform/` dir but has been changed to follow the format `.terraform-<profile>/`.
 

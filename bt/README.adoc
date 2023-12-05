@@ -182,8 +182,11 @@ If pre-apply checks are enabled in the config file, they can be disabled for the
 
 Multiple terraform config profiles can be defined.
 By default, the `default` profile is used.
+The default profile can be overriden with `config.default_terraform_profile` in the config file.
 
 To use a different profile, use the `--profile` option or export the `BT_TERRAFORM_PROFILE` environment variable.
+The environment variable can also be overridden to read an existing one in the environment.
+For example, set `config.terraform_profile_env_var` to `AWS_PROFILE` and name your terraform profiles the same way you name your AWS profiles.
 
 Each profile will have its own `TF_DATA_DIR` and the terraform data will be saved under `.terraform-<profile>/`.
 This allows to work with multiple profiles pointing to different backends under the same workspace directory without conflicts.
