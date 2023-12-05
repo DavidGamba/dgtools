@@ -58,7 +58,9 @@ func showPlanRun(ctx context.Context, opt *getoptions.GetOpt, args []string) err
 	if !isatty.IsTerminal(os.Stdout.Fd()) {
 		cmd = append(cmd, "-no-color")
 	}
-	ri := run.CMD(cmd...).Ctx(ctx).Stdin().Log()
+	dataDir := fmt.Sprintf("TF_DATA_DIR=.terraform-%s", profile)
+	Logger.Printf("export %s\n", dataDir)
+	ri := run.CMD(cmd...).Ctx(ctx).Stdin().Log().Env(dataDir)
 	if ws != "" {
 		wsEnv := fmt.Sprintf("TF_WORKSPACE=%s", ws)
 		Logger.Printf("export %s\n", wsEnv)

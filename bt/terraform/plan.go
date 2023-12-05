@@ -181,7 +181,9 @@ func planRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	}
 	cmd = append(cmd, args...)
 
-	ri := run.CMD(cmd...).Ctx(ctx).Stdin().Log()
+	dataDir := fmt.Sprintf("TF_DATA_DIR=.terraform-%s", profile)
+	Logger.Printf("export %s\n", dataDir)
+	ri := run.CMD(cmd...).Ctx(ctx).Stdin().Log().Env(dataDir)
 	if ws != "" {
 		wsEnv := fmt.Sprintf("TF_WORKSPACE=%s", ws)
 		Logger.Printf("export %s\n", wsEnv)
@@ -288,7 +290,9 @@ func checksRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error
 	}
 
 	cmd := []string{cfg.Terraform[profile].BinaryName, "show", "-json", planFile}
-	ri := run.CMD(cmd...).Ctx(ctx).Stdin().Log()
+	dataDir := fmt.Sprintf("TF_DATA_DIR=.terraform-%s", profile)
+	Logger.Printf("export %s\n", dataDir)
+	ri := run.CMD(cmd...).Ctx(ctx).Stdin().Log().Env(dataDir)
 	out, err := ri.STDOutOutput()
 	if err != nil {
 		return fmt.Errorf("failed to get plan json output: %w", err)
@@ -306,7 +310,7 @@ func checksRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error
 		if err != nil {
 			return fmt.Errorf("failed to expand: %w", err)
 		}
-		ri := run.CMD(exp...).Ctx(ctx).Stdin().Log()
+		ri := run.CMD(exp...).Ctx(ctx).Stdin().Log().Env(dataDir)
 		err = ri.Run()
 		if err != nil {
 			return fmt.Errorf("failed to run: %w", err)

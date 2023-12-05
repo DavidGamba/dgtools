@@ -41,7 +41,9 @@ func initRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 		cmd = append(cmd, "-no-color")
 	}
 	cmd = append(cmd, args...)
-	err := run.CMD(cmd...).Ctx(ctx).Stdin().Log().Run()
+	dataDir := fmt.Sprintf("TF_DATA_DIR=.terraform-%s", profile)
+	Logger.Printf("export %s\n", dataDir)
+	err := run.CMD(cmd...).Ctx(ctx).Stdin().Log().Env(dataDir).Run()
 	if err != nil {
 		return fmt.Errorf("failed to run: %w", err)
 	}
