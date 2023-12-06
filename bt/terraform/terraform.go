@@ -31,6 +31,13 @@ func NewCommand(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetO
 	importCMD(ctx, opt)
 	refreshCMD(ctx, opt)
 
+	// workspace management
+	workspaceListCMD(ctx, opt)
+	workspaceShowCMD(ctx, opt)
+	workspaceSelectCMD(ctx, opt)
+	workspaceDeleteCMD(ctx, opt)
+	workspaceNewCMD(ctx, opt)
+
 	// workspace selection
 	applyCMD(ctx, opt)
 	consoleCMD(ctx, opt)
