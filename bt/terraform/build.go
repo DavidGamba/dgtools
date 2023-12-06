@@ -44,16 +44,17 @@ func buildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	show := opt.Value("show").(bool)
 	detailedExitcode := opt.Value("detailed-exitcode").(bool)
 	ws := opt.Value("ws").(string)
-	ws, err := updateWSIfSelected(ws)
-	if err != nil {
-		return err
-	}
 
 	cfg := config.ConfigFromContext(ctx)
 	Logger.Printf("cfg: %s\n", cfg.TFProfile[profile])
 
+	ws, err := updateWSIfSelected(cfg.Config.DefaultTerraformProfile, profile, ws)
+	if err != nil {
+		return err
+	}
+
 	if cfg.TFProfile[profile].Workspaces.Enabled {
-		if !workspaceSelected() {
+		if !workspaceSelected(cfg.Config.DefaultTerraformProfile, profile) {
 			if ws == "" {
 				return fmt.Errorf("running in workspace mode but no workspace selected or --ws given")
 			}

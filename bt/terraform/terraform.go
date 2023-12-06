@@ -72,7 +72,8 @@ func getWorkspaces(cfg *config.Config, profile string) ([]string, error) {
 func validWorkspaces(cfg *config.Config, profile string) ([]string, error) {
 	wss := []string{}
 	if cfg.TFProfile[profile].Workspaces.Enabled {
-		if _, err := os.Stat(".terraform/environment"); os.IsNotExist(err) {
+		envFile := getDataDir(cfg.Config.DefaultTerraformProfile, profile) + "/environment"
+		if _, err := os.Stat(envFile); os.IsNotExist(err) {
 			wss, err = getWorkspaces(cfg, profile)
 			if err != nil {
 				return wss, err
@@ -88,16 +89,27 @@ func validWorkspaces(cfg *config.Config, profile string) ([]string, error) {
 	return wss, nil
 }
 
-func workspaceSelected() bool {
-	if _, err := os.Stat(".terraform/environment"); os.IsNotExist(err) {
+func getDataDir(defaultProfile, profile string) string {
+	envFile := ".terraform"
+	if defaultProfile != profile {
+		envFile = fmt.Sprintf(".terraform-%s", profile)
+	}
+	return envFile
+}
+
+func workspaceSelected(defaultProfile, profile string) bool {
+	envFile := getDataDir(defaultProfile, profile) + "/environment"
+	if _, err := os.Stat(envFile); os.IsNotExist(err) {
 		return false
 	}
 	return true
 }
 
-func updateWSIfSelected(ws string) (string, error) {
-	if workspaceSelected() {
-		e, err := os.ReadFile(".terraform/environment")
+// If the given workspace is empty and there is a workspace selected then use the selected workspace
+func updateWSIfSelected(defaultProfile, profile, ws string) (string, error) {
+	if workspaceSelected(defaultProfile, profile) {
+		envFile := getDataDir(defaultProfile, profile) + "/environment"
+		e, err := os.ReadFile(envFile)
 		if err != nil {
 			return ws, fmt.Errorf("failed to read current workspace: %w", err)
 		}
@@ -113,7 +125,7 @@ func updateWSIfSelected(ws string) (string, error) {
 // If there is no workspace selected, check the given var files and use the first one as the workspace then return the ws env var
 func getWorkspace(cfg *config.Config, profile, ws string, varFiles []string) (string, error) {
 	if cfg.TFProfile[profile].Workspaces.Enabled {
-		if !workspaceSelected() {
+		if !workspaceSelected(cfg.Config.DefaultTerraformProfile, profile) {
 			if ws != "" {
 				return ws, nil
 			}

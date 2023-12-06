@@ -49,13 +49,14 @@ func planRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	targets := opt.Value("target").([]string)
 	replacements := opt.Value("replace").([]string)
 	ws := opt.Value("ws").(string)
-	ws, err := updateWSIfSelected(ws)
-	if err != nil {
-		return err
-	}
 
 	cfg := config.ConfigFromContext(ctx)
 	Logger.Printf("cfg: %s\n", cfg.TFProfile[profile])
+
+	ws, err := updateWSIfSelected(cfg.Config.DefaultTerraformProfile, profile, ws)
+	if err != nil {
+		return err
+	}
 
 	ws, err = getWorkspace(cfg, profile, ws, varFiles)
 	if err != nil {
@@ -181,7 +182,7 @@ func planRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	}
 	cmd = append(cmd, args...)
 
-	dataDir := fmt.Sprintf("TF_DATA_DIR=.terraform-%s", profile)
+	dataDir := fmt.Sprintf("TF_DATA_DIR=%s", getDataDir(cfg.Config.DefaultTerraformProfile, profile))
 	Logger.Printf("export %s\n", dataDir)
 	ri := run.CMD(cmd...).Ctx(ctx).Stdin().Log().Env(dataDir)
 	if ws != "" {
@@ -213,7 +214,10 @@ func checksRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error
 		return nil
 	}
 
-	ws, err := updateWSIfSelected(ws)
+	cfg := config.ConfigFromContext(ctx)
+	Logger.Printf("cfg: %s\n", cfg.TFProfile[profile])
+
+	ws, err := updateWSIfSelected(cfg.Config.DefaultTerraformProfile, profile, ws)
 	if err != nil {
 		return err
 	}
@@ -222,8 +226,6 @@ func checksRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error
 	if err != nil {
 		return fmt.Errorf("failed to get current dir: %w", err)
 	}
-
-	cfg := config.ConfigFromContext(ctx)
 
 	ws, err = getWorkspace(cfg, profile, ws, varFiles)
 	if err != nil {
@@ -290,7 +292,7 @@ func checksRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error
 	}
 
 	cmd := []string{cfg.TFProfile[profile].BinaryName, "show", "-json", planFile}
-	dataDir := fmt.Sprintf("TF_DATA_DIR=.terraform-%s", profile)
+	dataDir := fmt.Sprintf("TF_DATA_DIR=%s", getDataDir(cfg.Config.DefaultTerraformProfile, profile))
 	Logger.Printf("export %s\n", dataDir)
 	ri := run.CMD(cmd...).Ctx(ctx).Stdin().Log().Env(dataDir)
 	out, err := ri.STDOutOutput()

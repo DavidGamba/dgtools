@@ -40,7 +40,6 @@ func forceUnlockRun(ctx context.Context, opt *getoptions.GetOpt, args []string) 
 	args = slices.Delete(args, 0, 1)
 
 	cfg := config.ConfigFromContext(ctx)
-	Logger.Printf("cfg: %s\n", cfg.TFProfile[profile])
 
 	cmd := []string{cfg.TFProfile[profile].BinaryName, "force-unlock", "-force", lockID}
 	return wsCMDRun(cmd...)(ctx, opt, args)

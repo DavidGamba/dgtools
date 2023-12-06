@@ -32,16 +32,17 @@ func applyCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt
 func applyRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	ws := opt.Value("ws").(string)
 	profile := opt.Value("profile").(string)
-	ws, err := updateWSIfSelected(ws)
-	if err != nil {
-		return err
-	}
 
 	cfg := config.ConfigFromContext(ctx)
 	Logger.Printf("cfg: %s\n", cfg.TFProfile[profile])
 
+	ws, err := updateWSIfSelected(cfg.Config.DefaultTerraformProfile, profile, ws)
+	if err != nil {
+		return err
+	}
+
 	if cfg.TFProfile[profile].Workspaces.Enabled {
-		if !workspaceSelected() {
+		if !workspaceSelected(cfg.Config.DefaultTerraformProfile, profile) {
 			if ws == "" {
 				return fmt.Errorf("running in workspace mode but no workspace selected or --ws given")
 			}
@@ -73,7 +74,7 @@ func applyRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 		cmd = append(cmd, "-no-color")
 	}
 	cmd = append(cmd, args...)
-	dataDir := fmt.Sprintf("TF_DATA_DIR=.terraform-%s", profile)
+	dataDir := fmt.Sprintf("TF_DATA_DIR=%s", getDataDir(cfg.Config.DefaultTerraformProfile, profile))
 	Logger.Printf("export %s\n", dataDir)
 	ri := run.CMD(cmd...).Ctx(ctx).Stdin().Log().Env(dataDir)
 	if ws != "" {
