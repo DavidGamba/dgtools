@@ -173,6 +173,8 @@ When using `bt terraform workspace-select default` bt will automatically delete 
 
 == Pre Apply Checks
 
+When using `bt terraform build`, pre apply checks get run automatically after a plan if they are enabled.
+
 Pre apply check commands get the following Env vars exported:
 
 * `CONFIG_ROOT`: The dir of the config file.
@@ -180,11 +182,13 @@ Pre apply check commands get the following Env vars exported:
 
 If pre-apply checks are enabled in the config file, they can be disabled for the current run using the `--no-checks` option.
 
+To run only the checks, use `bt terraform checks`, combine it with the `--ws` option to run the checks against the last generated plan for the given workspace.
+
 == Profiles
 
 Multiple terraform config profiles can be defined.
 By default, the `default` profile is used.
-The default profile can be overriden with `config.default_terraform_profile` in the config file.
+The default profile can be overridden with `config.default_terraform_profile` in the config file.
 
 To use a different profile, use the `--profile` option or export the `BT_TERRAFORM_PROFILE` environment variable.
 The environment variable can also be overridden to read an existing one in the environment.

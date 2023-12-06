@@ -11,6 +11,8 @@ This eases using Terraform with and without bt.
 +
 When switching to the default workspace, bt automatically removes the environment file so that we are not locked into a specific workspace.
 
+* Expose terraform checks command as a standalone command to allow running pre-apply checks.
+
 == v0.3.0: Breaking changes
 
 Terraform config has been updated to support multiple profiles.
