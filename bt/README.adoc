@@ -169,6 +169,8 @@ terraform apply -input .tf.plan
 IMPORTANT: Because `bt` uses the `TF_WORKSPACE` environment variable rather than selecting the workspace,
 it is possible to work with multiple workspaces at the same time on different terminals.
 
+When using `bt terraform workspace-select default` bt will automatically delete the `.terraform/environment` file to ensure we can use the `TF_WORKSPACE` environment variable safely.
+
 == Pre Apply Checks
 
 Pre apply check commands get the following Env vars exported:
@@ -188,5 +190,6 @@ To use a different profile, use the `--profile` option or export the `BT_TERRAFO
 The environment variable can also be overridden to read an existing one in the environment.
 For example, set `config.terraform_profile_env_var` to `AWS_PROFILE` and name your terraform profiles the same way you name your AWS profiles.
 
-Each profile will have its own `TF_DATA_DIR` and the terraform data will be saved under `.terraform-<profile>/`.
+Each additional profile will have its own `TF_DATA_DIR` and the terraform data will be saved under `.terraform-<profile>/`.
+The `config.default_terraform_profile` will still use the default `.terraform/` dir.
 This allows to work with multiple profiles pointing to different backends under the same workspace directory without conflicts.

@@ -1,5 +1,16 @@
 = bt
 
+== v0.4.0: New features
+
+* Use the default `.terraform/` TF_DATA_DIR when the default profile is used.
+Other profiles will continue to use the `.terraform-<profile>/` dir.
++
+This eases using Terraform with and without bt.
+
+* Add workspace commands to manage workspaces when working with multiple profiles.
++
+When switching to the default workspace, bt automatically removes the environment file so that we are not locked into a specific workspace.
+
 == v0.3.0: Breaking changes
 
 Terraform config has been updated to support multiple profiles.

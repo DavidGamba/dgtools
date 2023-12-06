@@ -44,6 +44,7 @@ func workspaceShowRun(ctx context.Context, opt *getoptions.GetOpt, args []string
 	return workspaceFn(cmd...)(ctx, opt, args)
 }
 
+// When switching to the default workspace, remove the environment file so that we are not in workspace mode
 func workspaceSelectCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
 	profile := parent.Value("profile").(string)
 	cfg := config.ConfigFromContext(ctx)
