@@ -53,7 +53,9 @@ func NewCommand(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetO
 	taintCMD(ctx, opt)
 	untaintCMD(ctx, opt)
 
+	// Custom
 	buildCMD(ctx, opt)
+	checksCMD(ctx, opt)
 
 	return opt
 }
