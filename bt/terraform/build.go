@@ -28,6 +28,7 @@ func buildCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt
 	opt.StringSlice("replace", 1, 99)
 	opt.Bool("apply", false, opt.Description("Apply Terraform plan"))
 	opt.Bool("show", false, opt.Description("Show Terraform plan"))
+	opt.Bool("visualize", false, opt.Description("Visualize Terraform plan"))
 
 	wss, err := validWorkspaces(cfg, profile)
 	if err != nil {
@@ -42,6 +43,7 @@ func buildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	profile := opt.Value("profile").(string)
 	apply := opt.Value("apply").(bool)
 	show := opt.Value("show").(bool)
+	visualize := opt.Value("visualize").(bool)
 	detailedExitcode := opt.Value("detailed-exitcode").(bool)
 	ws := opt.Value("ws").(string)
 
@@ -81,6 +83,9 @@ func buildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	if show {
 		tm.Add("show", showPlanRun)
 	}
+	if visualize {
+		tm.Add("visualize", visualizePlanRun)
+	}
 
 	g := dag.NewGraph("build")
 	g.TaskDependensOn(tm.Get("plan"), tm.Get("init"))
@@ -90,6 +95,9 @@ func buildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 
 	if show {
 		g.TaskDependensOn(tm.Get("show"), tm.Get("plan"))
+	}
+	if visualize {
+		g.TaskDependensOn(tm.Get("visualize"), tm.Get("plan"))
 	}
 	if apply {
 		g.TaskDependensOn(tm.Get("apply"), tm.Get("plan"))
