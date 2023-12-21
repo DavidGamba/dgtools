@@ -11,19 +11,9 @@ import (
 )
 
 func taintCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
-	profile := parent.Value("profile").(string)
-	cfg := config.ConfigFromContext(ctx)
-
 	opt := parent.NewCommand("taint", "")
 	opt.SetCommandFn(taintRun)
 	opt.HelpSynopsisArg("<address>", "Address")
-
-	wss, err := validWorkspaces(cfg, profile)
-	if err != nil {
-		Logger.Printf("WARNING: failed to list workspaces: %s\n", err)
-	}
-	opt.String("ws", "", opt.ValidValues(wss...), opt.Description("Workspace to use"))
-
 	return opt
 }
 
@@ -45,19 +35,9 @@ func taintRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 }
 
 func untaintCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
-	profile := parent.Value("profile").(string)
-	cfg := config.ConfigFromContext(ctx)
-
 	opt := parent.NewCommand("untaint", "")
 	opt.SetCommandFn(untaintRun)
 	opt.HelpSynopsisArg("<address>", "Address")
-
-	wss, err := validWorkspaces(cfg, profile)
-	if err != nil {
-		Logger.Printf("WARNING: failed to list workspaces: %s\n", err)
-	}
-	opt.String("ws", "", opt.ValidValues(wss...), opt.Description("Workspace to use"))
-
 	return opt
 }
 

@@ -14,21 +14,11 @@ import (
 )
 
 func checksCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
-	profile := parent.Value("profile").(string)
-
-	cfg := config.ConfigFromContext(ctx)
-
 	opt := parent.NewCommand("checks", "Run pre-apply checks against the latest plan")
 	opt.StringSlice("var-file", 1, 1)
 	opt.Bool("no-checks", false, opt.Description("Do not run pre-apply checks"), opt.Alias("nc"))
 	opt.Bool("ignore-cache", false, opt.Description("ignore the cache and re-run the checks"), opt.Alias("ic"))
 	opt.SetCommandFn(checksRun)
-
-	wss, err := validWorkspaces(cfg, profile)
-	if err != nil {
-		Logger.Printf("WARNING: failed to list workspaces: %s\n", err)
-	}
-	opt.String("ws", "", opt.ValidValues(wss...), opt.Description("Workspace to use"))
 
 	return opt
 }

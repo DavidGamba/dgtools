@@ -13,10 +13,6 @@ import (
 )
 
 func buildCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
-	profile := parent.Value("profile").(string)
-
-	cfg := config.ConfigFromContext(ctx)
-
 	opt := parent.NewCommand("build", "Wraps init, plan and apply into a single operation with a cache")
 	opt.SetCommandFn(buildRun)
 	opt.StringSlice("var-file", 1, 1)
@@ -28,12 +24,6 @@ func buildCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt
 	opt.StringSlice("replace", 1, 99)
 	opt.Bool("apply", false, opt.Description("Apply Terraform plan"))
 	opt.Bool("show", false, opt.Description("Show Terraform plan"))
-
-	wss, err := validWorkspaces(cfg, profile)
-	if err != nil {
-		Logger.Printf("WARNING: failed to list workspaces: %s\n", err)
-	}
-	opt.String("ws", "", opt.ValidValues(wss...), opt.Description("Workspace to use"))
 
 	return opt
 }

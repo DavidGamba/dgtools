@@ -46,18 +46,8 @@ func workspaceShowRun(ctx context.Context, opt *getoptions.GetOpt, args []string
 
 // When switching to the default workspace, remove the environment file so that we are not in workspace mode
 func workspaceSelectCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
-	profile := parent.Value("profile").(string)
-	cfg := config.ConfigFromContext(ctx)
-
 	opt := parent.NewCommand("workspace-select", "")
 	opt.SetCommandFn(workspaceSelectRun)
-
-	wss, err := validWorkspaces(cfg, profile)
-	if err != nil {
-		Logger.Printf("WARNING: failed to list workspaces: %s\n", err)
-	}
-	opt.String("ws", "", opt.ValidValues(wss...), opt.Description("Workspace to use"))
-
 	return opt
 }
 
@@ -99,18 +89,8 @@ func workspaceSelectRun(ctx context.Context, opt *getoptions.GetOpt, args []stri
 }
 
 func workspaceDeleteCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
-	profile := parent.Value("profile").(string)
-	cfg := config.ConfigFromContext(ctx)
-
 	opt := parent.NewCommand("workspace-delete", "")
 	opt.SetCommandFn(workspaceDeleteRun)
-
-	wss, err := validWorkspaces(cfg, profile)
-	if err != nil {
-		Logger.Printf("WARNING: failed to list workspaces: %s\n", err)
-	}
-	opt.String("ws", "", opt.ValidValues(wss...), opt.Description("Workspace to use"))
-
 	return opt
 }
 

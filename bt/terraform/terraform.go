@@ -23,6 +23,12 @@ func NewCommand(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetO
 	opt := parent.NewCommand("terraform", "terraform related tasks")
 	opt.String("profile", "default", opt.Description("BT Terraform Profile to use"), opt.GetEnv(cfg.Config.TerraformProfileEnvVar))
 
+	wss, err := validWorkspaces(cfg, opt.Value("profile").(string))
+	if err != nil {
+		Logger.Printf("WARNING: failed to list workspaces: %s\n", err)
+	}
+	opt.String("ws", "", opt.ValidValues(wss...), opt.Description("Workspace to use"))
+
 	// backend-config
 	initCMD(ctx, opt)
 

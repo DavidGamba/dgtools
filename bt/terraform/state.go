@@ -11,18 +11,8 @@ import (
 )
 
 func stateListCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
-	profile := parent.Value("profile").(string)
-	cfg := config.ConfigFromContext(ctx)
-
 	opt := parent.NewCommand("state-list", "")
 	opt.SetCommandFn(stateListRun)
-
-	wss, err := validWorkspaces(cfg, profile)
-	if err != nil {
-		Logger.Printf("WARNING: failed to list workspaces: %s\n", err)
-	}
-	opt.String("ws", "", opt.ValidValues(wss...), opt.Description("Workspace to use"))
-
 	return opt
 }
 
@@ -36,19 +26,9 @@ func stateListRun(ctx context.Context, opt *getoptions.GetOpt, args []string) er
 }
 
 func statePushCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
-	profile := parent.Value("profile").(string)
-	cfg := config.ConfigFromContext(ctx)
-
 	opt := parent.NewCommand("state-push", "")
 	opt.SetCommandFn(statePushRun)
 	opt.HelpSynopsisArg("<state_file>", "State file to push")
-
-	wss, err := validWorkspaces(cfg, profile)
-	if err != nil {
-		Logger.Printf("WARNING: failed to list workspaces: %s\n", err)
-	}
-	opt.String("ws", "", opt.ValidValues(wss...), opt.Description("Workspace to use"))
-
 	return opt
 }
 
@@ -70,18 +50,8 @@ func statePushRun(ctx context.Context, opt *getoptions.GetOpt, args []string) er
 }
 
 func statePullCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
-	profile := parent.Value("profile").(string)
-	cfg := config.ConfigFromContext(ctx)
-
 	opt := parent.NewCommand("state-pull", "")
 	opt.SetCommandFn(statePullRun)
-
-	wss, err := validWorkspaces(cfg, profile)
-	if err != nil {
-		Logger.Printf("WARNING: failed to list workspaces: %s\n", err)
-	}
-	opt.String("ws", "", opt.ValidValues(wss...), opt.Description("Workspace to use"))
-
 	return opt
 }
 
@@ -95,18 +65,8 @@ func statePullRun(ctx context.Context, opt *getoptions.GetOpt, args []string) er
 }
 
 func stateRMCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
-	profile := parent.Value("profile").(string)
-	cfg := config.ConfigFromContext(ctx)
-
 	opt := parent.NewCommand("state-rm", "")
 	opt.SetCommandFn(stateRMRun)
-
-	wss, err := validWorkspaces(cfg, profile)
-	if err != nil {
-		Logger.Printf("WARNING: failed to list workspaces: %s\n", err)
-	}
-	opt.String("ws", "", opt.ValidValues(wss...), opt.Description("Workspace to use"))
-
 	return opt
 }
 
@@ -120,18 +80,8 @@ func stateRMRun(ctx context.Context, opt *getoptions.GetOpt, args []string) erro
 }
 
 func stateShowCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
-	profile := parent.Value("profile").(string)
-	cfg := config.ConfigFromContext(ctx)
-
 	opt := parent.NewCommand("state-show", "")
 	opt.SetCommandFn(stateShowRun)
-
-	wss, err := validWorkspaces(cfg, profile)
-	if err != nil {
-		Logger.Printf("WARNING: failed to list workspaces: %s\n", err)
-	}
-	opt.String("ws", "", opt.ValidValues(wss...), opt.Description("Workspace to use"))
-
 	return opt
 }
 

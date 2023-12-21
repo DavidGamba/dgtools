@@ -8,19 +8,8 @@ import (
 )
 
 func showCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
-	profile := parent.Value("profile").(string)
-
-	cfg := config.ConfigFromContext(ctx)
-
 	opt := parent.NewCommand("show", "")
 	opt.SetCommandFn(showRun)
-
-	wss, err := validWorkspaces(cfg, profile)
-	if err != nil {
-		Logger.Printf("WARNING: failed to list workspaces: %s\n", err)
-	}
-	opt.String("ws", "", opt.ValidValues(wss...), opt.Description("Workspace to use"))
-
 	return opt
 }
 
