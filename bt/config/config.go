@@ -70,6 +70,14 @@ func (t TerraformProfile) String() string {
 	return output
 }
 
+func (c Config) Profile(profile string) string {
+	_, ok := c.TFProfile[profile]
+	if !ok {
+		return c.Config.DefaultTerraformProfile
+	}
+	return profile
+}
+
 type contextKey string
 
 const configKey contextKey = "config"

@@ -24,7 +24,7 @@ func workspaceListRun(ctx context.Context, opt *getoptions.GetOpt, args []string
 
 	cfg := config.ConfigFromContext(ctx)
 
-	cmd := []string{cfg.TFProfile[profile].BinaryName, "workspace", "list"}
+	cmd := []string{cfg.TFProfile[cfg.Profile(profile)].BinaryName, "workspace", "list"}
 	return workspaceFn(cmd...)(ctx, opt, args)
 }
 
@@ -40,7 +40,7 @@ func workspaceShowRun(ctx context.Context, opt *getoptions.GetOpt, args []string
 
 	cfg := config.ConfigFromContext(ctx)
 
-	cmd := []string{cfg.TFProfile[profile].BinaryName, "workspace", "show"}
+	cmd := []string{cfg.TFProfile[cfg.Profile(profile)].BinaryName, "workspace", "show"}
 	return workspaceFn(cmd...)(ctx, opt, args)
 }
 
@@ -64,9 +64,9 @@ func workspaceSelectRun(ctx context.Context, opt *getoptions.GetOpt, args []stri
 	args = slices.Delete(args, 0, 1)
 
 	cfg := config.ConfigFromContext(ctx)
-	Logger.Printf("cfg: %s\n", cfg.TFProfile[profile])
+	Logger.Printf("cfg: %s\n", cfg.TFProfile[cfg.Profile(profile)])
 
-	cmd := []string{cfg.TFProfile[profile].BinaryName, "workspace", "select", wsName}
+	cmd := []string{cfg.TFProfile[cfg.Profile(profile)].BinaryName, "workspace", "select", wsName}
 
 	if !isatty.IsTerminal(os.Stdout.Fd()) {
 		cmd = append(cmd, "-no-color")
@@ -100,7 +100,7 @@ func workspaceDeleteRun(ctx context.Context, opt *getoptions.GetOpt, args []stri
 
 	cfg := config.ConfigFromContext(ctx)
 
-	cmd := []string{cfg.TFProfile[profile].BinaryName, "workspace", "delete"}
+	cmd := []string{cfg.TFProfile[cfg.Profile(profile)].BinaryName, "workspace", "delete"}
 	return workspaceFn(cmd...)(ctx, opt, args)
 }
 
@@ -116,7 +116,7 @@ func workspaceNewRun(ctx context.Context, opt *getoptions.GetOpt, args []string)
 
 	cfg := config.ConfigFromContext(ctx)
 
-	cmd := []string{cfg.TFProfile[profile].BinaryName, "workspace", "new"}
+	cmd := []string{cfg.TFProfile[cfg.Profile(profile)].BinaryName, "workspace", "new"}
 	return workspaceFn(cmd...)(ctx, opt, args)
 }
 
@@ -125,7 +125,7 @@ func workspaceFn(cmd ...string) getoptions.CommandFn {
 		profile := opt.Value("profile").(string)
 
 		cfg := config.ConfigFromContext(ctx)
-		Logger.Printf("cfg: %s\n", cfg.TFProfile[profile])
+		Logger.Printf("cfg: %s\n", cfg.TFProfile[cfg.Profile(profile)])
 
 		if !isatty.IsTerminal(os.Stdout.Fd()) {
 			cmd = append(cmd, "-no-color")

@@ -36,15 +36,15 @@ func buildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	ws := opt.Value("ws").(string)
 
 	cfg := config.ConfigFromContext(ctx)
-	Logger.Printf("cfg: %s\n", cfg.TFProfile[profile])
+	Logger.Printf("cfg: %s\n", cfg.TFProfile[cfg.Profile(profile)])
 
-	ws, err := updateWSIfSelected(cfg.Config.DefaultTerraformProfile, profile, ws)
+	ws, err := updateWSIfSelected(cfg.Config.DefaultTerraformProfile, cfg.Profile(profile), ws)
 	if err != nil {
 		return err
 	}
 
-	if cfg.TFProfile[profile].Workspaces.Enabled {
-		if !workspaceSelected(cfg.Config.DefaultTerraformProfile, profile) {
+	if cfg.TFProfile[cfg.Profile(profile)].Workspaces.Enabled {
+		if !workspaceSelected(cfg.Config.DefaultTerraformProfile, cfg.Profile(profile)) {
 			if ws == "" {
 				return fmt.Errorf("running in workspace mode but no workspace selected or --ws given")
 			}
@@ -62,7 +62,7 @@ func buildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	tm := dag.NewTaskMap()
 	tm.Add("init", initFn)
 	tm.Add("plan", planRun)
-	if cfg.TFProfile[profile].PreApplyChecks.Enabled {
+	if cfg.TFProfile[cfg.Profile(profile)].PreApplyChecks.Enabled {
 		tm.Add("checks", checksRun)
 	}
 	if apply {
@@ -74,7 +74,7 @@ func buildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 
 	g := dag.NewGraph("build")
 	g.TaskDependensOn(tm.Get("plan"), tm.Get("init"))
-	if cfg.TFProfile[profile].PreApplyChecks.Enabled {
+	if cfg.TFProfile[cfg.Profile(profile)].PreApplyChecks.Enabled {
 		g.TaskDependensOn(tm.Get("checks"), tm.Get("plan"))
 	}
 
@@ -83,7 +83,7 @@ func buildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	}
 	if apply {
 		g.TaskDependensOn(tm.Get("apply"), tm.Get("plan"))
-		if cfg.TFProfile[profile].PreApplyChecks.Enabled {
+		if cfg.TFProfile[cfg.Profile(profile)].PreApplyChecks.Enabled {
 			g.TaskDependensOn(tm.Get("apply"), tm.Get("checks"))
 		}
 	}

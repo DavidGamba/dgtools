@@ -17,14 +17,14 @@ func wsCMDRun(cmd ...string) getoptions.CommandFn {
 		ws := opt.Value("ws").(string)
 
 		cfg := config.ConfigFromContext(ctx)
-		Logger.Printf("cfg: %s\n", cfg.TFProfile[profile])
+		Logger.Printf("cfg: %s\n", cfg.TFProfile[cfg.Profile(profile)])
 
-		ws, err := updateWSIfSelected(cfg.Config.DefaultTerraformProfile, profile, ws)
+		ws, err := updateWSIfSelected(cfg.Config.DefaultTerraformProfile, cfg.Profile(profile), ws)
 		if err != nil {
 			return err
 		}
 
-		if cfg.TFProfile[profile].Workspaces.Enabled {
+		if cfg.TFProfile[cfg.Profile(profile)].Workspaces.Enabled {
 			if !workspaceSelected(cfg.Config.DefaultTerraformProfile, profile) {
 				if ws == "" {
 					return fmt.Errorf("running in workspace mode but no workspace selected or --ws given")

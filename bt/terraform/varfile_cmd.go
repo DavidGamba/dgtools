@@ -65,9 +65,9 @@ func varFileCMDRun(fn VarFileCMDer, cmd ...string) getoptions.CommandFn {
 		ws := opt.Value("ws").(string)
 
 		cfg := config.ConfigFromContext(ctx)
-		Logger.Printf("cfg: %s\n", cfg.TFProfile[profile])
+		Logger.Printf("cfg: %s\n", cfg.TFProfile[cfg.Profile(profile)])
 
-		ws, err := updateWSIfSelected(cfg.Config.DefaultTerraformProfile, profile, ws)
+		ws, err := updateWSIfSelected(cfg.Config.DefaultTerraformProfile, cfg.Profile(profile), ws)
 		if err != nil {
 			return err
 		}

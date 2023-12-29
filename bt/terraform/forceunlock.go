@@ -31,6 +31,6 @@ func forceUnlockRun(ctx context.Context, opt *getoptions.GetOpt, args []string) 
 
 	cfg := config.ConfigFromContext(ctx)
 
-	cmd := []string{cfg.TFProfile[profile].BinaryName, "force-unlock", "-force", lockID}
+	cmd := []string{cfg.TFProfile[cfg.Profile(profile)].BinaryName, "force-unlock", "-force", lockID}
 	return wsCMDRun(cmd...)(ctx, opt, args)
 }

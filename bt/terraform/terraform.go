@@ -70,7 +70,7 @@ func NewCommand(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetO
 // It only lists files, it doesn't query Terraform for a 'proper' list of workspaces.
 func getWorkspaces(cfg *config.Config, profile string) ([]string, error) {
 	wss := []string{}
-	glob := fmt.Sprintf("%s/*.tfvars*", cfg.TFProfile[profile].Workspaces.Dir)
+	glob := fmt.Sprintf("%s/*.tfvars*", cfg.TFProfile[cfg.Profile(profile)].Workspaces.Dir)
 	ff, _, err := fsmodtime.Glob(os.DirFS("."), true, []string{glob})
 	if err != nil {
 		return wss, fmt.Errorf("failed to glob ws files: %w", err)
@@ -86,7 +86,7 @@ func getWorkspaces(cfg *config.Config, profile string) ([]string, error) {
 
 func validWorkspaces(cfg *config.Config, profile string) ([]string, error) {
 	wss := []string{}
-	if cfg.TFProfile[profile].Workspaces.Enabled {
+	if cfg.TFProfile[cfg.Profile(profile)].Workspaces.Enabled {
 		envFile := getDataDir(cfg.Config.DefaultTerraformProfile, profile) + "/environment"
 		if _, err := os.Stat(envFile); os.IsNotExist(err) {
 			wss, err = getWorkspaces(cfg, profile)
@@ -139,7 +139,7 @@ func updateWSIfSelected(defaultProfile, profile, ws string) (string, error) {
 
 // If there is no workspace selected, check the given var files and use the first one as the workspace then return the ws env var
 func getWorkspace(cfg *config.Config, profile, ws string, varFiles []string) (string, error) {
-	if cfg.TFProfile[profile].Workspaces.Enabled {
+	if cfg.TFProfile[cfg.Profile(profile)].Workspaces.Enabled {
 		if !workspaceSelected(cfg.Config.DefaultTerraformProfile, profile) {
 			if ws != "" {
 				return ws, nil
@@ -159,7 +159,7 @@ func getWorkspace(cfg *config.Config, profile, ws string, varFiles []string) (st
 // If the var file is already present then don't add it again.
 func AddVarFileIfWorkspaceSelected(cfg *config.Config, profile, ws string, varFiles []string) ([]string, error) {
 	if ws != "" {
-		glob := fmt.Sprintf("%s/%s.tfvars*", cfg.TFProfile[profile].Workspaces.Dir, ws)
+		glob := fmt.Sprintf("%s/%s.tfvars*", cfg.TFProfile[cfg.Profile(profile)].Workspaces.Dir, ws)
 		Logger.Printf("ws: %s, glob: %s\n", ws, glob)
 		ff, _, err := fsmodtime.Glob(os.DirFS("."), true, []string{glob})
 		if err != nil {
@@ -177,7 +177,7 @@ func AddVarFileIfWorkspaceSelected(cfg *config.Config, profile, ws string, varFi
 
 func getDefaultVarFiles(cfg *config.Config, profile string) ([]string, error) {
 	varFiles := []string{}
-	for _, vars := range cfg.TFProfile[profile].Plan.VarFile {
+	for _, vars := range cfg.TFProfile[cfg.Profile(profile)].Plan.VarFile {
 		v := strings.ReplaceAll(vars, "~", "$HOME")
 		vv, err := fsmodtime.ExpandEnv([]string{v})
 		if err != nil {

@@ -19,9 +19,9 @@ func stateListCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.Ge
 func stateListRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	profile := opt.Value("profile").(string)
 	cfg := config.ConfigFromContext(ctx)
-	Logger.Printf("cfg: %s\n", cfg.TFProfile[profile])
+	Logger.Printf("cfg: %s\n", cfg.TFProfile[cfg.Profile(profile)])
 
-	cmd := []string{cfg.TFProfile[profile].BinaryName, "state", "list"}
+	cmd := []string{cfg.TFProfile[cfg.Profile(profile)].BinaryName, "state", "list"}
 	return wsCMDRun(cmd...)(ctx, opt, args)
 }
 
@@ -43,9 +43,9 @@ func statePushRun(ctx context.Context, opt *getoptions.GetOpt, args []string) er
 	args = slices.Delete(args, 0, 1)
 
 	cfg := config.ConfigFromContext(ctx)
-	Logger.Printf("cfg: %s\n", cfg.TFProfile[profile])
+	Logger.Printf("cfg: %s\n", cfg.TFProfile[cfg.Profile(profile)])
 
-	cmd := []string{cfg.TFProfile[profile].BinaryName, "state", "push", stateFile}
+	cmd := []string{cfg.TFProfile[cfg.Profile(profile)].BinaryName, "state", "push", stateFile}
 	return wsCMDRun(cmd...)(ctx, opt, args)
 }
 
@@ -58,9 +58,9 @@ func statePullCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.Ge
 func statePullRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	profile := opt.Value("profile").(string)
 	cfg := config.ConfigFromContext(ctx)
-	Logger.Printf("cfg: %s\n", cfg.TFProfile[profile])
+	Logger.Printf("cfg: %s\n", cfg.TFProfile[cfg.Profile(profile)])
 
-	cmd := []string{cfg.TFProfile[profile].BinaryName, "state", "pull"}
+	cmd := []string{cfg.TFProfile[cfg.Profile(profile)].BinaryName, "state", "pull"}
 	return wsCMDRun(cmd...)(ctx, opt, args)
 }
 
@@ -73,9 +73,9 @@ func stateRMCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetO
 func stateRMRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	profile := opt.Value("profile").(string)
 	cfg := config.ConfigFromContext(ctx)
-	Logger.Printf("cfg: %s\n", cfg.TFProfile[profile])
+	Logger.Printf("cfg: %s\n", cfg.TFProfile[cfg.Profile(profile)])
 
-	cmd := []string{cfg.TFProfile[profile].BinaryName, "state", "rm"}
+	cmd := []string{cfg.TFProfile[cfg.Profile(profile)].BinaryName, "state", "rm"}
 	return wsCMDRun(cmd...)(ctx, opt, args)
 }
 
@@ -88,8 +88,8 @@ func stateShowCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.Ge
 func stateShowRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	profile := opt.Value("profile").(string)
 	cfg := config.ConfigFromContext(ctx)
-	Logger.Printf("cfg: %s\n", cfg.TFProfile[profile])
+	Logger.Printf("cfg: %s\n", cfg.TFProfile[cfg.Profile(profile)])
 
-	cmd := []string{cfg.TFProfile[profile].BinaryName, "state", "show"}
+	cmd := []string{cfg.TFProfile[cfg.Profile(profile)].BinaryName, "state", "show"}
 	return wsCMDRun(cmd...)(ctx, opt, args)
 }

@@ -35,9 +35,9 @@ func checksRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error
 	}
 
 	cfg := config.ConfigFromContext(ctx)
-	Logger.Printf("cfg: %s\n", cfg.TFProfile[profile])
+	Logger.Printf("cfg: %s\n", cfg.TFProfile[cfg.Profile(profile)])
 
-	ws, err := updateWSIfSelected(cfg.Config.DefaultTerraformProfile, profile, ws)
+	ws, err := updateWSIfSelected(cfg.Config.DefaultTerraformProfile, cfg.Profile(profile), ws)
 	if err != nil {
 		return err
 	}
@@ -66,7 +66,7 @@ func checksRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error
 	os.Setenv("CONFIG_ROOT", cfg.ConfigRoot)
 
 	cmdFiles := []string{}
-	for _, cmd := range cfg.TFProfile[profile].PreApplyChecks.Commands {
+	for _, cmd := range cfg.TFProfile[cfg.Profile(profile)].PreApplyChecks.Commands {
 		exp, err := fsmodtime.ExpandEnv(cmd.Files)
 		if err != nil {
 			return fmt.Errorf("failed to expand: %w", err)
@@ -111,7 +111,7 @@ func checksRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error
 		Logger.Printf("missing target: %v\n", checkFile)
 	}
 
-	cmd := []string{cfg.TFProfile[profile].BinaryName, "show", "-json", planFile}
+	cmd := []string{cfg.TFProfile[cfg.Profile(profile)].BinaryName, "show", "-json", planFile}
 	dataDir := fmt.Sprintf("TF_DATA_DIR=%s", getDataDir(cfg.Config.DefaultTerraformProfile, profile))
 	Logger.Printf("export %s\n", dataDir)
 	ri := run.CMD(cmd...).Ctx(ctx).Stdin().Log().Env(dataDir)
@@ -126,7 +126,7 @@ func checksRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error
 	}
 	Logger.Printf("plan json written to: %s\n", jsonPlan)
 
-	for _, cmd := range cfg.TFProfile[profile].PreApplyChecks.Commands {
+	for _, cmd := range cfg.TFProfile[cfg.Profile(profile)].PreApplyChecks.Commands {
 		Logger.Printf("running check: %s\n", cmd.Name)
 		exp, err := fsmodtime.ExpandEnv(cmd.Command)
 		if err != nil {

@@ -41,9 +41,9 @@ func planRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	ws := opt.Value("ws").(string)
 
 	cfg := config.ConfigFromContext(ctx)
-	Logger.Printf("cfg: %s\n", cfg.TFProfile[profile])
+	Logger.Printf("cfg: %s\n", cfg.TFProfile[cfg.Profile(profile)])
 
-	ws, err := updateWSIfSelected(cfg.Config.DefaultTerraformProfile, profile, ws)
+	ws, err := updateWSIfSelected(cfg.Config.DefaultTerraformProfile, cfg.Profile(profile), ws)
 	if err != nil {
 		return err
 	}
@@ -148,7 +148,7 @@ func planRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 		Logger.Printf("missing target: %v\n", planFile)
 	}
 
-	cmd := []string{cfg.TFProfile[profile].BinaryName, "plan", "-out", planFile}
+	cmd := []string{cfg.TFProfile[cfg.Profile(profile)].BinaryName, "plan", "-out", planFile}
 	for _, v := range defaultVarFiles {
 		cmd = append(cmd, "-var-file", v)
 	}
