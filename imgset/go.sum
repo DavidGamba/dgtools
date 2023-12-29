@@ -1,0 +1,4 @@
+github.com/DavidGamba/go-getoptions v0.29.1-0.20231229203511-b599ac976167 h1:ZS+Q2lpw2qND7MtTnnTqBoOKKkTmjqOh6OQmZC1JK/4=
+github.com/DavidGamba/go-getoptions v0.29.1-0.20231229203511-b599ac976167/go.mod h1:zE97E3PR9P3BI/HKyNYgdMlYxodcuiC6W68KIgeYT84=
+golang.org/x/image v0.14.0 h1:tNgSxAFe3jC4uYqvZdTr84SZoM1KfwdC9SKIFrLjFn4=
+golang.org/x/image v0.14.0/go.mod h1:HUYqC05R2ZcZ3ejNQsIHQDQiwWM4JBqmm6MKANTp4LE=
