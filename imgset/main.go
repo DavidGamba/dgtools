@@ -26,11 +26,20 @@ func program(args []string) int {
 	opt := getoptions.New()
 	opt.SetUnknownMode(getoptions.Pass)
 	opt.Bool("quiet", false, opt.GetEnv("QUIET"))
-	opt.SetCommandFn(Run)
+
+	resize := opt.NewCommand("resize", "Resize an image")
+	resize.SetCommandFn(ResizeRun)
+	resize.HelpSynopsisArg("<image_file>", "Base Image file")
+	resize.HelpSynopsisArg("<size>", "Size of the image, only one necessary since it keeps aspect ratio")
+	resize.String("output", "output.png", opt.Alias("o"), opt.Description("Output file name"))
+
+	set := opt.NewCommand("set", "Create a set of images with different sizes")
+	set.SetCommandFn(ResizeRun)
+	set.HelpSynopsisArg("<image_file>", "Base Image file, used for 3x size")
+	set.String("output", "output.png", opt.Alias("o"), opt.Description("Output file name"))
+	set.Int("size", 0, opt.Description("Size of the 3x image, only one necessary since it keeps aspect ratio"))
+
 	opt.HelpCommand("help", opt.Alias("?"))
-	opt.HelpSynopsisArg("<image_file>", "Base Image file")
-	opt.HelpSynopsisArg("<size>", "Size of the image, only one provide to keep aspect ratio")
-	opt.String("output", "output.png", opt.Alias("o"), opt.Description("Output file name"))
 	remaining, err := opt.Parse(args[1:])
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
@@ -55,7 +64,28 @@ func program(args []string) int {
 	return 0
 }
 
-func Run(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
+func ResizeRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
+	Logger.Printf("Running")
+	output := opt.Value("output").(string)
+
+	imgFile, args, err := opt.GetRequiredArg(args)
+	if err != nil {
+		return err
+	}
+	size, _, err := opt.GetRequiredArgInt(args)
+	if err != nil {
+		return err
+	}
+
+	err = resizeImg(ctx, imgFile, output, size)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func SetResizeRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	Logger.Printf("Running")
 	output := opt.Value("output").(string)
 
