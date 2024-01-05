@@ -1,0 +1,4 @@
+github.com/DavidGamba/dgtools/run v0.7.0 h1:ENTskNQvBM1/n/b42PxqJktU9EzQVqPZRGUBtVdEVdE=
+github.com/DavidGamba/dgtools/run v0.7.0/go.mod h1:3P1fMJupTWqsiE8IXsXrk2HtgkZBTCFRLbaTjRlmDe0=
+github.com/DavidGamba/go-getoptions v0.29.0 h1:cU8MjOyfAyPZke4hrgEuiGBJHS9PFYPAHve2fhDhdDk=
+github.com/DavidGamba/go-getoptions v0.29.0/go.mod h1:zE97E3PR9P3BI/HKyNYgdMlYxodcuiC6W68KIgeYT84=
