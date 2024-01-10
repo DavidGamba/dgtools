@@ -36,6 +36,7 @@ func NewCommand(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetO
 	planCMD(ctx, opt)
 	importCMD(ctx, opt)
 	refreshCMD(ctx, opt)
+	consoleCMD(ctx, opt)
 
 	// workspace management
 	workspaceListCMD(ctx, opt)
@@ -46,7 +47,6 @@ func NewCommand(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetO
 
 	// workspace selection
 	applyCMD(ctx, opt)
-	consoleCMD(ctx, opt)
 	forceUnlockCMD(ctx, opt)
 	outputCMD(ctx, opt)
 	showCMD(ctx, opt)
@@ -58,6 +58,8 @@ func NewCommand(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetO
 	stateShowCMD(ctx, opt)
 	taintCMD(ctx, opt)
 	untaintCMD(ctx, opt)
+	validateCMD(ctx, opt)
+	testCMD(ctx, opt)
 
 	// Custom
 	buildCMD(ctx, opt)
