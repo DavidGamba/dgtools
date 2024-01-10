@@ -42,7 +42,8 @@ type TerraformProfile struct {
 		Enabled  bool
 		Commands []Command
 	} `json:"pre_apply_checks"`
-	BinaryName string `json:"binary_name"`
+	BinaryName string   `json:"binary_name"`
+	Platforms  []string `json:"platforms"`
 }
 
 type Command struct {

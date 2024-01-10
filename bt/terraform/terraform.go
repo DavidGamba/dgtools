@@ -60,6 +60,7 @@ func NewCommand(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetO
 	untaintCMD(ctx, opt)
 	validateCMD(ctx, opt)
 	testCMD(ctx, opt)
+	providersCMD(ctx, opt)
 
 	// Custom
 	buildCMD(ctx, opt)

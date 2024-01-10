@@ -91,6 +91,7 @@ terraform_profile: {
 				{name: "conftest", command: ["conftest", "test", "$TERRAFORM_JSON_PLAN"]},
 			]
 		}
+		platforms: ["darwin_amd64", "darwin_arm64", "linux_amd64", "linux_arm64"]
 	}
 }
 ----
@@ -197,3 +198,7 @@ For example, set `config.terraform_profile_env_var` to `AWS_PROFILE` and name yo
 Each additional profile will have its own `TF_DATA_DIR` and the terraform data will be saved under `.terraform-<profile>/`.
 The `config.default_terraform_profile` will still use the default `.terraform/` dir.
 This allows to work with multiple profiles pointing to different backends under the same workspace directory without conflicts.
+
+=== Providers lock using Platforms list
+
+Use `bt terraform providers lock` to generate a lock file using all the os archs in the `platforms` list for a given profile.

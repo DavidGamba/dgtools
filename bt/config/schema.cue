@@ -25,6 +25,7 @@ terraform_profile: [ID=_]: #TerraformProfile & {id: ID}
 		commands: [...#Command]
 	}
 	binary_name: string | *"terraform"
+	platforms: [...string]
 }
 
 #Command: {
