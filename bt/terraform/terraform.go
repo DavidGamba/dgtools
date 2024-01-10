@@ -27,7 +27,7 @@ func NewCommand(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetO
 	if err != nil {
 		Logger.Printf("WARNING: failed to list workspaces: %s\n", err)
 	}
-	opt.String("ws", "", opt.ValidValues(wss...), opt.Description("Workspace to use"))
+	opt.String("ws", "", opt.SuggestedValues(wss...), opt.Description("Workspace to use"))
 
 	// backend-config
 	initCMD(ctx, opt)
