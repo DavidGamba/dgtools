@@ -6,7 +6,7 @@ require (
 	github.com/DavidGamba/dgtools/cueutils v0.0.0-20231205054544-4ad77b60f561
 	github.com/DavidGamba/dgtools/fsmodtime v0.2.0
 	github.com/DavidGamba/dgtools/run v0.7.0
-	github.com/DavidGamba/go-getoptions v0.29.0
+	github.com/DavidGamba/go-getoptions v0.29.1-0.20240105065605-b7ada72ecac6
 	github.com/hashicorp/terraform-config-inspect v0.0.0-20230925220900-5a6f8d18746d
 	github.com/mattn/go-isatty v0.0.20
 )

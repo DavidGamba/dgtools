@@ -10,6 +10,8 @@ github.com/DavidGamba/dgtools/run v0.7.0 h1:ENTskNQvBM1/n/b42PxqJktU9EzQVqPZRGUB
 github.com/DavidGamba/dgtools/run v0.7.0/go.mod h1:3P1fMJupTWqsiE8IXsXrk2HtgkZBTCFRLbaTjRlmDe0=
 github.com/DavidGamba/go-getoptions v0.29.0 h1:cU8MjOyfAyPZke4hrgEuiGBJHS9PFYPAHve2fhDhdDk=
 github.com/DavidGamba/go-getoptions v0.29.0/go.mod h1:zE97E3PR9P3BI/HKyNYgdMlYxodcuiC6W68KIgeYT84=
+github.com/DavidGamba/go-getoptions v0.29.1-0.20240105065605-b7ada72ecac6 h1:TwFGmq9SC3CACHH5mD2/Yv47Y9gMegRtiPmE+tWY7Jg=
+github.com/DavidGamba/go-getoptions v0.29.1-0.20240105065605-b7ada72ecac6/go.mod h1:zE97E3PR9P3BI/HKyNYgdMlYxodcuiC6W68KIgeYT84=
 github.com/agext/levenshtein v1.2.3 h1:YB2fHEn0UJagG8T1rrWknE3ZQzWM06O8AMAatNn7lmo=
 github.com/agext/levenshtein v1.2.3/go.mod h1:JEDfjyjHDjOF/1e4FlBE/PkbqA9OfWu2ki2W0IB5558=
 github.com/apparentlymart/go-textseg/v15 v15.0.0 h1:uYvfpb3DyLSCGWnctWKGj857c6ew1u1fNQOlOtuGxQY=
