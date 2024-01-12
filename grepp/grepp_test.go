@@ -9,15 +9,16 @@
 package main
 
 import (
-	l "github.com/DavidGamba/dgtools/grepp/logging"
-	"io/ioutil"
+	"io"
 	"os"
 	"testing"
+
+	l "github.com/DavidGamba/dgtools/grepp/logging"
 )
 
 func TestMain(m *testing.M) {
 	// l.LogInit(os.Stderr, os.Stderr, os.Stdout, os.Stderr, os.Stderr)
-	l.LogInit(ioutil.Discard, ioutil.Discard, os.Stdout, os.Stderr, os.Stderr)
+	l.LogInit(io.Discard, io.Discard, os.Stdout, os.Stderr, os.Stderr)
 	os.Exit(m.Run())
 }
 
