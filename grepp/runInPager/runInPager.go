@@ -1,6 +1,7 @@
 package runInPager
 
 import (
+	"context"
 	"io"
 	"os"
 	"os/exec"
@@ -10,7 +11,7 @@ import (
 type Runner interface {
 	SetStdout(io.Writer)
 	SetStderr(io.Writer)
-	Run()
+	Run(context.Context) error
 }
 
 /* func runInPager - runs a function passed as an argument and sends the output
@@ -24,7 +25,7 @@ type Runner interface {
 * colors properly.
 * Otherwise it uses whathever PAGER is set.
  */
-func Command(caller Runner) {
+func Command(ctx context.Context, caller Runner) error {
 	pager := strings.Split(os.Getenv("PAGER"), " ")
 	var cmd *exec.Cmd
 	// Make sure to use -R to show colors when using less
@@ -38,6 +39,7 @@ func Command(caller Runner) {
 	var pw *io.PipeWriter
 	// create a pipe (blocking)
 	pr, pw = io.Pipe()
+	defer pw.Close()
 	cmd.Stdin = pr
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -45,18 +47,18 @@ func Command(caller Runner) {
 	cPager := make(chan struct{})
 	// Create a blocking chan, Run the pager and unblock once it is finished
 	go func() {
-		cmd.Run()
+		_ = cmd.Run()
 		close(cPager)
-		os.Exit(0)
 	}()
 
 	caller.SetStdout(pw)
 	caller.SetStderr(pw)
-	caller.Run()
+	err := caller.Run(ctx)
 
 	// Close pipe
 	pw.Close()
 
 	// Wait for the pager to be finished
 	<-cPager
+	return err
 }

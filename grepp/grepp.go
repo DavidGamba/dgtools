@@ -13,6 +13,7 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -55,7 +56,7 @@ func ReadLineByLine(filename string, bufferSize int) <-chan LineError {
 			n++
 			line, isPrefix, err := reader.ReadLine()
 			if isPrefix {
-				err := fmt.Errorf("%s: %w\n", filename, errorBufferSizeTooSmall)
+				err := fmt.Errorf("%s: %w", filename, errorBufferSizeTooSmall)
 				c <- LineError{Error: err}
 				break
 			}
@@ -128,12 +129,12 @@ func color(color string, line string, useColor bool) string {
 	if useColor {
 		return fmt.Sprintf("%s%s", color, line)
 	}
-	return fmt.Sprintf("%s", line)
+	return line
 }
 
 func colorReset(useColor bool) string {
 	if useColor {
-		return fmt.Sprintf("%s", ansi.Reset)
+		return ansi.Reset
 	}
 	return ""
 }
@@ -325,7 +326,7 @@ func (g grepp) getFileList() <-chan ffind.FileError {
 	return c
 }
 
-func (g grepp) Run() {
+func (g grepp) Run(ctx context.Context) error {
 	for ch := range g.getFileList() {
 		filename := ch.Path
 		if g.ignoreBinary == true && !greppLib.IsTextMIME(filename) {
@@ -400,6 +401,7 @@ func (g grepp) Run() {
 	if g.bufferSizeErrorsC > 0 {
 		fmt.Fprintf(g.Stderr, "WARNING: %s found %d times\n", errorBufferSizeTooSmall, g.bufferSizeErrorsC)
 	}
+	return nil
 }
 
 func (g *grepp) SetStderr(w io.Writer) {

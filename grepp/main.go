@@ -136,18 +136,18 @@ func Run(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	isDevice := isDevice()
 	if !noPager && isDevice {
 		l.Debug.Println("runInPager")
-		runInPager.Command(&g)
+		err = runInPager.Command(ctx, &g)
 	} else if noPager && isDevice {
 		g.Stdout = os.Stdout
 		g.Stderr = os.Stderr
-		g.Run()
+		err = g.Run(ctx)
 	} else {
 		g.useColor = false
 		g.Stdout = os.Stdout
 		g.Stderr = os.Stderr
-		g.Run()
+		err = g.Run(ctx)
 	}
-	return nil
+	return err
 }
 
 func isDevice() bool {
