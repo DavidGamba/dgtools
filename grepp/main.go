@@ -42,26 +42,24 @@ func program(args []string) int {
 	opt.BoolVar(&g.ignoreBinary, "ignore-binary", true, opt.Alias("I"))
 	opt.BoolVar(&g.caseSensitive, "case-sensitive", false, opt.Alias("c"))
 
-	// TODO:
-	// opt.StringVar(&g.useColor, "color", "auto")
-	opt.BoolVar(&g.useColor, "color", true)
+	opt.String("color", "auto", opt.Description("When to use colors: always, auto, never"), opt.ValidValues("always", "auto", "never"), opt.ArgName("always|auto|never"))
 	opt.BoolVar(&g.useNumber, "line-number", true, opt.Alias("n"))
 	opt.BoolVar(&g.filenameOnly, "files-with-matches", false, opt.Alias("l"))
-	opt.StringVar(&g.replace, "replace", "", opt.Alias("r"), opt.Description(`Replace matches with the given text.
-Use \1, \2, \3, \4, \5 to replace captures`))
-	opt.BoolVar(&g.force, "force", false, opt.Alias("f"))
-	opt.IntVar(&g.context, "context", 0, opt.Alias("C"), opt.Description("Number of lines of context to show"))
+	opt.StringVar(&g.replace, "replace", "", opt.Alias("r"), opt.Description(`In-place replace matches with the given text.
+Use \1, \2, \3, \4, \5 to replace captures.
+Requires --force to apply changes`))
+	opt.BoolVar(&g.force, "force", false, opt.Alias("f", "apply"), opt.Description("Apply changes when using --replace"))
+	opt.IntVar(&g.context, "context", 0, opt.Alias("C"), opt.Description("Number of lines of context to show"), opt.ArgName("number"))
 	opt.IntVar(&bufferSize, "buffer", 16384)
 	opt.BoolVar(&g.showBufferSizeErrors, "show-buffer-errors", false, opt.Alias("sbe"))
-	opt.Bool("no-pager", false)
+	opt.Bool("no-pager", false, opt.Description("Do not use pager"))
 	opt.HelpSynopsisArg("<pattern>", "Pattern to search for")
 	opt.HelpSynopsisArg("[<search_path>]", "Base path to search in, defaults to current directory")
-	opt.StringSlice("ignore-extension", 1, 1, opt.Alias("ie"))
+	opt.StringSlice("ignore-extension", 1, 1, opt.Alias("ie"), opt.ArgName("ext"))
 	// "fp"      // fullPath - Used to show the file full path instead of the relative to the current dir.
 	// "name"    // filePattern - Use to further filter the search to files matching that pattern.
 	// "ignore"  // ignoreFilePattern - Use to further filter the search to files not matching that pattern.
 	// "spacing" // keepSpacing - Do not remove initial spacing.
-	// "no-page" // Don't use pager for output
 
 	opt.Bool("debug", false, opt.Description("Enable debug logging"))
 	opt.HelpCommand("help", opt.Alias("?"))
@@ -101,6 +99,7 @@ Use \1, \2, \3, \4, \5 to replace captures`))
 func Run(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	noPager := opt.Value("no-pager").(bool)
 	ie := opt.Value("ignore-extension").([]string)
+	color := opt.Value("color").(string)
 
 	// TODO: Read from ~/.grepprc
 	g.ignoreExtensionList = []string{
@@ -145,6 +144,20 @@ func Run(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	l.Debug.Printf(fmt.Sprintln(g))
 
 	isDevice := isDevice()
+
+	switch color {
+	case "always":
+		g.useColor = true
+	case "never":
+		g.useColor = false
+	default:
+		if isDevice {
+			g.useColor = true
+		} else {
+			g.useColor = false
+		}
+	}
+
 	if !noPager && isDevice {
 		l.Debug.Println("runInPager")
 		err = runInPager.Command(ctx, &g)
@@ -153,7 +166,6 @@ func Run(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 		g.Stderr = os.Stderr
 		err = g.Run(ctx)
 	} else {
-		g.useColor = false
 		g.Stdout = os.Stdout
 		g.Stderr = os.Stderr
 		err = g.Run(ctx)
