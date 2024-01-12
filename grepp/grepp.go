@@ -106,6 +106,12 @@ func (g grepp) writeLineMatch(file *os.File, lm lineMatch) {
 			if len(m) >= 6 {
 				replace = strings.ReplaceAll(replace, `\3`, m[5])
 			}
+			if len(m) >= 7 {
+				replace = strings.ReplaceAll(replace, `\4`, m[6])
+			}
+			if len(m) >= 8 {
+				replace = strings.ReplaceAll(replace, `\5`, m[7])
+			}
 		}
 		file.WriteString(m[1] + replace)
 	}
@@ -129,6 +135,12 @@ func (g grepp) printLineMatch(lm lineMatch) {
 					}
 					if len(m) >= 6 {
 						replace = strings.ReplaceAll(replace, `\3`, m[5])
+					}
+					if len(m) >= 7 {
+						replace = strings.ReplaceAll(replace, `\4`, m[6])
+					}
+					if len(m) >= 8 {
+						replace = strings.ReplaceAll(replace, `\5`, m[7])
 					}
 					l.Debug.Printf("[printLineMatch] replace: %s\n", replace)
 				}

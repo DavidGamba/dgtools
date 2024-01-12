@@ -47,12 +47,15 @@ func program(args []string) int {
 	opt.BoolVar(&g.useColor, "color", true)
 	opt.BoolVar(&g.useNumber, "line-number", true, opt.Alias("n"))
 	opt.BoolVar(&g.filenameOnly, "files-with-matches", false, opt.Alias("l"))
-	opt.StringVar(&g.replace, "replace", "", opt.Alias("r"), opt.Description(`Replace matches with the given text. Use \1, \2, \3 to replace captures`))
+	opt.StringVar(&g.replace, "replace", "", opt.Alias("r"), opt.Description(`Replace matches with the given text.
+Use \1, \2, \3, \4, \5 to replace captures`))
 	opt.BoolVar(&g.force, "force", false, opt.Alias("f"))
 	opt.IntVar(&g.context, "context", 0, opt.Alias("C"), opt.Description("Number of lines of context to show"))
 	opt.IntVar(&bufferSize, "buffer", 16384)
 	opt.BoolVar(&g.showBufferSizeErrors, "show-buffer-errors", false, opt.Alias("sbe"))
 	opt.Bool("no-pager", false)
+	opt.HelpSynopsisArg("<pattern>", "Pattern to search for")
+	opt.HelpSynopsisArg("[<search_path>]", "Base path to search in, defaults to current directory")
 	opt.StringSlice("ignore-extension", 1, 1, opt.Alias("ie"))
 	// "fp"      // fullPath - Used to show the file full path instead of the relative to the current dir.
 	// "name"    // filePattern - Use to further filter the search to files matching that pattern.
