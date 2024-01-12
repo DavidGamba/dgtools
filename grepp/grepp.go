@@ -160,9 +160,21 @@ func stripCtlFromUTF8(str string) string {
 
 func (g grepp) writeLineMatch(file *os.File, lm lineMatch) {
 	for _, m := range lm.match {
-		file.WriteString(m[1] + g.replace)
+		replace := g.replace
+		if strings.Contains(g.replace, `\1`) {
+			if len(m) >= 4 {
+				replace = strings.ReplaceAll(replace, `\1`, m[3])
+			}
+			if len(m) >= 5 {
+				replace = strings.ReplaceAll(replace, `\2`, m[4])
+			}
+			if len(m) >= 6 {
+				replace = strings.ReplaceAll(replace, `\3`, m[5])
+			}
+		}
+		file.WriteString(m[1] + replace)
 	}
-	file.WriteString(lm.end[1] + "\n")
+	file.WriteString(lm.end[len(lm.end)-1] + "\n")
 }
 
 // Each section is in charge of starting with the color or reset.
@@ -170,16 +182,30 @@ func (g grepp) printLineMatch(lm lineMatch) {
 	stringLine := func() string {
 		if g.useColor {
 			result := ansi.Reset
+			l.Debug.Printf("[printLineMatch] %#v\n", lm)
 			for _, m := range lm.match {
+				replace := g.replace
+				if strings.Contains(g.replace, `\1`) {
+					if len(m) >= 4 {
+						replace = strings.ReplaceAll(replace, `\1`, m[3])
+					}
+					if len(m) >= 5 {
+						replace = strings.ReplaceAll(replace, `\2`, m[4])
+					}
+					if len(m) >= 6 {
+						replace = strings.ReplaceAll(replace, `\3`, m[5])
+					}
+					l.Debug.Printf("[printLineMatch] replace: %s\n", replace)
+				}
 				result += fmt.Sprintf("%s%s%s%s%s%s",
 					stripCtlFromUTF8(m[1]),
 					ansi.Red,
 					stripCtlFromUTF8(m[2]),
 					ansi.Green,
-					stripCtlFromUTF8(g.replace),
+					stripCtlFromUTF8(replace),
 					ansi.Reset)
 			}
-			result += stripCtlFromUTF8(lm.end[1])
+			result += stripCtlFromUTF8(lm.end[len(lm.end)-1])
 			return result
 		}
 		return stripCtlFromUTF8(lm.line)
