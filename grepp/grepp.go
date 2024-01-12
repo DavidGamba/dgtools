@@ -12,12 +12,10 @@ Package main provides an improved version of the most common combinations of gre
 package main
 
 import (
-	"bufio"
 	"context"
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -29,50 +27,6 @@ import (
 	"github.com/DavidGamba/ffind/lib/ffind"
 	"github.com/mgutz/ansi"
 )
-
-var errorBufferSizeTooSmall = fmt.Errorf("buffer size too small")
-
-type LineError struct {
-	Line       string
-	LineNumber int
-	Error      error
-}
-
-func ReadLineByLine(filename string, bufferSize int) <-chan LineError {
-	l.Debug.Printf("[readLineByLine] %s : %d\n", filename, bufferSize)
-	c := make(chan LineError)
-	go func() {
-		fh, err := os.Open(filename)
-		if err != nil {
-			c <- LineError{Error: err}
-			close(c)
-			return
-		}
-		defer fh.Close()
-		reader := bufio.NewReaderSize(fh, bufferSize)
-		// line number
-		n := 0
-		for {
-			n++
-			line, isPrefix, err := reader.ReadLine()
-			if isPrefix {
-				err := fmt.Errorf("%s: %w", filename, errorBufferSizeTooSmall)
-				c <- LineError{Error: err}
-				break
-			}
-			// stop reading file
-			if err != nil {
-				if err != io.EOF {
-					c <- LineError{Error: err}
-				}
-				break
-			}
-			c <- LineError{Line: string(line), LineNumber: n}
-		}
-		close(c)
-	}()
-	return c
-}
 
 func checkPatternInFile(filename string, pattern string, ignoreCase bool) (bool, error) {
 	re, _ := getRegex(pattern, ignoreCase)
@@ -137,19 +91,6 @@ func colorReset(useColor bool) string {
 		return ansi.Reset
 	}
 	return ""
-}
-
-//TODO: Don't drop the control char but scape it and show it like less.
-
-// http://rosettacode.org/wiki/Strip_control_codes_and_extended_characters_from_a_string#Go
-// two UTF-8 functions identical except for operator comparing c to 127
-func stripCtlFromUTF8(str string) string {
-	return strings.Map(func(r rune) rune {
-		if r >= 32 && r != 127 {
-			return r
-		}
-		return -1
-	}, str)
 }
 
 func (g grepp) writeLineMatch(file *os.File, lm lineMatch) {
@@ -235,33 +176,6 @@ func (g grepp) printLineContext(lm lineMatch) {
 	fmt.Fprintln(g.Stdout, result)
 }
 
-// copyFileContents copies the contents of the file named src to the file named
-// by dst. The file will be created if it does not already exist. If the
-// destination file exists, all it's contents will be replaced by the contents
-// of the source file.
-func copyFileContents(src, dst string) (err error) {
-	in, err := os.Open(src)
-	if err != nil {
-		return
-	}
-	defer in.Close()
-	out, err := os.Create(dst)
-	if err != nil {
-		return
-	}
-	defer func() {
-		cerr := out.Close()
-		if err == nil {
-			err = cerr
-		}
-	}()
-	if _, err = io.Copy(out, in); err != nil {
-		return
-	}
-	err = out.Sync()
-	return
-}
-
 type grepp struct {
 	ignoreBinary  bool
 	caseSensitive bool
@@ -329,7 +243,7 @@ func (g grepp) getFileList() <-chan ffind.FileError {
 func (g grepp) Run(ctx context.Context) error {
 	for ch := range g.getFileList() {
 		filename := ch.Path
-		if g.ignoreBinary == true && !greppLib.IsTextMIME(filename) {
+		if g.ignoreBinary && !greppLib.IsTextMIME(filename) {
 			continue
 		}
 		if g.filenameOnly {
@@ -363,7 +277,7 @@ func (g grepp) Run(ctx context.Context) error {
 				var tmpFile *os.File
 				var err error
 				if g.force {
-					tmpFile, err = ioutil.TempFile("", filepath.Base(filename)+"-")
+					tmpFile, err = os.CreateTemp("", filepath.Base(filename)+"-")
 					defer tmpFile.Close()
 					if err != nil {
 						l.Error.Println("cannot open ", tmpFile)
