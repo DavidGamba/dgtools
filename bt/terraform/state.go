@@ -43,6 +43,7 @@ func statePushRun(ctx context.Context, opt *getoptions.GetOpt, args []string) er
 	args = slices.Delete(args, 0, 1)
 
 	cfg := config.ConfigFromContext(ctx)
+	invalidateCacheContext(ctx, true)
 	Logger.Printf("cfg: %s\n", cfg.TFProfile[cfg.Profile(profile)])
 
 	cmd := []string{cfg.TFProfile[cfg.Profile(profile)].BinaryName, "state", "push", stateFile}
@@ -73,6 +74,7 @@ func stateMVCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetO
 func stateMVRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	profile := opt.Value("profile").(string)
 	cfg := config.ConfigFromContext(ctx)
+	invalidateCacheContext(ctx, true)
 	Logger.Printf("cfg: %s\n", cfg.TFProfile[cfg.Profile(profile)])
 
 	cmd := []string{cfg.TFProfile[cfg.Profile(profile)].BinaryName, "state", "mv"}
@@ -88,6 +90,7 @@ func stateRMCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetO
 func stateRMRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	profile := opt.Value("profile").(string)
 	cfg := config.ConfigFromContext(ctx)
+	invalidateCacheContext(ctx, true)
 	Logger.Printf("cfg: %s\n", cfg.TFProfile[cfg.Profile(profile)])
 
 	cmd := []string{cfg.TFProfile[cfg.Profile(profile)].BinaryName, "state", "rm"}

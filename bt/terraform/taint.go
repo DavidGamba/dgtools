@@ -28,6 +28,7 @@ func taintRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	args = slices.Delete(args, 0, 1)
 
 	cfg := config.ConfigFromContext(ctx)
+	invalidateCacheContext(ctx, true)
 	Logger.Printf("cfg: %s\n", cfg.TFProfile[cfg.Profile(profile)])
 
 	cmd := []string{cfg.TFProfile[cfg.Profile(profile)].BinaryName, "taint", address}
@@ -52,6 +53,7 @@ func untaintRun(ctx context.Context, opt *getoptions.GetOpt, args []string) erro
 	args = slices.Delete(args, 0, 1)
 
 	cfg := config.ConfigFromContext(ctx)
+	invalidateCacheContext(ctx, true)
 	Logger.Printf("cfg: %s\n", cfg.TFProfile[cfg.Profile(profile)])
 
 	cmd := []string{cfg.TFProfile[cfg.Profile(profile)].BinaryName, "untaint", address}

@@ -32,6 +32,13 @@ func wsCMDRun(cmd ...string) getoptions.CommandFn {
 			}
 		}
 
+		planFile := ""
+		if ws == "" {
+			planFile = ".tf.plan"
+		} else {
+			planFile = fmt.Sprintf(".tf.plan-%s", ws)
+		}
+
 		if !isatty.IsTerminal(os.Stdout.Fd()) {
 			cmd = append(cmd, "-no-color")
 		}
@@ -46,7 +53,13 @@ func wsCMDRun(cmd ...string) getoptions.CommandFn {
 		}
 		err = ri.Run()
 		if err != nil {
+			if invalidateCacheFromContext(ctx) {
+				os.Remove(planFile)
+			}
 			return fmt.Errorf("failed to run: %w", err)
+		}
+		if invalidateCacheFromContext(ctx) {
+			os.Remove(planFile)
 		}
 		return nil
 	}

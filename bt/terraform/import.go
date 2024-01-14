@@ -20,6 +20,7 @@ func importRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error
 	i := invalidatePlan{}
 
 	cfg := config.ConfigFromContext(ctx)
+	invalidateCacheContext(ctx, true)
 	Logger.Printf("cfg: %s\n", cfg.TFProfile[cfg.Profile(profile)])
 
 	return varFileCMDRun(i, cfg.TFProfile[cfg.Profile(profile)].BinaryName, "import")(ctx, opt, args)
