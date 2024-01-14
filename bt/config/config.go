@@ -100,7 +100,15 @@ func ConfigFromContext(ctx context.Context) *Config {
 func Get(ctx context.Context, filename string) (*Config, string, error) {
 	f, err := FindFileUpwards(ctx, filename)
 	if err != nil {
-		return &Config{}, f, fmt.Errorf("failed to find config file: %w", err)
+		cfg := &Config{
+			TFProfile: map[string]TerraformProfile{
+				"default": {
+					ID:         "default",
+					BinaryName: "terraform",
+				},
+			},
+		}
+		return cfg, f, fmt.Errorf("failed to find config file: %w", err)
 	}
 
 	configFH, err := os.Open(f)
