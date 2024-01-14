@@ -64,6 +64,21 @@ func statePullRun(ctx context.Context, opt *getoptions.GetOpt, args []string) er
 	return wsCMDRun(cmd...)(ctx, opt, args)
 }
 
+func stateMVCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
+	opt := parent.NewCommand("state-mv", "")
+	opt.SetCommandFn(stateMVRun)
+	return opt
+}
+
+func stateMVRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
+	profile := opt.Value("profile").(string)
+	cfg := config.ConfigFromContext(ctx)
+	Logger.Printf("cfg: %s\n", cfg.TFProfile[cfg.Profile(profile)])
+
+	cmd := []string{cfg.TFProfile[cfg.Profile(profile)].BinaryName, "state", "mv"}
+	return wsCMDRun(cmd...)(ctx, opt, args)
+}
+
 func stateRMCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
 	opt := parent.NewCommand("state-rm", "")
 	opt.SetCommandFn(stateRMRun)
