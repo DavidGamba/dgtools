@@ -25,8 +25,12 @@ func program(args []string) int {
 	// Read config and store it in context
 	cfg, _, err := config.Get(ctx, ".bt.cue")
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
-		return 1
+		if errors.Is(err, config.ErrNotFound) {
+			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
+		} else {
+			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
+			return 1
+		}
 	}
 	ctx = config.NewConfigContext(ctx, cfg)
 

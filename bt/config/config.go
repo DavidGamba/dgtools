@@ -15,6 +15,8 @@ import (
 //go:embed schema.cue
 var f embed.FS
 
+var ErrNotFound = fmt.Errorf("not found")
+
 var Logger = log.New(os.Stderr, "", log.LstdFlags)
 
 type Config struct {
@@ -174,5 +176,5 @@ func FindFileUpwards(ctx context.Context, filename string) (string, error) {
 		d = filepath.Join(d, "../")
 	}
 
-	return "", fmt.Errorf("not found: %s", filename)
+	return "", fmt.Errorf("%w: %s", ErrNotFound, filename)
 }
