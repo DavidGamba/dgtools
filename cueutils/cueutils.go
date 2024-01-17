@@ -62,7 +62,7 @@ func Unmarshal(configs []CueConfigFile, v any) error {
 		return fmt.Errorf("failed config validation: %s", cueErrors.Details(err, nil))
 	}
 
-	g := gocodec.New((*cue.Runtime)(c), nil)
+	g := gocodec.New(c, nil)
 	err = g.Encode(value, &v)
 	if err != nil {
 		return fmt.Errorf("failed to encode cue values: %w", err)
