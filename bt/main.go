@@ -9,6 +9,7 @@ import (
 
 	"github.com/DavidGamba/dgtools/bt/config"
 	"github.com/DavidGamba/dgtools/bt/terraform"
+	"github.com/DavidGamba/dgtools/buildutils"
 	"github.com/DavidGamba/go-getoptions"
 )
 
@@ -25,7 +26,7 @@ func program(args []string) int {
 	// Read config and store it in context
 	cfg, _, err := config.Get(ctx, ".bt.cue")
 	if err != nil {
-		if errors.Is(err, config.ErrNotFound) {
+		if errors.Is(err, buildutils.ErrNotFound) {
 			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
 		} else {
 			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)

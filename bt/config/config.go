@@ -9,13 +9,12 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/DavidGamba/dgtools/buildutils"
 	"github.com/DavidGamba/dgtools/cueutils"
 )
 
 //go:embed schema.cue
 var f embed.FS
-
-var ErrNotFound = fmt.Errorf("not found")
 
 var Logger = log.New(os.Stderr, "", log.LstdFlags)
 
@@ -98,7 +97,7 @@ func ConfigFromContext(ctx context.Context) *Config {
 }
 
 func Get(ctx context.Context, filename string) (*Config, string, error) {
-	f, err := FindFileUpwards(ctx, filename)
+	f, err := buildutils.FindFileUpwards(ctx, filename)
 	if err != nil {
 		cfg := &Config{
 			TFProfile: map[string]TerraformProfile{
@@ -154,35 +153,4 @@ func Read(ctx context.Context, filename string, configFH io.Reader) (*Config, er
 	}
 
 	return &c, nil
-}
-
-func FindFileUpwards(ctx context.Context, filename string) (string, error) {
-	cwd, err := os.Getwd()
-	if err != nil {
-		return "", fmt.Errorf("failed to get cwd: %w", err)
-	}
-	check := func(dir string) bool {
-		f := filepath.Join(dir, filename)
-		if _, err := os.Stat(f); os.IsNotExist(err) {
-			return false
-		}
-		return true
-	}
-	d := cwd
-	for {
-		found := check(d)
-		if found {
-			return filepath.Join(d, filename), nil
-		}
-		a, err := filepath.Abs(d)
-		if err != nil {
-			return "", fmt.Errorf("failed to get abs path: %w", err)
-		}
-		if a == "/" {
-			break
-		}
-		d = filepath.Join(d, "../")
-	}
-
-	return "", fmt.Errorf("%w: %s", ErrNotFound, filename)
 }

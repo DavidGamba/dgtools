@@ -12,6 +12,7 @@ Package buildutils provides functions used when writing build automation.
 package buildutils
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -81,4 +82,39 @@ func GetFileFromURL(url, outputFilename string) error {
 func GoModDir() (string, error) {
 	out, err := run.CMD("go", "list", "-m", "-f", "{{.Dir}}").STDOutOutput()
 	return strings.TrimSpace(string(out)), err
+}
+
+var ErrNotFound = fmt.Errorf("not found")
+
+// FindFileUpwards - traverses the file system upwards looking for a file
+// Returns buildutils.ErrNotFound if the file is not found
+func FindFileUpwards(ctx context.Context, filename string) (string, error) {
+	cwd, err := os.Getwd()
+	if err != nil {
+		return "", fmt.Errorf("failed to get cwd: %w", err)
+	}
+	check := func(dir string) bool {
+		f := filepath.Join(dir, filename)
+		if _, err := os.Stat(f); os.IsNotExist(err) {
+			return false
+		}
+		return true
+	}
+	d := cwd
+	for {
+		found := check(d)
+		if found {
+			return filepath.Join(d, filename), nil
+		}
+		a, err := filepath.Abs(d)
+		if err != nil {
+			return "", fmt.Errorf("failed to get abs path: %w", err)
+		}
+		if a == "/" {
+			break
+		}
+		d = filepath.Join(d, "../")
+	}
+
+	return "", fmt.Errorf("%w: %s", ErrNotFound, filename)
 }
