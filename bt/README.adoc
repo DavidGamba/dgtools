@@ -3,6 +3,26 @@
 A no commitments Terraform/Tofu wrapper that provides build caching functionality.
 It also makes working with workspaces a breeze.
 
+== Features
+
+* Automatically inject init backend tfvars and plan tfvars based on config values.
+
+* Automatically load tfvar files based on workspace name.
+
+* Allow you to have multiple profiles in the config file so that you can have a different configs for multiple workspaces.
+For example, one profile for dev and another for prod, or one profile for North America and another for China.
++
+Each profile uses a separate `TF_DATA_DIR`.
+This allows to work with multiple profiles pointing to different backends under the same directory without conflicts.
+
+* Runs pre-apply checks for you.
+If you define for example, `conftest` checks, it will run them for you before trying to apply.
+
+* Track the archs you want to use when running terraform provider lock.
+
+* Allow you to work on different workspaces in different terminals.
+It automatically uses the `TF_WORKSPACE` environment variable rather than selecting the workspace.
+
 == Install
 
 * Install using homebrew:
@@ -96,13 +116,13 @@ terraform_profile: {
 }
 ----
 
-== Usage
+== Usage Basics
 
 . Run `bt terraform init` to initialize your config.
 
 . Run `bt terraform build` to generate a plan.
 
-. Run `bt terraform build --ic` to generate a plan even when it detects there are no file changes.
+. Run `bt terraform build --ic` to generate a plan again even when it detects there are no file changes.
 
 . Run `bt terraform build --show` to view the generated plan.
 
@@ -117,7 +137,7 @@ It will check the time stamp of the `.tf.init` file and if it is newer than the 
 It will also compare the `.tf.plan` file against any file changes in the current dir or any of the module dirs to determine if a new plan needs to be generated.
 
 If `pre_apply_checks` are enabled, it will run the checks specified by passing the rendered json plan to the command.
-For example, conftest policy checks.
+For example, `conftest` policy checks.
 
 After running `terraform apply` it will save a `.tf.apply` or `.tf.apply-<workspace>` file.
 It will use that file and compare it to the `.tf.plan` time stamp to determine if the apply has already been made.
@@ -192,7 +212,7 @@ By default, the `default` profile is used.
 The default profile can be overridden with `config.default_terraform_profile` in the config file.
 
 To use a different profile, use the `--profile` option or export the `BT_TERRAFORM_PROFILE` environment variable.
-The environment variable can also be overridden to read an existing one in the environment.
+The environment variable name itself can also be overridden to read an existing one in the environment.
 For example, set `config.terraform_profile_env_var` to `AWS_PROFILE` and name your terraform profiles the same way you name your AWS profiles.
 
 Each additional profile will have its own `TF_DATA_DIR` and the terraform data will be saved under `.terraform-<profile>/`.
@@ -202,3 +222,114 @@ This allows to work with multiple profiles pointing to different backends under 
 === Providers lock using Platforms list
 
 Use `bt terraform providers lock` to generate a lock file using all the os archs in the `platforms` list for a given profile.
+
+== Stacks: A different take
+
+Hashicorp recently https://www.hashicorp.com/blog/terraform-stacks-explained[introduced their solution] for deploying stacks of resources.
+
+A stack is a collection of components that need to be deployed together to form a logical unit.
+
+Instead of having a massive state file that contains all resources, you can split them into multiple smaller components.
+This split provides numerous benefits that I won't get into here, however,
+these components require an orchestration layer to deploy them together and in the correct order.
+
+bt provides a separate config file for defining stacks: `bt-stacks.cue`
+
+=== Features
+
+* The stack is composed of multiple different components.
+
+* Each component can be deployed to a different workspace but in general,
+they should have a consistent naming convention so that the workspace name can be auto-resolved from the stack name.
+
+* A stack can have multiple instances of the same component, that is, multiple workspaces of one component.
+For example, setting connectivity between AWS North America and AWS China requires different Terraform backend configurations because of the AWS China split.
+The stack config file allows for this.
+
+* The stack definition allows for conditionally added components.
+Some regions or environments might not require certain components.
+
+* The stack config file defines 2 different constructs.
+One is the stack definition where the component and their dependencies are defined.
+The other is where the workspaces and variables are defined.
+
+* Because component dependencies are tracked, stack builds run in parallel when possible.
+
+* Components can have variables defined in the stack config file.
+
+=== Stack config file
+
+.bt-stacks.cue
+[source, cue]
+----
+// Define the list of components
+component: "networking": {}
+component: "kubernetes": {
+	depends_on: ["networking"]
+}
+component: "node_groups": {
+	depends_on: ["kubernetes"]
+}
+component: "addons": {
+	depends_on: ["kubernetes"]
+}
+component: "dns": {
+	depends_on: ["kubernetes"]
+}
+component: "dev-rbac": {
+	depends_on: ["kubernetes", "addons"]
+}
+
+// Create component groupings with additional variable definitions
+_standard_cluster: {
+	"networking": component["networking"] & {
+		variables: [
+			{name: "subnet_size", value: "/28"},
+		]
+	}
+	"kubernetes": component["kubernetes"]
+	"node_groups": component["node_groups"]
+	"addons": component["addons"]
+	"dns": component["dns"] & {
+		variables: [
+			{name: "api_endpoint", value: "api.example.com"},
+		]
+	}
+}
+
+// Create a stack with a list of components
+stack: "dev-us-west-2": {
+	id: string
+	components: [
+		for k, v in _standard_cluster {
+			[// switch
+				if k == "networking" {
+					v & {
+						workspaces: [
+							"\(id)-k8s",
+						]
+					}
+				},
+				if k == "node_groups" {
+					v & {
+						workspaces: [
+							"\(id)a",
+							"\(id)b",
+							"\(id)c",
+						]
+					}
+				},
+				v & {
+					workspaces: [id]
+				},
+			][0]
+		},
+		// Custom component that only applies to this stack
+		component["dev-rbac"] & {
+			workspaces: [id]
+		}
+	]
+}
+----
+
+Provide: $STACK_NAME, $COMPONENT_NAME, $WORKSPACE_NAME, $PROFILE_NAME

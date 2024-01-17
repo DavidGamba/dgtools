@@ -8,6 +8,8 @@ import (
 	"os"
 
 	"github.com/DavidGamba/dgtools/bt/config"
+	"github.com/DavidGamba/dgtools/bt/stack"
+	stacksConfig "github.com/DavidGamba/dgtools/bt/stack/config"
 	"github.com/DavidGamba/dgtools/bt/terraform"
 	"github.com/DavidGamba/dgtools/buildutils"
 	"github.com/DavidGamba/go-getoptions"
@@ -35,13 +37,24 @@ func program(args []string) int {
 	}
 	ctx = config.NewConfigContext(ctx, cfg)
 
+	// Read config and store it in context
+	stackCfg, _, err := stacksConfig.Get(ctx, "bt-stacks.cue")
+	if err != nil {
+		if !errors.Is(err, buildutils.ErrNotFound) {
+			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
+			return 1
+		}
+	}
+	ctx = stacksConfig.NewConfigContext(ctx, stackCfg)
+
 	opt := getoptions.New()
 	opt.Self("", "Terraform build system built as a no lock-in wrapper")
 	opt.Bool("quiet", false, opt.GetEnv("QUIET"))
 	opt.SetUnknownMode(getoptions.Pass)
 
-	terraform.NewCommand(ctx, opt)
 	configCMD(ctx, opt)
+	terraform.NewCommand(ctx, opt)
+	stack.NewCommand(ctx, opt)
 
 	opt.HelpCommand("help", opt.Alias("?"))
 	remaining, err := opt.Parse(args[1:])
