@@ -1,5 +1,21 @@
 = bt
 
+== v0.5.0: New features
+
+* Better cache invalidation.
+
+* Suggest workspace completions rather than limiting the list of valid values.
+
+* New command: `bt terraform providers lock`
++
+Uses the config file to get the list of archs for the given profile and uses them to update the lock file.
+
+* Add support for missing terraform commands:
+
+** state mv
+** validate
+** test
+
 == v0.4.0: New features
 
 * Use the default `.terraform/` TF_DATA_DIR when the default profile is used.
