@@ -1,6 +1,10 @@
 = Changelog
 :toc:
 
+== v0.3.0: Add FindFileUpwards function
+
+* Add FindFileUpwards function to find a file upwards in the directory tree.
+
 == v0.2.0: Add GoModDir function
 
 * Add GoModDir function to get the directory of the go.mod file.
