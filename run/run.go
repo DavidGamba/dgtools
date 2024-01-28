@@ -1,6 +1,6 @@
 // This file is part of run.
 //
-// Copyright (C) 2020-2021  David Gamba Rios
+// Copyright (C) 2020-2024  David Gamba Rios
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -27,25 +27,46 @@ var osStdout io.Writer = os.Stdout
 var osStderr io.Writer = os.Stderr
 
 type RunInfo struct {
-	cmd      []string
+	Cmd      []string // exposed for mocking purposes only
 	debug    bool
 	env      []string
 	dir      string
-	stdout   io.Writer
-	stderr   io.Writer
+	Stdout   io.Writer // exposed for mocking purposes only
+	Stderr   io.Writer // exposed for mocking purposes only
 	stdin    io.Reader
 	saveErr  bool
 	printErr bool
 	ctx      context.Context
+	mockFn   MockFn
 }
 
+type runInfoContextKey string
+
+func ContextWithRunInfo(ctx context.Context, value *RunInfo) context.Context {
+	return context.WithValue(ctx, runInfoContextKey("runInfo"), value)
+}
+
+// CMD - Normal constructor.
 func CMD(cmd ...string) *RunInfo {
-	r := &RunInfo{cmd: cmd}
+	r := &RunInfo{Cmd: cmd}
 	r.env = os.Environ()
-	r.stdout = nil
-	r.stderr = nil
+	r.Stdout = nil
+	r.Stderr = nil
 	r.ctx = context.Background()
 	r.printErr = true
+	return r
+}
+
+// CMD - Pulls RunInfo from context if it exists and if not it initializes a new one.
+// Useful when loading a RunInfo from context to ease testing.
+func CMDCtx(ctx context.Context, cmd ...string) *RunInfo {
+	v, ok := ctx.Value(runInfoContextKey("runInfo")).(*RunInfo)
+	if ok {
+		v.Cmd = cmd
+		return v
+	}
+	r := CMD(cmd...)
+	r.ctx = ctx
 	return r
 }
 
@@ -90,11 +111,11 @@ func (r *RunInfo) Ctx(ctx context.Context) *RunInfo {
 //
 // Retrieval can be done as shown below:
 //
-//   err := run.CMD("./command", "arg").SaveErr().Run() // or .STDOutOutput() or .CombinedOutput()
-//   if err != nil {
-//     var exitErr *exec.ExitError
-//     if errors.As(err, &exitErr) {
-//       errOutput := exitErr.Stderr
+//	err := run.CMD("./command", "arg").SaveErr().Run() // or .STDOutOutput() or .CombinedOutput()
+//	if err != nil {
+//	  var exitErr *exec.ExitError
+//	  if errors.As(err, &exitErr) {
+//	    errOutput := exitErr.Stderr
 func (r *RunInfo) SaveErr() *RunInfo {
 	r.saveErr = true
 	return r
@@ -117,8 +138,8 @@ func (r *RunInfo) DiscardErr() *RunInfo {
 // CombinedOutput - Runs given CMD and returns STDOut and STDErr combined.
 func (r *RunInfo) CombinedOutput() ([]byte, error) {
 	var b bytes.Buffer
-	r.stdout = &b
-	r.stderr = &b
+	r.Stdout = &b
+	r.Stderr = &b
 	err := r.Run()
 	return b.Bytes(), err
 }
@@ -128,9 +149,16 @@ func (r *RunInfo) CombinedOutput() ([]byte, error) {
 // Stderr output is discarded unless a call to SaveErr() or PrintErr() was made.
 func (r *RunInfo) STDOutOutput() ([]byte, error) {
 	var b bytes.Buffer
-	r.stdout = &b
+	r.Stdout = &b
 	err := r.Run()
 	return b.Bytes(), err
+}
+
+type MockFn func(*RunInfo) error
+
+func (r *RunInfo) Mock(fn MockFn) *RunInfo {
+	r.mockFn = fn
+	return r
 }
 
 // Run - wrapper around os/exec CMD.Run()
@@ -145,49 +173,61 @@ func (r *RunInfo) STDOutOutput() ([]byte, error) {
 //
 // Examples:
 //
-//   Run()            // Output goes to os.Stdout and os.Stderr
-//   Run(out)         // Sets the command's os.Stdout and os.Stderr to out.
-//   Run(out, outErr) // Sets the command's os.Stdout to out and os.Stderr to outErr.
+//	Run()            // Output goes to os.Stdout and os.Stderr
+//	Run(out)         // Sets the command's os.Stdout and os.Stderr to out.
+//	Run(out, outErr) // Sets the command's os.Stdout to out and os.Stderr to outErr.
 func (r *RunInfo) Run(w ...io.Writer) error {
 	if r.debug {
-		msg := fmt.Sprintf("run %v", r.cmd)
+		msg := fmt.Sprintf("run %v", r.Cmd)
 		if r.dir != "" {
 			msg += fmt.Sprintf(" on %s", r.dir)
 		}
 		Logger.Println(msg)
 	}
-	c := exec.CommandContext(r.ctx, r.cmd[0], r.cmd[1:]...)
-	c.Dir = r.dir
-	c.Env = r.env
 	if len(w) == 0 {
-		if r.stdout == nil {
-			r.stdout = osStdout
+		if r.Stdout == nil {
+			r.Stdout = osStdout
 		}
-		c.Stdout = r.stdout
-		c.Stderr = r.stderr
 	} else if len(w) == 1 {
-		c.Stdout = w[0]
-		c.Stderr = w[0]
+		r.Stdout = w[0]
+		r.Stderr = w[0]
 	} else if len(w) > 1 {
-		c.Stdout = w[0]
-		c.Stderr = w[1]
+		r.Stdout = w[0]
+		r.Stderr = w[1]
 	}
 	if r.printErr {
-		if c.Stderr == nil {
-			c.Stderr = osStderr
-		} else if c.Stderr != osStderr {
-			c.Stderr = io.MultiWriter(c.Stderr, osStderr)
+		if r.Stderr == nil {
+			r.Stderr = osStderr
+		} else if r.Stderr != osStderr {
+			r.Stderr = io.MultiWriter(r.Stderr, osStderr)
 		}
 	}
 	var b bytes.Buffer
 	if r.saveErr {
-		if c.Stderr == nil {
-			c.Stderr = &b
+		if r.Stderr == nil {
+			r.Stderr = &b
 		} else {
-			c.Stderr = io.MultiWriter(c.Stderr, &b)
+			r.Stderr = io.MultiWriter(r.Stderr, &b)
 		}
 	}
+
+	if r.mockFn != nil {
+		err := r.mockFn(r)
+		if err != nil && r.saveErr {
+			if exitErr, ok := err.(*exec.ExitError); ok {
+				exitErr.Stderr = b.Bytes()
+			}
+		}
+		return err
+	}
+
+	c := exec.CommandContext(r.ctx, r.Cmd[0], r.Cmd[1:]...)
+	c.Dir = r.dir
+	c.Env = r.env
+	c.Stdout = r.Stdout
+	c.Stderr = r.Stderr
 	c.Stdin = r.stdin
+
 	err := c.Run()
 	if err != nil && r.saveErr {
 		if exitErr, ok := err.(*exec.ExitError); ok {

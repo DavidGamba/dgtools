@@ -70,6 +70,15 @@ Import: `github.com/DavidGamba/dgtools/run`
 	defer cancel()
 	out, err := run.CMD("./command", "arg1", "arg2").Ctx(ctx).CombinedOutput()
 ----
++
+Or:
++
+[source, go]
+----
+	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
+	defer cancel()
+	out, err := run.CMDCtx(ctx, "./command", "arg1", "arg2").CombinedOutput()
+----
 
 .Run a command and pass a custom io.Writer to run:
 [source, go]
@@ -107,11 +116,45 @@ Import: `github.com/DavidGamba/dgtools/run`
 			log.Printf("Failed with exit code: %d, full error output: %s\n", exitErr.ExitCode(), string(errOutput))
 ----
 
+== Testing
+
+A mocking function can be stored in the context and retrieved automatically:
+
+. Store the mock function in the context:
++
+[source, go]
+----
+		ctx := context.Background()
+		mockR := run.CMD().Mock(func(r *run.RunInfo) error {
+			r.Stdout.Write([]byte("hello world\n"))
+			r.Stderr.Write([]byte("hola mundo\n"))
+			return nil
+		})
+		ctx = run.ContextWithRunInfo(ctx, mockR)
+----
+
+. Automatically run the mock function if it exists in the context:
++
+[source, go]
+----
+		r := run.CMDCtx(ctx, "ls", "./run")
+		out, err := r.CombinedOutput()
+		if err != nil {
+			t.Errorf("unexpected error")
+		}
+		if string(out) != "hello world\nhola mundo\n" {
+			t.Errorf("wrong output: %s\n", out)
+		}
+----
+
+NOTE: Must use `run.CMDCtx` to automatically run the mock function if it exists in the context.
+If the function doesn't exist it runs the command as usual.
+
 == LICENSE
 
 This file is part of run.
 
-Copyright (C) 2020-2021  David Gamba Rios
+Copyright (C) 2020-2024  David Gamba Rios
 
 This Source Code Form is subject to the terms of the Mozilla Public
 License, v. 2.0. If a copy of the MPL was not distributed with this
