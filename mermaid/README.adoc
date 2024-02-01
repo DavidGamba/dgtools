@@ -1,0 +1,75 @@
+= mermaid: Mermaid Diagrams CLI
+
+Render mermaid files to SVG or PNG on the CLI
+
+== Install
+
+* Install using homebrew:
++
+----
+brew tap DavidGamba/dgtools https://github.com/DavidGamba/dgtools
+brew install --HEAD DavidGamba/dgtools/mermaid
+----
++
+[NOTE]
+====
+Completion is auto setup for bash.
+
+For `zsh` completions, an additional step is required, add the following to your `.zshrc`:
+
+[source, zsh]
+----
+export ZSHELL="true"
+source "$(brew --prefix)/share/zsh/site-functions/dgtools.mermaid.zsh"
+----
+====
++
+Upgrade with:
++
+----
+brew update
+brew reinstall mermaid
+----
+
+* Install using go:
++
+Install the binary into your `~/go/bin`:
++
+----
+go install github.com/DavidGamba/dgtools/mermaid@latest
+----
++
+Then setup the completion.
++
+For bash:
++
+----
+complete -o default -C mermaid mermaid
+----
++
+For zsh:
++
+[source, zsh]
+----
+export ZSHELL="true"
+autoload -U +X compinit && compinit
+autoload -U +X bashcompinit && bashcompinit
+complete -o default -C mermaid mermaid
+----
+
+== Usage
+
+
+. Read Mermaid file
++
+[source,sh]
+----
+mermaid render <filename.mermaid> -o <filename.[svg|png]>
+----
+
+. Pipe Mermaid file to mermaid
++
+[source,sh]
+----
+cat <filename.mermaid> | mermaid render -o <filename.[svg|png]>
+----
