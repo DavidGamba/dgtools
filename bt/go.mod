@@ -4,11 +4,11 @@ go 1.21
 
 require (
 	github.com/DavidGamba/dgtools/buildutils v0.3.0
-	github.com/DavidGamba/dgtools/cueutils v0.0.0-20240124055834-43d0e56733d8
+	github.com/DavidGamba/dgtools/cueutils v0.0.0-20240201071851-6dc3d3af21e8
 	github.com/DavidGamba/dgtools/fsmodtime v0.2.0
-	github.com/DavidGamba/dgtools/run v0.7.0
+	github.com/DavidGamba/dgtools/run v0.8.0
 	github.com/DavidGamba/go-getoptions v0.29.1-0.20240105065605-b7ada72ecac6
-	github.com/hashicorp/terraform-config-inspect v0.0.0-20230925220900-5a6f8d18746d
+	github.com/hashicorp/terraform-config-inspect v0.0.0-20231204233900-a34142ec2a72
 	github.com/mattn/go-isatty v0.0.20
 )
 
@@ -23,7 +23,7 @@ require (
 	github.com/hashicorp/hcl/v2 v2.19.1 // indirect
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
 	github.com/mpvl/unique v0.0.0-20150818121801-cbe035fff7de // indirect
-	github.com/zclconf/go-cty v1.14.1 // indirect
+	github.com/zclconf/go-cty v1.14.2 // indirect
 	golang.org/x/net v0.20.0 // indirect
 	golang.org/x/sys v0.16.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
