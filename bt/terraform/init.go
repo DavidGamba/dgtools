@@ -43,7 +43,7 @@ func initRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	cmd = append(cmd, args...)
 	dataDir := fmt.Sprintf("TF_DATA_DIR=%s", getDataDir(cfg.Config.DefaultTerraformProfile, profile))
 	Logger.Printf("export %s\n", dataDir)
-	err := run.CMD(cmd...).Ctx(ctx).Stdin().Log().Env(dataDir).Run()
+	err := run.CMDCtx(ctx, cmd...).Stdin().Log().Env(dataDir).Run()
 	if err != nil {
 		return fmt.Errorf("failed to run: %w", err)
 	}

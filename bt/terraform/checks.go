@@ -114,7 +114,7 @@ func checksRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error
 	cmd := []string{cfg.TFProfile[cfg.Profile(profile)].BinaryName, "show", "-json", planFile}
 	dataDir := fmt.Sprintf("TF_DATA_DIR=%s", getDataDir(cfg.Config.DefaultTerraformProfile, profile))
 	Logger.Printf("export %s\n", dataDir)
-	ri := run.CMD(cmd...).Ctx(ctx).Stdin().Log().Env(dataDir)
+	ri := run.CMDCtx(ctx, cmd...).Stdin().Log().Env(dataDir)
 	out, err := ri.STDOutOutput()
 	if err != nil {
 		return fmt.Errorf("failed to get plan json output: %w", err)
@@ -132,7 +132,7 @@ func checksRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error
 		if err != nil {
 			return fmt.Errorf("failed to expand: %w", err)
 		}
-		ri := run.CMD(exp...).Ctx(ctx).Stdin().Log().Env(dataDir)
+		ri := run.CMDCtx(ctx, exp...).Stdin().Log().Env(dataDir)
 		err = ri.Run()
 		if err != nil {
 			return fmt.Errorf("failed to run: %w", err)

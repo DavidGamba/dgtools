@@ -45,7 +45,7 @@ func wsCMDRun(cmd ...string) getoptions.CommandFn {
 		cmd = append(cmd, args...)
 		dataDir := fmt.Sprintf("TF_DATA_DIR=%s", getDataDir(cfg.Config.DefaultTerraformProfile, profile))
 		Logger.Printf("export %s\n", dataDir)
-		ri := run.CMD(cmd...).Ctx(ctx).Stdin().Log().Env(dataDir)
+		ri := run.CMDCtx(ctx, cmd...).Stdin().Log().Env(dataDir)
 		if ws != "" {
 			wsEnv := fmt.Sprintf("TF_WORKSPACE=%s", ws)
 			Logger.Printf("export %s\n", wsEnv)
