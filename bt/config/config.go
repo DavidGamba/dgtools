@@ -72,6 +72,19 @@ func (t TerraformProfile) String() string {
 	return output
 }
 
+func (c Config) String() string {
+	output := ""
+	output += fmt.Sprintf("config_root: %s\n", c.ConfigRoot)
+	output += fmt.Sprintf("default_terraform_profile: %s\n", c.Config.DefaultTerraformProfile)
+	output += fmt.Sprintf("terraform_profile_env_var: %s\n", c.Config.TerraformProfileEnvVar)
+
+	for k := range c.TFProfile {
+		output += fmt.Sprintf("profile '%s': %s\n", k, c.TFProfile[k])
+	}
+
+	return output
+}
+
 func (c Config) Profile(profile string) string {
 	_, ok := c.TFProfile[profile]
 	if !ok {

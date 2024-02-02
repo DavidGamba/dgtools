@@ -41,6 +41,7 @@ func program(args []string) int {
 	opt.SetUnknownMode(getoptions.Pass)
 
 	terraform.NewCommand(ctx, opt)
+	configCMD(ctx, opt)
 
 	opt.HelpCommand("help", opt.Alias("?"))
 	remaining, err := opt.Parse(args[1:])
