@@ -1,0 +1,11 @@
+= kgetcontext: get k8s current context and namespace
+
+Reads the k8s kube config file and returns the current context and namespace.
+
+It is faster than running:
+
+----
+kubectl config view --minify --output 'jsonpath={.contexts[].name}/{..namespace}' 2>/dev/null
+----
+
+Running the above command was slowing down my shell prompt.
