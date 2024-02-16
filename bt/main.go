@@ -28,9 +28,7 @@ func program(args []string) int {
 	// Read config and store it in context
 	cfg, _, err := config.Get(ctx, ".bt.cue")
 	if err != nil {
-		if errors.Is(err, buildutils.ErrNotFound) {
-			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
-		} else {
+		if !errors.Is(err, buildutils.ErrNotFound) {
 			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
 			return 1
 		}

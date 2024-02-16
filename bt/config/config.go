@@ -25,6 +25,7 @@ type Config struct {
 	} `json:"config"`
 	TFProfile  map[string]TerraformProfile `json:"terraform_profile"`
 	ConfigRoot string                      `json:"config_root"`
+	ConfigFile string                      `json:"config_file"`
 }
 
 type TerraformProfile struct {
@@ -120,6 +121,8 @@ func Get(ctx context.Context, filename string) (*Config, string, error) {
 				},
 			},
 		}
+		cfg.Config.DefaultTerraformProfile = "default"
+		SetDefaults(ctx, cfg, "")
 		return cfg, f, fmt.Errorf("failed to find config file: %w", err)
 	}
 
@@ -142,7 +145,12 @@ func Get(ctx context.Context, filename string) (*Config, string, error) {
 }
 
 func SetDefaults(ctx context.Context, cfg *Config, filename string) error {
+	if filename == "" {
+		cfg.ConfigRoot = filepath.Dir(".")
+		return nil
+	}
 	cfg.ConfigRoot = filepath.Dir(filename)
+	cfg.ConfigFile = filename
 	return nil
 }
 

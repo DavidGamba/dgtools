@@ -70,6 +70,13 @@ func NewCommand(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetO
 	return opt
 }
 
+func LogConfig(cfg *config.Config, profile string) {
+	Logger.Printf("cfg: %s\n", cfg.TFProfile[cfg.Profile(profile)])
+	if cfg.ConfigFile == "" {
+		Logger.Printf("WARNING: cfg file not found\n")
+	}
+}
+
 // Retrieves workspaces assuming a convention where the .tfvars[.json] file matches the name of the workspace
 // It only lists files, it doesn't query Terraform for a 'proper' list of workspaces.
 func getWorkspaces(cfg *config.Config, profile string) ([]string, error) {

@@ -23,7 +23,7 @@ func initRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	profile := opt.Value("profile").(string)
 
 	cfg := config.ConfigFromContext(ctx)
-	Logger.Printf("cfg: %s\n", cfg.TFProfile[cfg.Profile(profile)])
+	LogConfig(cfg, profile)
 
 	cmd := []string{cfg.TFProfile[cfg.Profile(profile)].BinaryName, "init"}
 
