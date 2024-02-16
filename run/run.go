@@ -94,10 +94,20 @@ func (r *RunInfo) Env(env ...string) *RunInfo {
 	return r
 }
 
+// GetEnv - used for testing
+func (r *RunInfo) GetEnv() []string {
+	return r.env
+}
+
 // Dir - specifies the working directory of the command.
 func (r *RunInfo) Dir(dir string) *RunInfo {
 	r.dir = dir
 	return r
+}
+
+// GetDir - used for testing
+func (r *RunInfo) GetDir() string {
+	return r.dir
 }
 
 // Ctx - specifies the context of the command to allow for timeouts.
