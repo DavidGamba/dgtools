@@ -1,6 +1,6 @@
 module github.com/DavidGamba/dgtools/bt
 
-go 1.21
+go 1.22
 
 require (
 	github.com/DavidGamba/dgtools/buildutils v0.3.0
