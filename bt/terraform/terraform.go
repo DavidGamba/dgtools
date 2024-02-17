@@ -89,7 +89,7 @@ func getWorkspaces(cfg *config.Config, profile string) ([]string, error) {
 func validWorkspaces(cfg *config.Config, profile string) ([]string, error) {
 	wss := []string{}
 	if cfg.TFProfile[cfg.Profile(profile)].Workspaces.Enabled {
-		envFile := getDataDir(cfg.Config.DefaultTerraformProfile, profile) + "/environment"
+		envFile := getDataDir(cfg.Config.DefaultTerraformProfile, cfg.Profile(profile)) + "/environment"
 		if _, err := os.Stat(envFile); os.IsNotExist(err) {
 			wss, err = getWorkspaces(cfg, profile)
 			if err != nil {

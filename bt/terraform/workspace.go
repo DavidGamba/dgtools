@@ -84,7 +84,7 @@ func workspaceSelectRun(ctx context.Context, opt *getoptions.GetOpt, args []stri
 		cmd = append(cmd, "-no-color")
 	}
 	cmd = append(cmd, args...)
-	dataDir := fmt.Sprintf("TF_DATA_DIR=%s", getDataDir(cfg.Config.DefaultTerraformProfile, profile))
+	dataDir := fmt.Sprintf("TF_DATA_DIR=%s", getDataDir(cfg.Config.DefaultTerraformProfile, cfg.Profile(profile)))
 	Logger.Printf("export %s\n", dataDir)
 	err := run.CMDCtx(ctx, cmd...).Stdin().Log().Env(dataDir).Run()
 	if err != nil {
@@ -93,7 +93,7 @@ func workspaceSelectRun(ctx context.Context, opt *getoptions.GetOpt, args []stri
 
 	// When switching to the default workspace, remove the environment file so that we are not in workspace mode
 	if wsName == "default" {
-		dd := getDataDir(cfg.Config.DefaultTerraformProfile, profile)
+		dd := getDataDir(cfg.Config.DefaultTerraformProfile, cfg.Profile(profile))
 		os.Remove(fmt.Sprintf("%s/environment", dd))
 	}
 
@@ -143,7 +143,7 @@ func workspaceFn(cmd ...string) getoptions.CommandFn {
 			cmd = append(cmd, "-no-color")
 		}
 		cmd = append(cmd, args...)
-		dataDir := fmt.Sprintf("TF_DATA_DIR=%s", getDataDir(cfg.Config.DefaultTerraformProfile, profile))
+		dataDir := fmt.Sprintf("TF_DATA_DIR=%s", getDataDir(cfg.Config.DefaultTerraformProfile, cfg.Profile(profile)))
 		Logger.Printf("export %s\n", dataDir)
 		err := run.CMDCtx(ctx, cmd...).Stdin().Log().Env(dataDir).Run()
 		if err != nil {

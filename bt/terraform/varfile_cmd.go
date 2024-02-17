@@ -99,7 +99,7 @@ func varFileCMDRun(fn VarFileCMDer, cmd ...string) getoptions.CommandFn {
 		cmd = append(cmd, fn.cmdFunction(ws)...)
 		cmd = append(cmd, args...)
 
-		dataDir := fmt.Sprintf("TF_DATA_DIR=%s", getDataDir(cfg.Config.DefaultTerraformProfile, profile))
+		dataDir := fmt.Sprintf("TF_DATA_DIR=%s", getDataDir(cfg.Config.DefaultTerraformProfile, cfg.Profile(profile)))
 		Logger.Printf("export %s\n", dataDir)
 		ri := run.CMDCtx(ctx, cmd...).Stdin().Log().Env(dataDir)
 		if ws != "" {

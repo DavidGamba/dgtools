@@ -48,7 +48,7 @@ func showPlanRun(ctx context.Context, opt *getoptions.GetOpt, args []string) err
 	if !isatty.IsTerminal(os.Stdout.Fd()) {
 		cmd = append(cmd, "-no-color")
 	}
-	dataDir := fmt.Sprintf("TF_DATA_DIR=%s", getDataDir(cfg.Config.DefaultTerraformProfile, profile))
+	dataDir := fmt.Sprintf("TF_DATA_DIR=%s", getDataDir(cfg.Config.DefaultTerraformProfile, cfg.Profile(profile)))
 	Logger.Printf("export %s\n", dataDir)
 	ri := run.CMDCtx(ctx, cmd...).Stdin().Log().Env(dataDir)
 	if ws != "" {
