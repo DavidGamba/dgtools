@@ -12,6 +12,7 @@ import (
 	stacksConfig "github.com/DavidGamba/dgtools/bt/stack/config"
 	"github.com/DavidGamba/dgtools/bt/terraform"
 	"github.com/DavidGamba/dgtools/buildutils"
+	"github.com/DavidGamba/dgtools/run"
 	"github.com/DavidGamba/go-getoptions"
 )
 
@@ -62,6 +63,10 @@ func program(args []string) int {
 	}
 	if opt.Called("quiet") {
 		Logger.SetOutput(io.Discard)
+		run.Logger.SetOutput(io.Discard)
+		config.Logger.SetOutput(io.Discard)
+		stack.Logger.SetOutput(io.Discard)
+		terraform.Logger.SetOutput(io.Discard)
 	}
 
 	err = opt.Dispatch(ctx, remaining)

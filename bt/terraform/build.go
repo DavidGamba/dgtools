@@ -36,7 +36,6 @@ func buildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	ws := opt.Value("ws").(string)
 
 	cfg := config.ConfigFromContext(ctx)
-	LogConfig(cfg, profile)
 
 	ws, err := updateWSIfSelected(cfg.Config.DefaultTerraformProfile, cfg.Profile(profile), ws)
 	if err != nil {
