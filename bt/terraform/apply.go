@@ -23,7 +23,7 @@ func applyRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	profile := opt.Value("profile").(string)
 
 	cfg := config.ConfigFromContext(ctx)
-	Logger.Printf("cfg: %s\n", cfg.TFProfile[cfg.Profile(profile)])
+	LogConfig(cfg, profile)
 
 	ws, err := updateWSIfSelected(cfg.Config.DefaultTerraformProfile, cfg.Profile(profile), ws)
 	if err != nil {

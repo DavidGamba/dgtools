@@ -20,7 +20,7 @@ func refreshRun(ctx context.Context, opt *getoptions.GetOpt, args []string) erro
 
 	cfg := config.ConfigFromContext(ctx)
 	invalidateCacheContext(ctx, true)
-	Logger.Printf("cfg: %s\n", cfg.TFProfile[cfg.Profile(profile)])
+	LogConfig(cfg, profile)
 
 	return varFileCMDRun(i, cfg.TFProfile[cfg.Profile(profile)].BinaryName, "refresh")(ctx, opt, args)
 }

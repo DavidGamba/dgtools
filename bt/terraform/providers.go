@@ -21,7 +21,7 @@ func providersCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.Ge
 func providersRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	profile := opt.Value("profile").(string)
 	cfg := config.ConfigFromContext(ctx)
-	Logger.Printf("cfg: %s\n", cfg.TFProfile[cfg.Profile(profile)])
+	LogConfig(cfg, profile)
 
 	cmd := []string{cfg.TFProfile[cfg.Profile(profile)].BinaryName, "providers"}
 	return wsCMDRun(cmd...)(ctx, opt, args)
@@ -31,7 +31,7 @@ func providersLockRun(ctx context.Context, opt *getoptions.GetOpt, args []string
 	profile := opt.Value("profile").(string)
 	platforms := opt.Value("platform").([]string)
 	cfg := config.ConfigFromContext(ctx)
-	Logger.Printf("cfg: %s\n", cfg.TFProfile[cfg.Profile(profile)])
+	LogConfig(cfg, profile)
 
 	cmd := []string{cfg.TFProfile[cfg.Profile(profile)].BinaryName, "providers", "lock"}
 	for _, p := range append(platforms, cfg.TFProfile[cfg.Profile(profile)].Platforms...) {

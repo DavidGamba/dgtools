@@ -17,7 +17,7 @@ func testCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt 
 func testRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	profile := opt.Value("profile").(string)
 	cfg := config.ConfigFromContext(ctx)
-	Logger.Printf("cfg: %s\n", cfg.TFProfile[cfg.Profile(profile)])
+	LogConfig(cfg, profile)
 
 	cmd := []string{cfg.TFProfile[cfg.Profile(profile)].BinaryName, "test"}
 	return wsCMDRun(cmd...)(ctx, opt, args)

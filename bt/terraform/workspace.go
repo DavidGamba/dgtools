@@ -64,7 +64,7 @@ func workspaceSelectRun(ctx context.Context, opt *getoptions.GetOpt, args []stri
 	args = slices.Delete(args, 0, 1)
 
 	cfg := config.ConfigFromContext(ctx)
-	Logger.Printf("cfg: %s\n", cfg.TFProfile[cfg.Profile(profile)])
+	LogConfig(cfg, profile)
 
 	cmd := []string{cfg.TFProfile[cfg.Profile(profile)].BinaryName, "workspace", "select", wsName}
 
@@ -125,7 +125,7 @@ func workspaceFn(cmd ...string) getoptions.CommandFn {
 		profile := opt.Value("profile").(string)
 
 		cfg := config.ConfigFromContext(ctx)
-		Logger.Printf("cfg: %s\n", cfg.TFProfile[cfg.Profile(profile)])
+		LogConfig(cfg, profile)
 
 		if !isatty.IsTerminal(os.Stdout.Fd()) {
 			cmd = append(cmd, "-no-color")
