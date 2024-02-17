@@ -29,6 +29,7 @@ Source: https://github.com/DavidGamba/dgtools`)
 	opt.Bool("quiet", false, opt.GetEnv("QUIET"))
 	opt.SetCommandFn(Run)
 	opt.String("namespace", "")
+	opt.String("key", "", opt.Description("limit output to the given key"))
 	opt.String("cluster", "", opt.Description(`Allows targeting a different cluster from the current context.
 
 NOTE: This only works when you are not in a subshell
@@ -62,6 +63,7 @@ NOTE: This only works when you are not in a subshell
 func Run(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	namespace := opt.Value("namespace").(string)
 	cluster := opt.Value("cluster").(string)
+	key := opt.Value("key").(string)
 	secret := ""
 	if len(args) >= 1 {
 		secret = args[0]
@@ -96,7 +98,14 @@ func Run(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 		return fmt.Errorf("failed to get secret: %w", err)
 	}
 	for k, v := range k8sSecret.Data {
-		fmt.Printf("%s=%s\n", k, string(v))
+		if (key != "" && k == key) || key == "" {
+			fmt.Printf("%s=%s\n", k, string(v))
+		}
+	}
+	for k, v := range k8sSecret.StringData {
+		if (key != "" && k == key) || key == "" {
+			fmt.Printf("%s=%s\n", k, v)
+		}
 	}
 
 	return nil
