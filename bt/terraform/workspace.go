@@ -12,8 +12,20 @@ import (
 	"github.com/mattn/go-isatty"
 )
 
+func workspaceCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
+	opt := parent.NewCommand("workspace", "")
+
+	workspaceListCMD(ctx, opt)
+	workspaceShowCMD(ctx, opt)
+	workspaceSelectCMD(ctx, opt)
+	workspaceDeleteCMD(ctx, opt)
+	workspaceNewCMD(ctx, opt)
+
+	return opt
+}
+
 func workspaceListCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
-	opt := parent.NewCommand("workspace-list", "")
+	opt := parent.NewCommand("list", "")
 	opt.SetCommandFn(workspaceListRun)
 
 	return opt
@@ -29,7 +41,7 @@ func workspaceListRun(ctx context.Context, opt *getoptions.GetOpt, args []string
 }
 
 func workspaceShowCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
-	opt := parent.NewCommand("workspace-show", "")
+	opt := parent.NewCommand("show", "")
 	opt.SetCommandFn(workspaceShowRun)
 
 	return opt
@@ -46,7 +58,7 @@ func workspaceShowRun(ctx context.Context, opt *getoptions.GetOpt, args []string
 
 // When switching to the default workspace, remove the environment file so that we are not in workspace mode
 func workspaceSelectCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
-	opt := parent.NewCommand("workspace-select", "")
+	opt := parent.NewCommand("select", "")
 	opt.SetCommandFn(workspaceSelectRun)
 	return opt
 }
@@ -89,7 +101,7 @@ func workspaceSelectRun(ctx context.Context, opt *getoptions.GetOpt, args []stri
 }
 
 func workspaceDeleteCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
-	opt := parent.NewCommand("workspace-delete", "")
+	opt := parent.NewCommand("delete", "")
 	opt.SetCommandFn(workspaceDeleteRun)
 	return opt
 }
@@ -105,7 +117,7 @@ func workspaceDeleteRun(ctx context.Context, opt *getoptions.GetOpt, args []stri
 }
 
 func workspaceNewCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
-	opt := parent.NewCommand("workspace-new", "")
+	opt := parent.NewCommand("new", "")
 	opt.SetCommandFn(workspaceNewRun)
 
 	return opt
