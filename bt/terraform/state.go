@@ -10,8 +10,20 @@ import (
 	"github.com/DavidGamba/go-getoptions"
 )
 
+func stateCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
+	opt := parent.NewCommand("state", "")
+
+	stateListCMD(ctx, opt)
+	statePullCMD(ctx, opt)
+	statePushCMD(ctx, opt)
+	stateMVCMD(ctx, opt)
+	stateRMCMD(ctx, opt)
+	stateShowCMD(ctx, opt)
+	return opt
+}
+
 func stateListCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
-	opt := parent.NewCommand("state-list", "")
+	opt := parent.NewCommand("list", "")
 	opt.SetCommandFn(stateListRun)
 	return opt
 }
@@ -26,7 +38,7 @@ func stateListRun(ctx context.Context, opt *getoptions.GetOpt, args []string) er
 }
 
 func statePushCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
-	opt := parent.NewCommand("state-push", "")
+	opt := parent.NewCommand("push", "")
 	opt.SetCommandFn(statePushRun)
 	opt.HelpSynopsisArg("<state_file>", "State file to push")
 	return opt
@@ -51,7 +63,7 @@ func statePushRun(ctx context.Context, opt *getoptions.GetOpt, args []string) er
 }
 
 func statePullCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
-	opt := parent.NewCommand("state-pull", "")
+	opt := parent.NewCommand("pull", "")
 	opt.SetCommandFn(statePullRun)
 	return opt
 }
@@ -66,7 +78,7 @@ func statePullRun(ctx context.Context, opt *getoptions.GetOpt, args []string) er
 }
 
 func stateMVCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
-	opt := parent.NewCommand("state-mv", "")
+	opt := parent.NewCommand("mv", "")
 	opt.SetCommandFn(stateMVRun)
 	return opt
 }
@@ -82,7 +94,7 @@ func stateMVRun(ctx context.Context, opt *getoptions.GetOpt, args []string) erro
 }
 
 func stateRMCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
-	opt := parent.NewCommand("state-rm", "")
+	opt := parent.NewCommand("rm", "")
 	opt.SetCommandFn(stateRMRun)
 	return opt
 }
@@ -98,7 +110,7 @@ func stateRMRun(ctx context.Context, opt *getoptions.GetOpt, args []string) erro
 }
 
 func stateShowCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
-	opt := parent.NewCommand("state-show", "")
+	opt := parent.NewCommand("show", "")
 	opt.SetCommandFn(stateShowRun)
 	return opt
 }

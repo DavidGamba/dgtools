@@ -12,7 +12,7 @@ import (
 )
 
 func showPlanCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
-	opt := parent.NewCommand("show-plan", "")
+	opt := parent.NewCommand("show-plan", "Show the cached terraform plan")
 	opt.SetCommandFn(showPlanRun)
 	return opt
 }
