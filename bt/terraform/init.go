@@ -27,15 +27,17 @@ func initRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 
 	cmd := []string{cfg.TFProfile[cfg.Profile(profile)].BinaryName, "init"}
 
+	os.Setenv("CONFIG_ROOT", cfg.ConfigRoot)
 	for _, bvars := range cfg.TFProfile[cfg.Profile(profile)].Init.BackendConfig {
 		b := strings.ReplaceAll(bvars, "~", "$HOME")
 		bb, err := fsmodtime.ExpandEnv([]string{b})
 		if err != nil {
 			return fmt.Errorf("failed to expand: %w", err)
 		}
-		if _, err := os.Stat(bb[0]); err == nil {
-			cmd = append(cmd, "-backend-config", bb[0])
-		}
+		// TODO: Consider re-introducing validation
+		// if _, err := os.Stat(bb[0]); err == nil {
+		// }
+		cmd = append(cmd, "-backend-config", bb[0])
 	}
 	if !isatty.IsTerminal(os.Stdout.Fd()) {
 		cmd = append(cmd, "-no-color")
