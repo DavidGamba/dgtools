@@ -65,7 +65,7 @@ func TestBuild(t *testing.T) {
 		opt.StringSlice("var-file", 1, 1)
 		opt.StringSlice("target", 1, 99)
 		opt.StringSlice("replace", 1, 99)
-		err := buildRun(ctx, opt, []string{})
+		err := BuildRun(ctx, opt, []string{})
 		if err != nil {
 			t.Errorf("TestBuild error: %s", err)
 		}

@@ -14,7 +14,7 @@ import (
 
 func buildCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
 	opt := parent.NewCommand("build", "Wraps init, plan and apply into a single operation with a cache")
-	opt.SetCommandFn(buildRun)
+	opt.SetCommandFn(BuildRun)
 	opt.StringSlice("var-file", 1, 1)
 	opt.Bool("dry-run", false)
 	opt.Bool("destroy", false)
@@ -29,7 +29,7 @@ func buildCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt
 	return opt
 }
 
-func buildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
+func BuildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	profile := opt.Value("profile").(string)
 	apply := opt.Value("apply").(bool)
 	show := opt.Value("show").(bool)

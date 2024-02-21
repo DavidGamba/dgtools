@@ -24,5 +24,6 @@ func NewCommand(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetO
 
 	ConfigCMD(ctx, opt)
 	GraphCMD(ctx, opt)
+	BuildCMD(ctx, opt)
 	return opt
 }
