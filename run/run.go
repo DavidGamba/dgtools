@@ -38,6 +38,7 @@ type RunInfo struct {
 	printErr bool
 	ctx      context.Context
 	mockFn   MockFn
+	dryRun   bool
 }
 
 type runInfoContextKey string
@@ -72,6 +73,11 @@ func CMDCtx(ctx context.Context, cmd ...string) *RunInfo {
 
 func (r *RunInfo) Log() *RunInfo {
 	r.debug = true
+	return r
+}
+
+func (r *RunInfo) DryRun(b bool) *RunInfo {
+	r.dryRun = b
 	return r
 }
 
@@ -188,7 +194,11 @@ func (r *RunInfo) Mock(fn MockFn) *RunInfo {
 //	Run(out, outErr) // Sets the command's os.Stdout to out and os.Stderr to outErr.
 func (r *RunInfo) Run(w ...io.Writer) error {
 	if r.debug {
-		msg := fmt.Sprintf("run %v", r.Cmd)
+		msg := ""
+		if r.dryRun {
+			msg += "DRY-RUN "
+		}
+		msg += fmt.Sprintf("run %v", r.Cmd)
 		if r.dir != "" {
 			msg += fmt.Sprintf(" on %s", r.dir)
 		}
@@ -229,6 +239,9 @@ func (r *RunInfo) Run(w ...io.Writer) error {
 			}
 		}
 		return err
+	}
+	if r.dryRun {
+		return nil
 	}
 
 	c := exec.CommandContext(r.ctx, r.Cmd[0], r.Cmd[1:]...)
