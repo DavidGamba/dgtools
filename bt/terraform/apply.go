@@ -15,11 +15,13 @@ import (
 
 func applyCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
 	opt := parent.NewCommand("apply", "")
+	opt.Bool("dry-run", false)
 	opt.SetCommandFn(applyRun)
 	return opt
 }
 
 func applyRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
+	dryRun := opt.Value("dry-run").(bool)
 	ws := opt.Value("ws").(string)
 	profile := opt.Value("profile").(string)
 
@@ -67,7 +69,7 @@ func applyRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	cmd = append(cmd, args...)
 	dataDir := fmt.Sprintf("TF_DATA_DIR=%s", getDataDir(cfg.Config.DefaultTerraformProfile, cfg.Profile(profile)))
 	Logger.Printf("export %s\n", dataDir)
-	ri := run.CMDCtx(ctx, cmd...).Stdin().Log().Env(dataDir).Dir(dir)
+	ri := run.CMDCtx(ctx, cmd...).Stdin().Log().Env(dataDir).Dir(dir).DryRun(dryRun)
 	if ws != "" {
 		wsEnv := fmt.Sprintf("TF_WORKSPACE=%s", ws)
 		Logger.Printf("export %s\n", wsEnv)
@@ -77,6 +79,10 @@ func applyRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	if err != nil {
 		os.Remove(planFile)
 		return fmt.Errorf("failed to run: %w", err)
+	}
+
+	if dryRun {
+		return nil
 	}
 
 	fh, err := os.Create(applyFile)

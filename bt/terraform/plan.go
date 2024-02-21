@@ -19,10 +19,11 @@ import (
 
 func planCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
 	opt := parent.NewCommand("plan", "")
-	opt.StringSlice("var-file", 1, 1)
+	opt.Bool("dry-run", false)
 	opt.Bool("destroy", false)
 	opt.Bool("detailed-exitcode", false)
 	opt.Bool("ignore-cache", false, opt.Description("ignore the cache and re-run the plan"), opt.Alias("ic"))
+	opt.StringSlice("var-file", 1, 1)
 	opt.StringSlice("target", 1, 99)
 	opt.StringSlice("replace", 1, 99)
 	opt.SetCommandFn(planRun)
@@ -31,6 +32,7 @@ func planCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt 
 }
 
 func planRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
+	dryRun := opt.Value("dry-run").(bool)
 	profile := opt.Value("profile").(string)
 	destroy := opt.Value("destroy").(bool)
 	detailedExitcode := opt.Value("detailed-exitcode").(bool)
@@ -176,7 +178,7 @@ func planRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 
 	dataDir := fmt.Sprintf("TF_DATA_DIR=%s", getDataDir(cfg.Config.DefaultTerraformProfile, cfg.Profile(profile)))
 	Logger.Printf("export %s\n", dataDir)
-	ri := run.CMDCtx(ctx, cmd...).Stdin().Log().Env(dataDir).Dir(dir)
+	ri := run.CMDCtx(ctx, cmd...).Stdin().Log().Env(dataDir).Dir(dir).DryRun(dryRun)
 	if ws != "" {
 		wsEnv := fmt.Sprintf("TF_WORKSPACE=%s", ws)
 		Logger.Printf("export %s\n", wsEnv)

@@ -9,6 +9,7 @@ import (
 
 func showCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
 	opt := parent.NewCommand("show", "")
+	opt.Bool("dry-run", false)
 	opt.SetCommandFn(showRun)
 	return opt
 }

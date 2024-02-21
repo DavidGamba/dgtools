@@ -15,8 +15,13 @@ func wsCMDRun(cmd ...string) getoptions.CommandFn {
 	return func(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 		profile := opt.Value("profile").(string)
 		ws := opt.Value("ws").(string)
+		dryRun := false
+		if opt.Value("dry-run") != nil {
+			dryRun = opt.Value("dry-run").(bool)
+		}
 
 		cfg := config.ConfigFromContext(ctx)
+		dir := DirFromContext(ctx)
 		LogConfig(cfg, profile)
 
 		ws, err := updateWSIfSelected(cfg.Config.DefaultTerraformProfile, cfg.Profile(profile), ws)
@@ -45,7 +50,7 @@ func wsCMDRun(cmd ...string) getoptions.CommandFn {
 		cmd = append(cmd, args...)
 		dataDir := fmt.Sprintf("TF_DATA_DIR=%s", getDataDir(cfg.Config.DefaultTerraformProfile, cfg.Profile(profile)))
 		Logger.Printf("export %s\n", dataDir)
-		ri := run.CMDCtx(ctx, cmd...).Stdin().Log().Env(dataDir)
+		ri := run.CMDCtx(ctx, cmd...).Stdin().Log().Env(dataDir).Dir(dir).DryRun(dryRun)
 		if ws != "" {
 			wsEnv := fmt.Sprintf("TF_WORKSPACE=%s", ws)
 			Logger.Printf("export %s\n", wsEnv)

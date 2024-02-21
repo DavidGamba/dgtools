@@ -15,6 +15,7 @@ import (
 
 func checksCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
 	opt := parent.NewCommand("checks", "Run pre-apply checks against the latest plan")
+	opt.Bool("dry-run", false)
 	opt.StringSlice("var-file", 1, 1)
 	opt.Bool("no-checks", false, opt.Description("Do not run pre-apply checks"), opt.Alias("nc"))
 	opt.Bool("ignore-cache", false, opt.Description("ignore the cache and re-run the checks"), opt.Alias("ic"))
@@ -24,6 +25,7 @@ func checksCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOp
 }
 
 func checksRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
+	dryRun := opt.Value("dry-run").(bool)
 	profile := opt.Value("profile").(string)
 	varFiles := opt.Value("var-file").([]string)
 	ws := opt.Value("ws").(string)
@@ -35,6 +37,7 @@ func checksRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error
 	}
 
 	cfg := config.ConfigFromContext(ctx)
+	dir := DirFromContext(ctx)
 	LogConfig(cfg, profile)
 
 	ws, err := updateWSIfSelected(cfg.Config.DefaultTerraformProfile, cfg.Profile(profile), ws)
@@ -42,7 +45,7 @@ func checksRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error
 		return err
 	}
 
-	cwd, err := os.Getwd()
+	cwd, err := filepath.Abs(dir)
 	if err != nil {
 		return fmt.Errorf("failed to get current dir: %w", err)
 	}
@@ -114,7 +117,7 @@ func checksRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error
 	cmd := []string{cfg.TFProfile[cfg.Profile(profile)].BinaryName, "show", "-json", planFile}
 	dataDir := fmt.Sprintf("TF_DATA_DIR=%s", getDataDir(cfg.Config.DefaultTerraformProfile, cfg.Profile(profile)))
 	Logger.Printf("export %s\n", dataDir)
-	ri := run.CMDCtx(ctx, cmd...).Stdin().Log().Env(dataDir)
+	ri := run.CMDCtx(ctx, cmd...).Stdin().Log().Env(dataDir).Dir(dir).DryRun(dryRun)
 	out, err := ri.STDOutOutput()
 	if err != nil {
 		return fmt.Errorf("failed to get plan json output: %w", err)
@@ -132,11 +135,15 @@ func checksRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error
 		if err != nil {
 			return fmt.Errorf("failed to expand: %w", err)
 		}
-		ri := run.CMDCtx(ctx, exp...).Stdin().Log().Env(dataDir)
+		ri := run.CMDCtx(ctx, exp...).Stdin().Log().Env(dataDir).Dir(dir).DryRun(dryRun)
 		err = ri.Run()
 		if err != nil {
 			return fmt.Errorf("failed to run: %w", err)
 		}
+	}
+
+	if dryRun {
+		return nil
 	}
 
 	fh, err := os.Create(checkFile)

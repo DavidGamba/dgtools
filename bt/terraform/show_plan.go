@@ -13,15 +13,18 @@ import (
 
 func showPlanCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
 	opt := parent.NewCommand("show-plan", "Show the cached terraform plan")
+	opt.Bool("dry-run", false)
 	opt.SetCommandFn(showPlanRun)
 	return opt
 }
 
 func showPlanRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
+	dryRun := opt.Value("dry-run").(bool)
 	profile := opt.Value("profile").(string)
 	ws := opt.Value("ws").(string)
 
 	cfg := config.ConfigFromContext(ctx)
+	dir := DirFromContext(ctx)
 	LogConfig(cfg, profile)
 
 	ws, err := updateWSIfSelected(cfg.Config.DefaultTerraformProfile, cfg.Profile(profile), ws)
@@ -50,7 +53,7 @@ func showPlanRun(ctx context.Context, opt *getoptions.GetOpt, args []string) err
 	}
 	dataDir := fmt.Sprintf("TF_DATA_DIR=%s", getDataDir(cfg.Config.DefaultTerraformProfile, cfg.Profile(profile)))
 	Logger.Printf("export %s\n", dataDir)
-	ri := run.CMDCtx(ctx, cmd...).Stdin().Log().Env(dataDir)
+	ri := run.CMDCtx(ctx, cmd...).Stdin().Log().Env(dataDir).Dir(dir).DryRun(dryRun)
 	if ws != "" {
 		wsEnv := fmt.Sprintf("TF_WORKSPACE=%s", ws)
 		Logger.Printf("export %s\n", wsEnv)

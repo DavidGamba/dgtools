@@ -16,11 +16,13 @@ import (
 
 func initCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
 	opt := parent.NewCommand("init", "")
+	opt.Bool("dry-run", false)
 	opt.SetCommandFn(initRun)
 	return opt
 }
 
 func initRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
+	dryRun := opt.Value("dry-run").(bool)
 	profile := opt.Value("profile").(string)
 
 	cfg := config.ConfigFromContext(ctx)
@@ -47,10 +49,15 @@ func initRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	cmd = append(cmd, args...)
 	dataDir := fmt.Sprintf("TF_DATA_DIR=%s", getDataDir(cfg.Config.DefaultTerraformProfile, cfg.Profile(profile)))
 	Logger.Printf("export %s\n", dataDir)
-	err := run.CMDCtx(ctx, cmd...).Stdin().Log().Env(dataDir).Dir(dir).Run()
+	err := run.CMDCtx(ctx, cmd...).Stdin().Log().Env(dataDir).Dir(dir).DryRun(dryRun).Run()
 	if err != nil {
 		return fmt.Errorf("failed to run: %w", err)
 	}
+
+	if dryRun {
+		return nil
+	}
+
 	initFile := filepath.Join(dir, ".tf.init")
 	fh, err := os.Create(initFile)
 	if err != nil {
