@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/DavidGamba/dgtools/bt/config"
 	"github.com/DavidGamba/dgtools/fsmodtime"
@@ -23,6 +24,7 @@ func applyRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	profile := opt.Value("profile").(string)
 
 	cfg := config.ConfigFromContext(ctx)
+	dir := DirFromContext(ctx)
 	LogConfig(cfg, profile)
 
 	ws, err := updateWSIfSelected(cfg.Config.DefaultTerraformProfile, cfg.Profile(profile), ws)
@@ -42,12 +44,12 @@ func applyRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	planFile := ""
 	if ws == "" {
 		planFile = ".tf.plan"
-		applyFile = ".tf.apply"
+		applyFile = filepath.Join(dir, ".tf.apply")
 	} else {
 		planFile = fmt.Sprintf(".tf.plan-%s", ws)
-		applyFile = fmt.Sprintf(".tf.apply-%s", ws)
+		applyFile = filepath.Join(dir, fmt.Sprintf(".tf.apply-%s", ws))
 	}
-	files, modified, err := fsmodtime.Target(os.DirFS("."), []string{applyFile}, []string{planFile})
+	files, modified, err := fsmodtime.Target(os.DirFS(dir), []string{applyFile}, []string{planFile})
 	if err != nil {
 		Logger.Printf("failed to check changes for: '%s'\n", applyFile)
 	}
@@ -65,7 +67,7 @@ func applyRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	cmd = append(cmd, args...)
 	dataDir := fmt.Sprintf("TF_DATA_DIR=%s", getDataDir(cfg.Config.DefaultTerraformProfile, cfg.Profile(profile)))
 	Logger.Printf("export %s\n", dataDir)
-	ri := run.CMDCtx(ctx, cmd...).Stdin().Log().Env(dataDir)
+	ri := run.CMDCtx(ctx, cmd...).Stdin().Log().Env(dataDir).Dir(dir)
 	if ws != "" {
 		wsEnv := fmt.Sprintf("TF_WORKSPACE=%s", ws)
 		Logger.Printf("export %s\n", wsEnv)
@@ -82,5 +84,7 @@ func applyRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 		return fmt.Errorf("failed to create file: %w", err)
 	}
 	fh.Close()
+	Logger.Printf("Create %s\n", applyFile)
+
 	return nil
 }
