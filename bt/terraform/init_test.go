@@ -3,6 +3,8 @@ package terraform
 import (
 	"context"
 	"fmt"
+	"os"
+	"path/filepath"
 	"slices"
 	"strings"
 	"testing"
@@ -20,8 +22,10 @@ func TestInit(t *testing.T) {
 		ctx := context.Background()
 		cfg, _, _ := config.Get(ctx, "x")
 		ctx = config.NewConfigContext(ctx, cfg)
+		tDir := t.TempDir()
+		ctx = NewDirContext(ctx, tDir)
 		mock := run.CMDCtx(ctx).Mock(func(r *run.RunInfo) error {
-			if r.GetDir() != "" {
+			if r.GetDir() != tDir {
 				return fmt.Errorf("unexpected dir: %s", r.GetDir())
 			}
 			if !slices.Equal(r.Cmd, []string{"terraform", "init", "-no-color"}) {
@@ -41,18 +45,22 @@ func TestInit(t *testing.T) {
 		opt.String("profile", "default")
 		err := initRun(ctx, opt, []string{})
 		if err != nil {
-			t.Errorf("TestInit: %s", err)
+			t.Errorf("TestInit error: %s", err)
+		}
+		if _, err := os.Stat(filepath.Join(tDir, ".tf.init")); os.IsNotExist(err) {
+			t.Errorf("no .tf.init file: %s", err)
 		}
 		t.Log(buf.String())
 	})
 
 	t.Run("TestInit with default config but no valid profile selected", func(t *testing.T) {
+		_ = os.Remove(".tf.init")
 		buf := setupLogging()
 		ctx := context.Background()
 		cfg := getDefaultConfig()
 		ctx = config.NewConfigContext(ctx, cfg)
 		mock := run.CMDCtx(ctx).Mock(func(r *run.RunInfo) error {
-			if r.GetDir() != "" {
+			if r.GetDir() != "." {
 				return fmt.Errorf("unexpected dir: %s", r.GetDir())
 			}
 			if !slices.Equal(r.Cmd, []string{"tofu", "init", "-backend-config", "/home/user/dev-credentials.json", "-no-color"}) {
@@ -72,8 +80,12 @@ func TestInit(t *testing.T) {
 		opt.String("profile", "default")
 		err := initRun(ctx, opt, []string{})
 		if err != nil {
-			t.Errorf("TestInit: %s", err)
+			t.Errorf("TestInit error: %s", err)
 		}
+		if _, err := os.Stat(".tf.init"); os.IsNotExist(err) {
+			t.Errorf("no .tf.init file: %s", err)
+		}
+		_ = os.Remove(".tf.init")
 		t.Log(buf.String())
 	})
 
@@ -82,8 +94,10 @@ func TestInit(t *testing.T) {
 		ctx := context.Background()
 		cfg := getDefaultConfig()
 		ctx = config.NewConfigContext(ctx, cfg)
+		tDir := t.TempDir()
+		ctx = NewDirContext(ctx, tDir)
 		mock := run.CMDCtx(ctx).Mock(func(r *run.RunInfo) error {
-			if r.GetDir() != "" {
+			if r.GetDir() != tDir {
 				return fmt.Errorf("unexpected dir: %s", r.GetDir())
 			}
 			if !slices.Equal(r.Cmd, []string{"tofu", "init", "-backend-config", "/home/user/dev-credentials.json", "-no-color"}) {
@@ -103,7 +117,10 @@ func TestInit(t *testing.T) {
 		opt.String("profile", "dev")
 		err := initRun(ctx, opt, []string{})
 		if err != nil {
-			t.Errorf("TestInit: %s", err)
+			t.Errorf("TestInit error: %s", err)
+		}
+		if _, err := os.Stat(filepath.Join(tDir, ".tf.init")); os.IsNotExist(err) {
+			t.Errorf("no .tf.init file: %s", err)
 		}
 		t.Log(buf.String())
 	})
@@ -113,8 +130,10 @@ func TestInit(t *testing.T) {
 		ctx := context.Background()
 		cfg := getDefaultConfig()
 		ctx = config.NewConfigContext(ctx, cfg)
+		tDir := t.TempDir()
+		ctx = NewDirContext(ctx, tDir)
 		mock := run.CMDCtx(ctx).Mock(func(r *run.RunInfo) error {
-			if r.GetDir() != "" {
+			if r.GetDir() != tDir {
 				return fmt.Errorf("unexpected dir: %s", r.GetDir())
 			}
 			if !slices.Equal(r.Cmd, []string{"terraform", "init", "-backend-config", "/tmp/terraform-project/prod-credentials.json", "-no-color"}) {
@@ -134,7 +153,10 @@ func TestInit(t *testing.T) {
 		opt.String("profile", "prod")
 		err := initRun(ctx, opt, []string{})
 		if err != nil {
-			t.Errorf("TestInit: %s", err)
+			t.Errorf("TestInit error: %s", err)
+		}
+		if _, err := os.Stat(filepath.Join(tDir, ".tf.init")); os.IsNotExist(err) {
+			t.Errorf("no .tf.init file: %s", err)
 		}
 		t.Log(buf.String())
 	})

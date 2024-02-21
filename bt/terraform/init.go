@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/DavidGamba/dgtools/bt/config"
@@ -23,6 +24,7 @@ func initRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	profile := opt.Value("profile").(string)
 
 	cfg := config.ConfigFromContext(ctx)
+	dir := DirFromContext(ctx)
 	LogConfig(cfg, profile)
 
 	cmd := []string{cfg.TFProfile[cfg.Profile(profile)].BinaryName, "init"}
@@ -45,15 +47,17 @@ func initRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	cmd = append(cmd, args...)
 	dataDir := fmt.Sprintf("TF_DATA_DIR=%s", getDataDir(cfg.Config.DefaultTerraformProfile, cfg.Profile(profile)))
 	Logger.Printf("export %s\n", dataDir)
-	err := run.CMDCtx(ctx, cmd...).Stdin().Log().Env(dataDir).Run()
+	err := run.CMDCtx(ctx, cmd...).Stdin().Log().Env(dataDir).Dir(dir).Run()
 	if err != nil {
 		return fmt.Errorf("failed to run: %w", err)
 	}
-	fh, err := os.Create(".tf.init")
+	initFile := filepath.Join(dir, ".tf.init")
+	fh, err := os.Create(initFile)
 	if err != nil {
 		return fmt.Errorf("failed to create file: %w", err)
 	}
 	fh.Close()
+	Logger.Printf("Create %s\n", initFile)
 
 	return nil
 }

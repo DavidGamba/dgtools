@@ -191,21 +191,3 @@ func getDefaultVarFiles(cfg *config.Config, profile string) ([]string, error) {
 	}
 	return varFiles, nil
 }
-
-type invalidateCache string
-type invalidateCacheOnFail string
-
-const invalidateCacheKey invalidateCache = "invalidateCache"
-const invalidateCacheOnFailKey invalidateCacheOnFail = "invalidateCacheOnFail"
-
-func invalidateCacheContext(ctx context.Context, value bool) context.Context {
-	return context.WithValue(ctx, invalidateCacheKey, value)
-}
-
-func invalidateCacheFromContext(ctx context.Context) bool {
-	v, ok := ctx.Value(invalidateCacheKey).(bool)
-	if ok {
-		return v
-	}
-	return false
-}
