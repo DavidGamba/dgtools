@@ -19,6 +19,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/DavidGamba/dgtools/run"
 )
@@ -117,4 +118,22 @@ func FindFileUpwards(ctx context.Context, filename string) (string, error) {
 	}
 
 	return "", fmt.Errorf("%w: %s", ErrNotFound, filename)
+}
+
+func Touch(filename string) error {
+	_, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		file, err := os.Create(filename)
+		if err != nil {
+			return err
+		}
+		_ = file.Close()
+	} else {
+		currentTime := time.Now().Local()
+		err = os.Chtimes(filename, currentTime, currentTime)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
