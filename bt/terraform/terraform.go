@@ -159,11 +159,11 @@ func getWorkspace(cfg *config.Config, profile, ws string, varFiles []string) (st
 
 // If a workspace is selected automatically insert a var file matching the workspace.
 // If the var file is already present then don't add it again.
-func AddVarFileIfWorkspaceSelected(cfg *config.Config, profile, ws string, varFiles []string) ([]string, error) {
+func AddVarFileIfWorkspaceSelected(cfg *config.Config, profile, dir, ws string, varFiles []string) ([]string, error) {
 	if ws != "" {
 		glob := fmt.Sprintf("%s/%s.tfvars*", cfg.TFProfile[cfg.Profile(profile)].Workspaces.Dir, ws)
 		Logger.Printf("ws: %s, glob: %s\n", ws, glob)
-		ff, _, err := fsmodtime.Glob(os.DirFS("."), true, []string{glob})
+		ff, _, err := fsmodtime.Glob(os.DirFS(dir), true, []string{glob})
 		if err != nil {
 			return varFiles, fmt.Errorf("failed to glob ws files: %w", err)
 		}
@@ -185,9 +185,10 @@ func getDefaultVarFiles(cfg *config.Config, profile string) ([]string, error) {
 		if err != nil {
 			return varFiles, fmt.Errorf("failed to expand: %w", err)
 		}
-		if _, err := os.Stat(vv[0]); err == nil {
-			varFiles = append(varFiles, vv[0])
-		}
+		// TODO: Consider re-introducing validation
+		// if _, err := os.Stat(vv[0]); err == nil {
+		// }
+		varFiles = append(varFiles, vv[0])
 	}
 	return varFiles, nil
 }

@@ -65,6 +65,7 @@ func varFileCMDRun(fn VarFileCMDer, cmd ...string) getoptions.CommandFn {
 		ws := opt.Value("ws").(string)
 
 		cfg := config.ConfigFromContext(ctx)
+		dir := DirFromContext(ctx)
 		LogConfig(cfg, profile)
 
 		ws, err := updateWSIfSelected(cfg.Config.DefaultTerraformProfile, cfg.Profile(profile), ws)
@@ -82,7 +83,7 @@ func varFileCMDRun(fn VarFileCMDer, cmd ...string) getoptions.CommandFn {
 			return err
 		}
 
-		varFiles, err = AddVarFileIfWorkspaceSelected(cfg, profile, ws, varFiles)
+		varFiles, err = AddVarFileIfWorkspaceSelected(cfg, profile, dir, ws, varFiles)
 		if err != nil {
 			return err
 		}
@@ -101,7 +102,7 @@ func varFileCMDRun(fn VarFileCMDer, cmd ...string) getoptions.CommandFn {
 
 		dataDir := fmt.Sprintf("TF_DATA_DIR=%s", getDataDir(cfg.Config.DefaultTerraformProfile, cfg.Profile(profile)))
 		Logger.Printf("export %s\n", dataDir)
-		ri := run.CMDCtx(ctx, cmd...).Stdin().Log().Env(dataDir)
+		ri := run.CMDCtx(ctx, cmd...).Stdin().Log().Env(dataDir).Dir(dir)
 		if ws != "" {
 			wsEnv := fmt.Sprintf("TF_WORKSPACE=%s", ws)
 			Logger.Printf("export %s\n", wsEnv)

@@ -26,10 +26,10 @@ func initRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	cfg := config.ConfigFromContext(ctx)
 	dir := DirFromContext(ctx)
 	LogConfig(cfg, profile)
+	os.Setenv("CONFIG_ROOT", cfg.ConfigRoot)
 
 	cmd := []string{cfg.TFProfile[cfg.Profile(profile)].BinaryName, "init"}
 
-	os.Setenv("CONFIG_ROOT", cfg.ConfigRoot)
 	for _, bvars := range cfg.TFProfile[cfg.Profile(profile)].Init.BackendConfig {
 		b := strings.ReplaceAll(bvars, "~", "$HOME")
 		bb, err := fsmodtime.ExpandEnv([]string{b})
