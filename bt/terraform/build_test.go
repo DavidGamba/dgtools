@@ -54,6 +54,7 @@ func TestBuild(t *testing.T) {
 		})
 		ctx = run.ContextWithRunInfo(ctx, mock)
 		opt := getoptions.New()
+		opt.Bool("dry-run", false)
 		opt.String("profile", "default")
 		opt.String("ws", "")
 		opt.Bool("destroy", false)

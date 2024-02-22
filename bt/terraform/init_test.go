@@ -42,6 +42,7 @@ func TestInit(t *testing.T) {
 		})
 		ctx = run.ContextWithRunInfo(ctx, mock)
 		opt := getoptions.New()
+		opt.Bool("dry-run", false)
 		opt.String("profile", "default")
 		err := initRun(ctx, opt, []string{})
 		if err != nil {
@@ -77,6 +78,7 @@ func TestInit(t *testing.T) {
 		})
 		ctx = run.ContextWithRunInfo(ctx, mock)
 		opt := getoptions.New()
+		opt.Bool("dry-run", false)
 		opt.String("profile", "default")
 		err := initRun(ctx, opt, []string{})
 		if err != nil {
@@ -114,6 +116,7 @@ func TestInit(t *testing.T) {
 		})
 		ctx = run.ContextWithRunInfo(ctx, mock)
 		opt := getoptions.New()
+		opt.Bool("dry-run", false)
 		opt.String("profile", "dev")
 		err := initRun(ctx, opt, []string{})
 		if err != nil {
@@ -150,6 +153,7 @@ func TestInit(t *testing.T) {
 		})
 		ctx = run.ContextWithRunInfo(ctx, mock)
 		opt := getoptions.New()
+		opt.Bool("dry-run", false)
 		opt.String("profile", "prod")
 		err := initRun(ctx, opt, []string{})
 		if err != nil {
