@@ -3,11 +3,11 @@ module github.com/DavidGamba/dgtools/bt
 go 1.22
 
 require (
-	github.com/DavidGamba/dgtools/buildutils v0.3.0
+	github.com/DavidGamba/dgtools/buildutils v0.4.0
 	github.com/DavidGamba/dgtools/cueutils v0.0.0-20240201071851-6dc3d3af21e8
 	github.com/DavidGamba/dgtools/fsmodtime v0.2.0
-	github.com/DavidGamba/dgtools/run v0.8.0
-	github.com/DavidGamba/go-getoptions v0.29.1-0.20240105065605-b7ada72ecac6
+	github.com/DavidGamba/dgtools/run v0.9.0
+	github.com/DavidGamba/go-getoptions v0.30.0
 	github.com/hashicorp/terraform-config-inspect v0.0.0-20231204233900-a34142ec2a72
 	github.com/mattn/go-isatty v0.0.20
 )
