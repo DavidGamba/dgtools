@@ -1,6 +1,8 @@
 = Changelog
 :toc:
 
+== v0.4.0: Add Touch function
+
 == v0.3.0: Add FindFileUpwards function
 
 * Add FindFileUpwards function to find a file upwards in the directory tree.
