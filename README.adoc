@@ -34,8 +34,6 @@ link:ffind[] - Fast Regex Find, faster common Find searches using the power of G
 
 link:grepp[] - An improved version of the most common combinations of grep, find and sed/perl, in a single tool.
 
-link:cssh[] - cssh & cscp: ssh and scp wrappers to connect to multiple servers.
-
 link:joinlines[] - Simple utility to join lines from a cli command output.
 
 link:kdecode[] - Decodes K8s secret's data block.
