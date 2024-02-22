@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 
 	"github.com/DavidGamba/dgtools/bt/config"
 	"github.com/DavidGamba/go-getoptions"
@@ -37,6 +38,8 @@ func BuildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	ws := opt.Value("ws").(string)
 
 	cfg := config.ConfigFromContext(ctx)
+	component := ComponentFromContext(ctx)
+	dir := DirFromContext(ctx)
 
 	ws, err := updateWSIfSelected(cfg.Config.DefaultTerraformProfile, cfg.Profile(profile), ws)
 	if err != nil {
@@ -53,7 +56,8 @@ func BuildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 
 	initFn := func(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 		// TODO: Add logic to only run when files have been modified
-		if _, err := os.Stat(".tf.init"); os.IsNotExist(err) {
+		initFile := filepath.Join(dir, ".tf.init")
+		if _, err := os.Stat(initFile); os.IsNotExist(err) {
 			return initRun(ctx, opt, args)
 		}
 		return nil
@@ -72,7 +76,7 @@ func BuildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 		tm.Add("show", showPlanRun)
 	}
 
-	g := dag.NewGraph("build")
+	g := dag.NewGraph(fmt.Sprintf("%s:build", component))
 	g.TaskDependensOn(tm.Get("plan"), tm.Get("init"))
 	if cfg.TFProfile[cfg.Profile(profile)].PreApplyChecks.Enabled {
 		g.TaskDependensOn(tm.Get("checks"), tm.Get("plan"))

@@ -33,3 +33,19 @@ func DirFromContext(ctx context.Context) string {
 	}
 	return "."
 }
+
+type componentContextKey string
+
+const componentKey componentContextKey = "component"
+
+func NewComponentContext(ctx context.Context, value string) context.Context {
+	return context.WithValue(ctx, componentKey, value)
+}
+
+func ComponentFromContext(ctx context.Context) string {
+	v, ok := ctx.Value(componentKey).(string)
+	if ok {
+		return v
+	}
+	return "."
+}

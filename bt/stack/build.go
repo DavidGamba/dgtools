@@ -58,21 +58,25 @@ func BuildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 			return nil
 		}
 	}
-	wsFn := func(dir, ws string) getoptions.CommandFn {
+	wsFn := func(component, dir, ws string) getoptions.CommandFn {
 		return func(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
+			ctx = terraform.NewComponentContext(ctx, component)
 			ctx = terraform.NewDirContext(ctx, dir)
-			opt.SetValue("ws", ws)
+			err := opt.SetValue("ws", ws)
+			if err != nil {
+				return fmt.Errorf("failed to set workspace: %w", err)
+			}
 			return terraform.BuildRun(ctx, opt, args)
 		}
 	}
 
 	for _, c := range cfg.Stack[sconfig.ID(id)].Components {
-		cID := fmt.Sprintf("c: %s", c.ID)
+		cID := string(c.ID)
 		tm.Add(cID, fn(cID))
 		g.AddTask(tm.Get(cID))
 		for _, w := range c.Workspaces {
-			wID := fmt.Sprintf("w: %s-%s", c.ID, w)
-			tm.Add(wID, wsFn(string(c.ID), w))
+			wID := fmt.Sprintf("%s:%s", c.ID, w)
+			tm.Add(wID, wsFn(string(c.ID), c.Path, w))
 			g.AddTask(tm.Get(wID))
 
 			if normal {
@@ -84,15 +88,15 @@ func BuildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	}
 
 	for _, c := range cfg.Stack[sconfig.ID(id)].Components {
-		cID := fmt.Sprintf("c: %s", c.ID)
+		cID := string(c.ID)
 		if normal {
 			for _, e := range c.DependsOn {
-				eID := fmt.Sprintf("c: %s", e)
+				eID := e
 				g.TaskDependensOn(tm.Get(cID), tm.Get(eID))
 			}
 		} else {
 			for _, e := range c.DependsOn {
-				eID := fmt.Sprintf("c: %s", e)
+				eID := e
 				g.TaskDependensOn(tm.Get(eID), tm.Get(cID))
 			}
 		}

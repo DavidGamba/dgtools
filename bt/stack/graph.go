@@ -49,11 +49,11 @@ func GraphRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	}
 
 	for _, c := range cfg.Stack[config.ID(id)].Components {
-		cID := fmt.Sprintf("c: %s", c.ID)
+		cID := string(c.ID)
 		tm.Add(cID, fn)
 		g.AddTask(tm.Get(cID))
 		for _, w := range c.Workspaces {
-			wID := fmt.Sprintf("w: %s-%s", c.ID, w)
+			wID := fmt.Sprintf("%s:%s", c.ID, w)
 			tm.Add(wID, fn)
 			g.AddTask(tm.Get(wID))
 
@@ -66,15 +66,15 @@ func GraphRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	}
 
 	for _, c := range cfg.Stack[config.ID(id)].Components {
-		cID := fmt.Sprintf("c: %s", c.ID)
+		cID := string(c.ID)
 		if normal {
 			for _, e := range c.DependsOn {
-				eID := fmt.Sprintf("c: %s", e)
+				eID := e
 				g.TaskDependensOn(tm.Get(cID), tm.Get(eID))
 			}
 		} else {
 			for _, e := range c.DependsOn {
-				eID := fmt.Sprintf("c: %s", e)
+				eID := e
 				g.TaskDependensOn(tm.Get(eID), tm.Get(cID))
 			}
 		}
