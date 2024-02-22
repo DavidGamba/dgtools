@@ -23,6 +23,8 @@ If you define for example, `conftest` checks, it will run them for you before tr
 * Allow you to work on different workspaces in different terminals.
 It automatically uses the `TF_WORKSPACE` environment variable rather than selecting the workspace.
 
+* Allows you to define stacks of components and their dependencies and orchestrate their deployment (and destruction in the reverse order).
+
 == Install
 
 * Install using homebrew:
@@ -250,8 +252,8 @@ The stack config file allows for this.
 Some regions or environments might not require certain components.
 
 * The stack config file defines 2 different constructs.
-One is the stack definition where the component and their dependencies are defined.
-The other is where the workspaces and variables are defined.
+One is the component definition where the component and its dependencies are defined.
+The other is the stack definition, where the workspaces that compose a given stack and its variables are defined.
 
 * Because component dependencies are tracked, stack builds run in parallel when possible.
 
@@ -277,6 +279,7 @@ component: "dns": {
 	depends_on: ["kubernetes"]
 }
 component: "dev-rbac": {
+	path: "dev-rbac/terraform"
 	depends_on: ["kubernetes", "addons"]
 }
 
@@ -330,6 +333,89 @@ stack: "dev-us-west-2": {
 		}
 	]
 }
+
+stack: "prod-us-west-2": {
+	id: string
+	components: [
+		for k, v in _standard_cluster {
+			[// switch
+				if k == "networking" {
+					v & {
+						workspaces: [
+							"\(id)-k8s",
+						]
+					}
+				},
+				if k == "node_groups" {
+					v & {
+						workspaces: [
+							"\(id)a",
+							"\(id)b",
+							"\(id)c",
+						]
+					}
+				},
+				v & {
+					workspaces: [id]
+				},
+			][0]
+		}
+	]
+}
 ----
 
-Provide: $STACK_NAME, $COMPONENT_NAME, $WORKSPACE_NAME, $PROFILE_NAME
+=== Usage
+
+==== Config
+
+Quickly inspect the config file:
+
+----
+bt stack config
+----
+
+==== Graph
+
+----
+bt stack graph --id=dev-us-west-2 -T png
+----
+
+image::https://github.com/DavidGamba/screenshots/blob/master/dgtools/bt/stack-dev-us-west-2.png[]
+
+----
+bt stack graph --id=prod-us-west-2 -T png
+----
+
+image::https://github.com/DavidGamba/screenshots/blob/master/dgtools/bt/stack-prod-us-west-2.png[]
+
+==== Build
+
+Run all plans in parallel:
+
+----
+bt stack build --id=dev-us-west-2
+----
+
+Run all plans in serial:
+
+----
+bt stack build --id=dev-us-west-2 --serial
+----
+
+Apply the changes:
+
+----
+bt stack build --id=dev-us-west-2 --apply
+----
+
+Destroy (pass both `--destroy` and `--reverse` to destroy in reverse order):
+
+----
+bt stack build --id=dev-us-west-2 --reverse --destroy
+----
+
+Apply the destroy:
+
+----
+bt stack build --id=dev-us-west-2 --reverse --destroy --apply
+----
