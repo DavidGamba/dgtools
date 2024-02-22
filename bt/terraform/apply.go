@@ -46,10 +46,10 @@ func applyRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	planFile := ""
 	if ws == "" {
 		planFile = ".tf.plan"
-		applyFile = filepath.Join(dir, ".tf.apply")
+		applyFile = ".tf.apply"
 	} else {
 		planFile = fmt.Sprintf(".tf.plan-%s", ws)
-		applyFile = filepath.Join(dir, fmt.Sprintf(".tf.apply-%s", ws))
+		applyFile = fmt.Sprintf(".tf.apply-%s", ws)
 	}
 	files, modified, err := fsmodtime.Target(os.DirFS(dir), []string{applyFile}, []string{planFile})
 	if err != nil {
@@ -77,7 +77,7 @@ func applyRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	}
 	err = ri.Run()
 	if err != nil {
-		os.Remove(planFile)
+		os.Remove(filepath.Join(dir, planFile))
 		return fmt.Errorf("failed to run: %w", err)
 	}
 
@@ -85,12 +85,12 @@ func applyRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 		return nil
 	}
 
-	fh, err := os.Create(applyFile)
+	fh, err := os.Create(filepath.Join(dir, applyFile))
 	if err != nil {
 		return fmt.Errorf("failed to create file: %w", err)
 	}
 	fh.Close()
-	Logger.Printf("Create %s\n", applyFile)
+	Logger.Printf("Create %s\n", filepath.Join(dir, applyFile))
 
 	return nil
 }

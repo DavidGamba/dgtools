@@ -74,7 +74,7 @@ func planRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 		planFile = fmt.Sprintf(".tf.plan-%s", ws)
 	}
 
-	cwd, err := os.Getwd()
+	cwd, err := filepath.Abs(dir)
 	if err != nil {
 		return fmt.Errorf("failed to get current dir: %w", err)
 	}
