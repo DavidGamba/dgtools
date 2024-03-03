@@ -21,6 +21,8 @@ Runnign `cd qa` will change the directory to `repo/qa/a/b` instead of having to 
 
 ----
 alias cd='cdd'
+# Use bash built in completion for cd to allow for filenames to be used
+complete -r cd 2>/dev/null
 ----
 
 ----
