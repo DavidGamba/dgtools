@@ -1,0 +1,65 @@
+= cd-helper: Helper for cdd an extension for cd
+
+Extend cd with a number of helpers:
+
+* cd to the directory of the given file.
+Instead of failing like cd does.
+
+* cd to the directory matching the given string as an equivalent in the path.
+For example, given the following tree:
++
+----
+|
+|- repo/dev/a/b   # PWD
+|- repo/qa/a/b
+|- repo/prod/a/b
+----
++
+Runnign `cd qa` will change the directory to `repo/qa/a/b` instead of having to type `cd ../../qa/a/b`.
+
+== Setup
+
+----
+alias cd='cdd'
+----
+
+----
+# cdd allows you to cd to the directory of the given file or directory
+function cdd()
+{
+	if [[ $# -eq 0 ]]; then
+		cd
+	elif [[ "$1" == "-" ]]; then
+		cd "$*"
+	elif [[ -d "$*" ]]; then
+		cd "$*"
+	elif [[ -f "$*" ]]; then
+		echo "WARNING: file given, cd to file's dirname" 1>&2
+		local dir
+		dir=$(dirname "$*")
+		cd "$dir"
+	elif [[ "$1" == *"/"* ]]; then
+		cd "$*"
+	else
+		# Try to use the given target as an element in the path
+		# Example:
+		# tree:
+		# /home/david/
+		#    dev/a/b
+		#    qa/a/b
+		#    prod/a/b
+		# PWD=/home/david/dev/a/b
+		# $ cd qa
+		# will change dir to /home/david/qa/a/b
+		local dir
+		dir=$(cd-helper -q "$*")
+		retval=$?
+		>&2 echo "found: '${dir/$HOME/~}'"
+		if [[ $retval -ne 1 ]]; then
+			cd $dir
+		else
+			cd "$*"
+		fi
+	fi
+}
+----
