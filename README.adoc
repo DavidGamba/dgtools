@@ -50,6 +50,8 @@ link:reverseproxy[] - Creates a very simple reverse proxy that allows to proxy m
 
 link:clitable[csvtable] - Pretty print csv input as a table.
 
+link:eenv[eenv] - Print your environment like env but with the keys, passwords and tokens hidden.
+
 === Homebrew
 
 Some tools are published with homebrew:
