@@ -5,10 +5,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/DavidGamba/dgtools/bt/stack/config"
+	sconfig "github.com/DavidGamba/dgtools/bt/stack/config"
 	"github.com/DavidGamba/dgtools/run"
 	"github.com/DavidGamba/go-getoptions"
-	"github.com/DavidGamba/go-getoptions/dag"
 )
 
 func GraphCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
@@ -39,55 +38,11 @@ func GraphRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 
 	normal := !reverse
 
-	cfg := config.ConfigFromContext(ctx)
+	cfg := sconfig.ConfigFromContext(ctx)
 
-	tm := dag.NewTaskMap()
-	g := dag.NewGraph("stack " + id)
-
-	fn := func(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
-		return nil
-	}
-
-	for _, c := range cfg.Stack[config.ID(id)].Components {
-		cID := string(c.ID)
-		tm.Add(cID, fn)
-		g.AddTask(tm.Get(cID))
-		for _, w := range c.Workspaces {
-			wID := fmt.Sprintf("%s:%s", c.ID, w)
-			tm.Add(wID, fn)
-			g.AddTask(tm.Get(wID))
-
-			if normal {
-				g.TaskDependensOn(tm.Get(cID), tm.Get(wID))
-			} else {
-				g.TaskDependensOn(tm.Get(wID), tm.Get(cID))
-			}
-		}
-	}
-
-	for _, c := range cfg.Stack[config.ID(id)].Components {
-		if normal {
-			for _, e := range c.DependsOn {
-				eID := e
-				for _, w := range c.Workspaces {
-					wID := fmt.Sprintf("%s:%s", c.ID, w)
-					g.TaskDependensOn(tm.Get(wID), tm.Get(eID))
-				}
-			}
-		} else {
-			for _, e := range c.DependsOn {
-				eID := e
-				for _, w := range c.Workspaces {
-					wID := fmt.Sprintf("%s:%s", c.ID, w)
-					g.TaskDependensOn(tm.Get(eID), tm.Get(wID))
-				}
-			}
-		}
-	}
-
-	err := g.Validate(tm)
+	g, err := generateDAG(id, cfg, normal)
 	if err != nil {
-		return fmt.Errorf("failed to build graph: %w", err)
+		return err
 	}
 
 	fmt.Printf("%s\n", g)
