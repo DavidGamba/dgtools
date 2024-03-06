@@ -3,8 +3,10 @@ package config
 import "fmt"
 
 type Config struct {
-	Component map[ID]Component `json:"component"`
-	Stack     map[ID]Stack     `json:"stack"`
+	Component  map[ID]Component `json:"component"`
+	Stack      map[ID]Stack     `json:"stack"`
+	ConfigRoot string           `json:"config_root"`
+	ConfigFile string           `json:"config_file"`
 }
 
 type Component struct {

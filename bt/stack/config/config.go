@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/DavidGamba/dgtools/buildutils"
 	"github.com/DavidGamba/dgtools/cueutils"
@@ -34,6 +35,9 @@ func Get(ctx context.Context, filename string) (*Config, string, error) {
 	if err != nil {
 		return &Config{}, f, fmt.Errorf("failed to read config: %w", err)
 	}
+
+	cfg.ConfigFile = f
+	cfg.ConfigRoot = filepath.Dir(f)
 
 	return cfg, f, nil
 }

@@ -3,6 +3,8 @@ package stack
 import (
 	"context"
 	"fmt"
+	"os"
+	"path/filepath"
 
 	sconfig "github.com/DavidGamba/dgtools/bt/stack/config"
 	"github.com/DavidGamba/dgtools/bt/terraform"
@@ -14,6 +16,11 @@ func generateDAG(id string, cfg *sconfig.Config, normal bool) (*dag.Graph, error
 	tm := dag.NewTaskMap()
 	g := dag.NewGraph("stack " + id)
 
+	wd, err := os.Getwd()
+	if err != nil {
+		return g, fmt.Errorf("failed to get current working directory: %w", err)
+	}
+
 	emptyFn := func(dir string) getoptions.CommandFn {
 		return func(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 			return nil
@@ -22,14 +29,24 @@ func generateDAG(id string, cfg *sconfig.Config, normal bool) (*dag.Graph, error
 	normalFn := func(component, dir string) getoptions.CommandFn {
 		return func(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 			ctx = terraform.NewComponentContext(ctx, component)
-			ctx = terraform.NewDirContext(ctx, dir)
+			d := filepath.Join(cfg.ConfigRoot, dir)
+			d, err = filepath.Rel(wd, d)
+			if err != nil {
+				return fmt.Errorf("failed to get relative path: %w", err)
+			}
+			ctx = terraform.NewDirContext(ctx, d)
 			return terraform.BuildRun(ctx, opt, args)
 		}
 	}
 	wsFn := func(component, dir, ws string) getoptions.CommandFn {
 		return func(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 			ctx = terraform.NewComponentContext(ctx, fmt.Sprintf("%s:%s", component, ws))
-			ctx = terraform.NewDirContext(ctx, dir)
+			d := filepath.Join(cfg.ConfigRoot, dir)
+			d, err = filepath.Rel(wd, d)
+			if err != nil {
+				return fmt.Errorf("failed to get relative path: %w", err)
+			}
+			ctx = terraform.NewDirContext(ctx, d)
 			err := opt.SetValue("ws", ws)
 			if err != nil {
 				return fmt.Errorf("failed to set workspace: %w", err)
@@ -97,7 +114,7 @@ func generateDAG(id string, cfg *sconfig.Config, normal bool) (*dag.Graph, error
 		}
 	}
 
-	err := g.Validate(tm)
+	err = g.Validate(tm)
 	if err != nil {
 		return g, fmt.Errorf("failed to build graph: %w", err)
 	}
