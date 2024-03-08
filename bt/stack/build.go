@@ -15,20 +15,16 @@ func BuildCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt
 
 	opt := parent.NewCommand("build", "Builds the stack")
 	opt.SetCommandFn(BuildRun)
-	opt.Bool("dry-run", false)
-	opt.Bool("serial", false)
-	opt.Bool("reverse", false, opt.Description("Reverses the order of operation"))
+	opt.Bool("apply", false, opt.Description("Apply Terraform plan"))
 	opt.Bool("destroy", false)
 	opt.Bool("detailed-exitcode", false)
+	opt.Bool("dry-run", false)
 	opt.Bool("ignore-cache", false, opt.Description("Ignore the cache and re-run the plan"), opt.Alias("ic"))
 	opt.Bool("no-checks", false, opt.Description("Do not run pre-apply checks"), opt.Alias("nc"))
-	opt.Bool("apply", false, opt.Description("Apply Terraform plan"))
+	opt.Bool("reverse", false, opt.Description("Reverses the order of operation"))
+	opt.Bool("serial", false)
 	opt.Bool("show", false, opt.Description("Show Terraform plan"))
 	opt.String("profile", "default", opt.Description("BT Terraform Profile to use"), opt.GetEnv(cfg.Config.TerraformProfileEnvVar))
-	opt.StringSlice("var-file", 1, 1)
-	opt.StringSlice("target", 1, 99)
-	opt.StringSlice("replace", 1, 99)
-	opt.String("ws", "", opt.Description("Workspace to use"))
 
 	return opt
 }
@@ -48,7 +44,7 @@ func BuildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 
 	cfg := sconfig.ConfigFromContext(ctx)
 
-	g, err := generateDAG(id, cfg, normal)
+	g, err := generateDAG(opt, id, cfg, normal)
 	if err != nil {
 		return err
 	}

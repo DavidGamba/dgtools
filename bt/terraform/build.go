@@ -16,16 +16,17 @@ import (
 func buildCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
 	opt := parent.NewCommand("build", "Wraps init, plan and apply into a single operation with a cache")
 	opt.SetCommandFn(BuildRun)
-	opt.StringSlice("var-file", 1, 1)
-	opt.Bool("dry-run", false)
+	opt.Bool("apply", false, opt.Description("Apply Terraform plan"))
 	opt.Bool("destroy", false)
 	opt.Bool("detailed-exitcode", false)
+	opt.Bool("dry-run", false)
 	opt.Bool("ignore-cache", false, opt.Description("Ignore the cache and re-run the plan"), opt.Alias("ic"))
 	opt.Bool("no-checks", false, opt.Description("Do not run pre-apply checks"), opt.Alias("nc"))
-	opt.StringSlice("target", 1, 99)
-	opt.StringSlice("replace", 1, 99)
-	opt.Bool("apply", false, opt.Description("Apply Terraform plan"))
 	opt.Bool("show", false, opt.Description("Show Terraform plan"))
+	opt.StringSlice("replace", 1, 99)
+	opt.StringSlice("target", 1, 99)
+	opt.StringSlice("var", 1, 99)
+	opt.StringSlice("var-file", 1, 1)
 
 	return opt
 }

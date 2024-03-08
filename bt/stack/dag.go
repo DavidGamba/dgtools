@@ -12,7 +12,7 @@ import (
 	"github.com/DavidGamba/go-getoptions/dag"
 )
 
-func generateDAG(id string, cfg *sconfig.Config, normal bool) (*dag.Graph, error) {
+func generateDAG(opt *getoptions.GetOpt, id string, cfg *sconfig.Config, normal bool) (*dag.Graph, error) {
 	tm := dag.NewTaskMap()
 	g := dag.NewGraph("stack " + id)
 
@@ -26,19 +26,7 @@ func generateDAG(id string, cfg *sconfig.Config, normal bool) (*dag.Graph, error
 			return nil
 		}
 	}
-	normalFn := func(component, dir string) getoptions.CommandFn {
-		return func(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
-			ctx = terraform.NewComponentContext(ctx, component)
-			d := filepath.Join(cfg.ConfigRoot, dir)
-			d, err = filepath.Rel(wd, d)
-			if err != nil {
-				return fmt.Errorf("failed to get relative path: %w", err)
-			}
-			ctx = terraform.NewDirContext(ctx, d)
-			return terraform.BuildRun(ctx, opt, args)
-		}
-	}
-	wsFn := func(component, dir, ws string) getoptions.CommandFn {
+	wsFn := func(component, dir, ws string, variables []string) getoptions.CommandFn {
 		return func(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 			ctx = terraform.NewComponentContext(ctx, fmt.Sprintf("%s:%s", component, ws))
 			d := filepath.Join(cfg.ConfigRoot, dir)
@@ -47,16 +35,36 @@ func generateDAG(id string, cfg *sconfig.Config, normal bool) (*dag.Graph, error
 				return fmt.Errorf("failed to get relative path: %w", err)
 			}
 			ctx = terraform.NewDirContext(ctx, d)
-			err := opt.SetValue("ws", ws)
+
+			nopt := getoptions.New()
+			nopt.Bool("apply", opt.Value("apply").(bool))
+			nopt.Bool("destroy", opt.Value("destroy").(bool))
+			nopt.Bool("detailed-exitcode", opt.Value("detailed-exitcode").(bool))
+			nopt.Bool("dry-run", opt.Value("dry-run").(bool))
+			nopt.Bool("ignore-cache", opt.Value("ignore-cache").(bool))
+			nopt.Bool("no-checks", opt.Value("no-checks").(bool))
+			nopt.Bool("show", opt.Value("show").(bool))
+			nopt.String("profile", opt.Value("profile").(string))
+			nopt.String("ws", ws)
+			nopt.StringSlice("replace", 1, 99)
+			nopt.StringSlice("target", 1, 99)
+			nopt.StringSlice("var", 1, 99)
+			nopt.StringSlice("var-file", 1, 1)
+			err = nopt.SetValue("var", variables...)
 			if err != nil {
-				return fmt.Errorf("failed to set workspace: %w", err)
+				return fmt.Errorf("failed to set variables: %w", err)
 			}
-			return terraform.BuildRun(ctx, opt, args)
+
+			return terraform.BuildRun(ctx, nopt, args)
 		}
 	}
 
 	for _, c := range cfg.Stack[sconfig.ID(id)].Components {
 		cID := string(c.ID)
+		variables := []string{}
+		for _, v := range c.Variables {
+			variables = append(variables, v.String())
+		}
 
 		if len(c.Workspaces) > 0 {
 			// workspace mode
@@ -64,8 +72,9 @@ func generateDAG(id string, cfg *sconfig.Config, normal bool) (*dag.Graph, error
 			g.AddTask(tm.Get(cID))
 			for _, w := range c.Workspaces {
 				wID := fmt.Sprintf("%s:%s", cID, w)
-				tm.Add(wID, wsFn(cID, c.Path, w))
+				tm.Add(wID, wsFn(cID, c.Path, w, variables))
 				g.AddTask(tm.Get(wID))
+				Logger.Printf("adding task %s on %s ws %s vars: %v\n", wID, c.Path, w, variables)
 
 				if normal {
 					g.TaskDependensOn(tm.Get(cID), tm.Get(wID))
@@ -75,7 +84,8 @@ func generateDAG(id string, cfg *sconfig.Config, normal bool) (*dag.Graph, error
 			}
 		} else {
 			// normal mode
-			tm.Add(cID, normalFn(cID, c.Path))
+			tm.Add(cID, wsFn(cID, c.Path, "", variables))
+			Logger.Printf("adding task %s on %s vars: %v\n", cID, c.Path, variables)
 			g.AddTask(tm.Get(cID))
 		}
 	}
