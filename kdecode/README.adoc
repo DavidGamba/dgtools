@@ -2,7 +2,63 @@
 
 Decodes K8s secret's data block.
 
-Cluster selection can be done using the `--cluster` flag to avoid having to change the current context when comparing multiple clusters.
+Change namespace with the `--namespace` or `-n` flag.
+
+Cluster selection can be done using the `--cluster` or `-c` flag to avoid having to change the current context when comparing multiple clusters.
+
+You can limit the output to a single key within the secret with the `--key` or `-k` flag.
+
+Additionally, if the secret is a PEM encoded certificate, you can pass the `--pem` flag to decode the certificate and print the details.
+
+== Examples
+
+.Decode a secret as a PEM certificate and pass the namespace, the cluster and filter to a single key
+----
+kdecode argo-server-tls -n argocd -c prod-cluster -k tls.crt -pem
+tls.crt=
+Certificate 0
+	Issuer: CN=R3,O=Let's Encrypt,C=US
+	Subject: CN=cd.argo.example.com
+	NotBefore: 2024-03-22 18:03:13 +0000 UTC
+	NotAfter: 2024-06-20 18:03:12 +0000 UTC
+	SignatureAlgorithm: SHA256-RSA
+	PublicKeyAlgorithm: RSA
+	SerialNumber: 111111111111111111111111111111111111111111
+	KeyUsage: 
+	OCSPServer: [http://r3.o.lencr.org]
+	IssuingCertificateURL: [http://r3.i.lencr.org/]
+	DNSNames: [cd.argo.example.com]
+Certificate 1
+	Issuer: CN=ISRG Root X1,O=Internet Security Research Group,C=US
+	Subject: CN=R3,O=Let's Encrypt,C=US
+	NotBefore: 2020-09-04 00:00:00 +0000 UTC
+	NotAfter: 2025-09-15 16:00:00 +0000 UTC
+	SignatureAlgorithm: SHA256-RSA
+	PublicKeyAlgorithm: RSA
+	SerialNumber: 222222222222222222222222222222222222222
+	KeyUsage: 
+	IssuingCertificateURL: [http://x1.i.lencr.org/]
+	CRLDistributionPoints: [http://x1.c.lencr.org/]
+Certificate 2
+	Issuer: CN=DST Root CA X3,O=Digital Signature Trust Co.
+	Subject: CN=ISRG Root X1,O=Internet Security Research Group,C=US
+	NotBefore: 2021-01-20 19:14:03 +0000 UTC
+	NotAfter: 2024-09-30 18:14:03 +0000 UTC
+	SignatureAlgorithm: SHA256-RSA
+	PublicKeyAlgorithm: RSA
+	SerialNumber: 33333333333333333333333333333333333333
+	KeyUsage: 
+	IssuingCertificateURL: [http://apps.identrust.com/roots/dstrootcax3.p7c]
+	CRLDistributionPoints: [http://crl.identrust.com/DSTROOTCAX3CRL.crl]
+----
+
+.Decode a secret as a PEM certificate and use the current namespace and the current context and filter to a single key
+----
+kdecode argo-server-tls -k tls.crt -pem # current context and namespace
+tls.crt=
+Certificate 0
+	...
+----
 
 == Installation
 
