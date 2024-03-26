@@ -113,7 +113,7 @@ func Run(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 					fmt.Printf("\n%s\n", info)
 				}
 			} else {
-				fmt.Printf("%s=%s\n", k, string(v))
+				fmt.Printf("%s\n", string(v))
 			}
 		}
 	}
@@ -121,15 +121,15 @@ func Run(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 		if (key != "" && k == key) || key == "" {
 			fmt.Printf("%s=", k)
 			if pem {
-				info, err := ParseCert(string(v))
+				info, err := ParseCert(v)
 				if err != nil {
-					fmt.Printf("%s\n", string(v))
+					fmt.Printf("%s\n", v)
 					Logger.Printf("%s\n", err)
 				} else {
 					fmt.Printf("\n%s\n", info)
 				}
 			} else {
-				fmt.Printf("%s=%s\n", k, v)
+				fmt.Printf("%s\n", v)
 			}
 		}
 	}
