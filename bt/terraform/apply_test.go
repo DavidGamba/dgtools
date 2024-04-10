@@ -28,7 +28,7 @@ func TestApply(t *testing.T) {
 			if r.GetDir() != tDir {
 				return fmt.Errorf("unexpected dir: %s", r.GetDir())
 			}
-			if !slices.Equal(r.Cmd, []string{"terraform", "apply", "-input", ".tf.plan-dev", "-no-color"}) {
+			if !slices.Equal(r.Cmd, []string{"terraform", "apply", "-parallelism", "10", "-input", ".tf.plan-dev", "-no-color"}) {
 				return fmt.Errorf("unexpected cmd: %v", r.Cmd)
 			}
 			for _, e := range r.GetEnv() {
@@ -43,6 +43,7 @@ func TestApply(t *testing.T) {
 		ctx = run.ContextWithRunInfo(ctx, mock)
 		opt := getoptions.New()
 		opt.Bool("dry-run", false)
+		opt.Int("parallelism", 10)
 		opt.String("profile", "default")
 		opt.String("ws", "dev")
 		err := applyRun(ctx, opt, []string{})
@@ -65,7 +66,7 @@ func TestApply(t *testing.T) {
 			if r.GetDir() != "." {
 				return fmt.Errorf("unexpected dir: %s", r.GetDir())
 			}
-			if !slices.Equal(r.Cmd, []string{"tofu", "apply", "-input", ".tf.plan-dev", "-no-color"}) {
+			if !slices.Equal(r.Cmd, []string{"tofu", "apply", "-parallelism", "10", "-input", ".tf.plan-dev", "-no-color"}) {
 				return fmt.Errorf("unexpected cmd: %v", r.Cmd)
 			}
 			for _, e := range r.GetEnv() {
@@ -80,6 +81,7 @@ func TestApply(t *testing.T) {
 		ctx = run.ContextWithRunInfo(ctx, mock)
 		opt := getoptions.New()
 		opt.Bool("dry-run", false)
+		opt.Int("parallelism", 10)
 		opt.String("profile", "default")
 		opt.String("ws", "dev")
 		err := applyRun(ctx, opt, []string{})
@@ -104,7 +106,7 @@ func TestApply(t *testing.T) {
 			if r.GetDir() != tDir {
 				return fmt.Errorf("unexpected dir: %s", r.GetDir())
 			}
-			if !slices.Equal(r.Cmd, []string{"tofu", "apply", "-input", ".tf.plan-dev", "-no-color"}) {
+			if !slices.Equal(r.Cmd, []string{"tofu", "apply", "-parallelism", "10", "-input", ".tf.plan-dev", "-no-color"}) {
 				return fmt.Errorf("unexpected cmd: %v", r.Cmd)
 			}
 			for _, e := range r.GetEnv() {
@@ -119,6 +121,7 @@ func TestApply(t *testing.T) {
 		ctx = run.ContextWithRunInfo(ctx, mock)
 		opt := getoptions.New()
 		opt.Bool("dry-run", false)
+		opt.Int("parallelism", 10)
 		opt.String("profile", "dev")
 		opt.String("ws", "dev")
 		err := applyRun(ctx, opt, []string{})
@@ -142,7 +145,7 @@ func TestApply(t *testing.T) {
 			if r.GetDir() != tDir {
 				return fmt.Errorf("unexpected dir: %s", r.GetDir())
 			}
-			if !slices.Equal(r.Cmd, []string{"terraform", "apply", "-input", ".tf.plan-prod", "-no-color"}) {
+			if !slices.Equal(r.Cmd, []string{"terraform", "apply", "-parallelism", "10", "-input", ".tf.plan-prod", "-no-color"}) {
 				return fmt.Errorf("unexpected cmd: %v", r.Cmd)
 			}
 			for _, e := range r.GetEnv() {
@@ -157,6 +160,7 @@ func TestApply(t *testing.T) {
 		ctx = run.ContextWithRunInfo(ctx, mock)
 		opt := getoptions.New()
 		opt.Bool("dry-run", false)
+		opt.Int("parallelism", 10)
 		opt.String("profile", "prod")
 		opt.String("ws", "prod")
 		err := applyRun(ctx, opt, []string{})

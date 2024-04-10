@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/DavidGamba/dgtools/bt/config"
@@ -23,6 +24,7 @@ func planCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt 
 	opt.Bool("destroy", false)
 	opt.Bool("detailed-exitcode", false)
 	opt.Bool("ignore-cache", false, opt.Description("ignore the cache and re-run the plan"), opt.Alias("ic"))
+	opt.Int("parallelism", 10*runtime.NumCPU())
 	opt.StringSlice("var-file", 1, 1)
 	opt.StringSlice("var", 1, 99)
 	opt.StringSlice("target", 1, 99)
@@ -38,6 +40,7 @@ func planRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	destroy := opt.Value("destroy").(bool)
 	detailedExitcode := opt.Value("detailed-exitcode").(bool)
 	ignoreCache := opt.Value("ignore-cache").(bool)
+	parallelism := opt.Value("parallelism").(int)
 	varFiles := opt.Value("var-file").([]string)
 	variables := opt.Value("var").([]string)
 	targets := opt.Value("target").([]string)
@@ -155,6 +158,8 @@ func planRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	}
 
 	cmd := []string{cfg.TFProfile[cfg.Profile(profile)].BinaryName, "plan", "-out", planFile}
+
+	cmd = append(cmd, "-parallelism", fmt.Sprintf("%d", parallelism))
 	for _, v := range defaultVarFiles {
 		cmd = append(cmd, "-var-file", v)
 	}

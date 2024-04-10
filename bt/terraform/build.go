@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 
 	"github.com/DavidGamba/dgtools/bt/config"
 	"github.com/DavidGamba/go-getoptions"
@@ -23,6 +24,7 @@ func buildCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt
 	opt.Bool("ignore-cache", false, opt.Description("Ignore the cache and re-run the plan"), opt.Alias("ic"))
 	opt.Bool("no-checks", false, opt.Description("Do not run pre-apply checks"), opt.Alias("nc"))
 	opt.Bool("show", false, opt.Description("Show Terraform plan"))
+	opt.Int("parallelism", 10*runtime.NumCPU())
 	opt.StringSlice("replace", 1, 99)
 	opt.StringSlice("target", 1, 99)
 	opt.StringSlice("var", 1, 99)

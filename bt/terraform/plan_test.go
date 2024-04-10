@@ -29,7 +29,7 @@ func TestPlan(t *testing.T) {
 			if r.GetDir() != tDir {
 				return fmt.Errorf("unexpected dir: %s", r.GetDir())
 			}
-			if !slices.Equal(r.Cmd, []string{"terraform", "plan", "-out", ".tf.plan", "-no-color"}) {
+			if !slices.Equal(r.Cmd, []string{"terraform", "plan", "-out", ".tf.plan", "-parallelism", "10", "-no-color"}) {
 				return fmt.Errorf("unexpected cmd: %v", r.Cmd)
 			}
 			for _, e := range r.GetEnv() {
@@ -44,11 +44,13 @@ func TestPlan(t *testing.T) {
 		ctx = run.ContextWithRunInfo(ctx, mock)
 		opt := getoptions.New()
 		opt.Bool("dry-run", false)
+		opt.Int("parallelism", 10)
 		opt.String("profile", "default")
 		opt.Bool("destroy", false)
 		opt.Bool("detailed-exitcode", false)
 		opt.Bool("ignore-cache", false)
 		opt.String("ws", "")
+		opt.StringSlice("var", 1, 1)
 		opt.StringSlice("var-file", 1, 1)
 		opt.StringSlice("target", 1, 99)
 		opt.StringSlice("replace", 1, 99)
@@ -72,7 +74,7 @@ func TestPlan(t *testing.T) {
 			if r.GetDir() != tDir {
 				return fmt.Errorf("unexpected dir: %s", r.GetDir())
 			}
-			if !slices.Equal(r.Cmd, []string{"tofu", "plan", "-out", ".tf.plan-dev", "-var-file", "/home/user/dev-backend-config.json", "-var-file", "environments/dev.tfvars", "-no-color"}) {
+			if !slices.Equal(r.Cmd, []string{"tofu", "plan", "-out", ".tf.plan-dev", "-parallelism", "10", "-var-file", "/home/user/dev-backend-config.json", "-var-file", "environments/dev.tfvars", "-no-color"}) {
 				return fmt.Errorf("unexpected cmd: %v", r.Cmd)
 			}
 			for _, e := range r.GetEnv() {
@@ -87,11 +89,13 @@ func TestPlan(t *testing.T) {
 		ctx = run.ContextWithRunInfo(ctx, mock)
 		opt := getoptions.New()
 		opt.Bool("dry-run", false)
+		opt.Int("parallelism", 10)
 		opt.String("profile", "default")
 		opt.Bool("destroy", false)
 		opt.Bool("detailed-exitcode", false)
 		opt.Bool("ignore-cache", false)
 		opt.String("ws", "dev")
+		opt.StringSlice("var", 1, 1)
 		opt.StringSlice("var-file", 1, 1)
 		opt.StringSlice("target", 1, 99)
 		opt.StringSlice("replace", 1, 99)
@@ -115,7 +119,7 @@ func TestPlan(t *testing.T) {
 			if r.GetDir() != tDir {
 				return fmt.Errorf("unexpected dir: %s", r.GetDir())
 			}
-			if !slices.Equal(r.Cmd, []string{"tofu", "plan", "-out", ".tf.plan-dev", "-var-file", "/home/user/dev-backend-config.json", "-var-file", "environments/dev.tfvars", "-no-color"}) {
+			if !slices.Equal(r.Cmd, []string{"tofu", "plan", "-out", ".tf.plan-dev", "-parallelism", "10", "-var-file", "/home/user/dev-backend-config.json", "-var-file", "environments/dev.tfvars", "-no-color"}) {
 				return fmt.Errorf("unexpected cmd: %v", r.Cmd)
 			}
 			for _, e := range r.GetEnv() {
@@ -130,11 +134,13 @@ func TestPlan(t *testing.T) {
 		ctx = run.ContextWithRunInfo(ctx, mock)
 		opt := getoptions.New()
 		opt.Bool("dry-run", false)
+		opt.Int("parallelism", 10)
 		opt.String("profile", "dev")
 		opt.Bool("destroy", false)
 		opt.Bool("detailed-exitcode", false)
 		opt.Bool("ignore-cache", false)
 		opt.String("ws", "dev")
+		opt.StringSlice("var", 1, 1)
 		opt.StringSlice("var-file", 1, 1)
 		opt.StringSlice("target", 1, 99)
 		opt.StringSlice("replace", 1, 99)
@@ -158,7 +164,7 @@ func TestPlan(t *testing.T) {
 			if r.GetDir() != tDir {
 				return fmt.Errorf("unexpected dir: %s", r.GetDir())
 			}
-			if !slices.Equal(r.Cmd, []string{"terraform", "plan", "-out", ".tf.plan-prod", "-var-file", "/tmp/terraform-project/prod-backend-config.json", "-var-file", "environments/prod.tfvars", "-no-color"}) {
+			if !slices.Equal(r.Cmd, []string{"terraform", "plan", "-out", ".tf.plan-prod", "-parallelism", "10", "-var-file", "/tmp/terraform-project/prod-backend-config.json", "-var-file", "environments/prod.tfvars", "-no-color"}) {
 				return fmt.Errorf("unexpected cmd: %v", r.Cmd)
 			}
 			for _, e := range r.GetEnv() {
@@ -173,11 +179,13 @@ func TestPlan(t *testing.T) {
 		ctx = run.ContextWithRunInfo(ctx, mock)
 		opt := getoptions.New()
 		opt.Bool("dry-run", false)
+		opt.Int("parallelism", 10)
 		opt.String("profile", "prod")
 		opt.Bool("destroy", false)
 		opt.Bool("detailed-exitcode", false)
 		opt.Bool("ignore-cache", false)
 		opt.String("ws", "prod")
+		opt.StringSlice("var", 1, 1)
 		opt.StringSlice("var-file", 1, 1)
 		opt.StringSlice("target", 1, 99)
 		opt.StringSlice("replace", 1, 99)

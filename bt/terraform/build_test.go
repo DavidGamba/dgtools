@@ -33,11 +33,11 @@ func TestBuild(t *testing.T) {
 					return fmt.Errorf("unexpected cmd: %v", r.Cmd)
 				}
 			case "plan":
-				if !slices.Equal(r.Cmd, []string{"terraform", "plan", "-out", ".tf.plan", "-no-color"}) {
+				if !slices.Equal(r.Cmd, []string{"terraform", "plan", "-out", ".tf.plan", "-parallelism", "10", "-no-color"}) {
 					return fmt.Errorf("unexpected cmd: %v", r.Cmd)
 				}
 			case "apply":
-				if !slices.Equal(r.Cmd, []string{"terraform", "apply", "-input", ".tf.plan-dev", "-no-color"}) {
+				if !slices.Equal(r.Cmd, []string{"terraform", "apply", "-parallelism", "10", "-input", ".tf.plan-dev", "-no-color"}) {
 					return fmt.Errorf("unexpected cmd: %v", r.Cmd)
 				}
 			default:
@@ -55,6 +55,7 @@ func TestBuild(t *testing.T) {
 		ctx = run.ContextWithRunInfo(ctx, mock)
 		opt := getoptions.New()
 		opt.Bool("dry-run", false)
+		opt.Int("parallelism", 10)
 		opt.String("profile", "default")
 		opt.String("ws", "")
 		opt.Bool("destroy", false)
@@ -63,6 +64,7 @@ func TestBuild(t *testing.T) {
 		opt.Bool("no-checks", false)
 		opt.Bool("apply", false)
 		opt.Bool("show", false)
+		opt.StringSlice("var", 1, 1)
 		opt.StringSlice("var-file", 1, 1)
 		opt.StringSlice("target", 1, 99)
 		opt.StringSlice("replace", 1, 99)

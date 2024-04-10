@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 
 	"github.com/DavidGamba/dgtools/bt/config"
 	"github.com/DavidGamba/dgtools/fsmodtime"
@@ -16,12 +17,14 @@ import (
 func applyCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
 	opt := parent.NewCommand("apply", "")
 	opt.Bool("dry-run", false)
+	opt.Int("parallelism", 10*runtime.NumCPU())
 	opt.SetCommandFn(applyRun)
 	return opt
 }
 
 func applyRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	dryRun := opt.Value("dry-run").(bool)
+	parallelism := opt.Value("parallelism").(int)
 	ws := opt.Value("ws").(string)
 	profile := opt.Value("profile").(string)
 
@@ -62,6 +65,7 @@ func applyRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	Logger.Printf("modified: %v\n", files)
 
 	cmd := []string{cfg.TFProfile[cfg.Profile(profile)].BinaryName, "apply"}
+	cmd = append(cmd, "-parallelism", fmt.Sprintf("%d", parallelism))
 	cmd = append(cmd, "-input", planFile)
 	if !isatty.IsTerminal(os.Stdout.Fd()) {
 		cmd = append(cmd, "-no-color")
