@@ -50,6 +50,7 @@ func generateDAG(opt *getoptions.GetOpt, id string, cfg *sconfig.Config, normal 
 			nopt.StringSlice("target", 1, 99)
 			nopt.StringSlice("var", 1, 99)
 			nopt.StringSlice("var-file", 1, 1)
+			nopt.Int("parallelism", opt.Value("parallelism").(int))
 			err = nopt.SetValue("var", variables...)
 			if err != nil {
 				return fmt.Errorf("failed to set variables: %w", err)

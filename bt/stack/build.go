@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"runtime"
 
 	"github.com/DavidGamba/dgtools/bt/config"
 	sconfig "github.com/DavidGamba/dgtools/bt/stack/config"
@@ -25,6 +26,7 @@ func BuildCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt
 	opt.Bool("serial", false)
 	opt.Bool("show", false, opt.Description("Show Terraform plan"))
 	opt.String("profile", "default", opt.Description("BT Terraform Profile to use"), opt.GetEnv(cfg.Config.TerraformProfileEnvVar))
+	opt.Int("parallelism", 10*runtime.NumCPU())
 
 	return opt
 }
@@ -48,6 +50,7 @@ func BuildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	if err != nil {
 		return err
 	}
+	g.SetMaxParallel(runtime.NumCPU())
 
 	if serial {
 		g.SetSerial()
