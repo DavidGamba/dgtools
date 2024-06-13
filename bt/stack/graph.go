@@ -55,6 +55,7 @@ func GraphRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 		if err != nil {
 			return fmt.Errorf("failed to generate graph: %w", err)
 		}
+		Logger.Printf("graph saved to: %s\n", filename)
 	}
 
 	return nil

@@ -53,6 +53,7 @@ func NewCommand(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetO
 	validateCMD(ctx, opt)
 	testCMD(ctx, opt)
 	providersCMD(ctx, opt)
+	graphCMD(ctx, opt)
 
 	// Custom
 	buildCMD(ctx, opt)
