@@ -24,6 +24,7 @@ func buildCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt
 	opt.Bool("ignore-cache", false, opt.Description("Ignore the cache and re-run the plan"), opt.Alias("ic"))
 	opt.Bool("no-checks", false, opt.Description("Do not run pre-apply checks"), opt.Alias("nc"))
 	opt.Bool("show", false, opt.Description("Show Terraform plan"))
+	opt.Bool("lock", false, opt.Description("Run 'terraform providers lock' after init"))
 	opt.Int("parallelism", 10*runtime.NumCPU())
 	opt.StringSlice("replace", 1, 99)
 	opt.StringSlice("target", 1, 99)
@@ -37,6 +38,7 @@ func BuildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	profile := opt.Value("profile").(string)
 	apply := opt.Value("apply").(bool)
 	show := opt.Value("show").(bool)
+	lock := opt.Value("lock").(bool)
 	detailedExitcode := opt.Value("detailed-exitcode").(bool)
 	ws := opt.Value("ws").(string)
 
@@ -66,8 +68,23 @@ func BuildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 		return nil
 	}
 
+	lockFn := func(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
+		lockFile := filepath.Join(dir, ".tf.lock")
+		if _, err := os.Stat(lockFile); os.IsNotExist(err) {
+			nopt := getoptions.New()
+			nopt.String("profile", opt.Value("profile").(string))
+			nopt.StringSlice("platform", 1, 99)
+			nopt.String("ws", ws)
+			return providersLockRun(ctx, nopt, args)
+		}
+		return nil
+	}
+
 	tm := dag.NewTaskMap()
 	tm.Add("init", initFn)
+	if lock {
+		tm.Add("lock", lockFn)
+	}
 	tm.Add("plan", planRun)
 	if cfg.TFProfile[cfg.Profile(profile)].PreApplyChecks.Enabled {
 		tm.Add("checks", checksRun)
@@ -81,6 +98,10 @@ func BuildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 
 	g := dag.NewGraph(fmt.Sprintf("%s:build", component))
 	g.TaskDependensOn(tm.Get("plan"), tm.Get("init"))
+	if lock {
+		g.TaskDependensOn(tm.Get("lock"), tm.Get("init"))
+		g.TaskDependensOn(tm.Get("plan"), tm.Get("lock"))
+	}
 	if cfg.TFProfile[cfg.Profile(profile)].PreApplyChecks.Enabled {
 		g.TaskDependensOn(tm.Get("checks"), tm.Get("plan"))
 	}

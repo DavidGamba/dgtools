@@ -25,6 +25,7 @@ func BuildCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt
 	opt.Bool("reverse", false, opt.Description("Reverses the order of operation"))
 	opt.Bool("serial", false)
 	opt.Bool("show", false, opt.Description("Show Terraform plan"))
+	opt.Bool("lock", false, opt.Description("Run 'terraform providers lock' after init"))
 	opt.String("profile", "default", opt.Description("BT Terraform Profile to use"), opt.GetEnv(cfg.Config.TerraformProfileEnvVar))
 	opt.Int("parallelism", 10*runtime.NumCPU())
 

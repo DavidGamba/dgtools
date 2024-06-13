@@ -44,6 +44,7 @@ func generateDAG(opt *getoptions.GetOpt, id string, cfg *sconfig.Config, normal 
 			nopt.Bool("ignore-cache", opt.Value("ignore-cache").(bool))
 			nopt.Bool("no-checks", opt.Value("no-checks").(bool))
 			nopt.Bool("show", opt.Value("show").(bool))
+			nopt.Bool("lock", opt.Value("lock").(bool))
 			nopt.String("profile", opt.Value("profile").(string))
 			nopt.String("ws", ws)
 			nopt.StringSlice("replace", 1, 99)
