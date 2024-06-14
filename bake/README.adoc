@@ -1,0 +1,142 @@
+= Bake
+
+Go Build + Something like Make = Bake ¯\_(ツ)_/¯ 🤷
+
+Bake is a Make like tool that allows you to define and run tasks defined in Go code under a `bake/` dir.
+
+* Tasks have a fully featured argument parser.
+* It allows you to see the description of the tasks and subtasks and autocomplete them and their options.
+* It also bundles a DAG runner that allows you to make tasks depend on other tasks.
+
+== Getting Started
+
+In any directory, run: `bake _bake init` to create a `bake/` directory with an empty project.
+
+Then run: `bake` to see the available tasks.
+
+== Install
+
+* Install using go:
++
+Install the binary into your `~/go/bin`:
++
+----
+go install github.com/DavidGamba/dgtools/bake@latest
+----
++
+Then setup the completion.
++
+For bash:
++
+----
+complete -o default -C bake bake
+----
++
+For zsh:
++
+[source, zsh]
+----
+export ZSHELL="true"
+autoload -U +X compinit && compinit
+autoload -U +X bashcompinit && bashcompinit
+complete -o default -C bake bake
+----
+
+== Example Task
+
+NOTE: A more in depth example can be found https://github.com/DavidGamba/go-getoptions/blob/bake/bake/examples/website/README.adoc[here].
+
+[source, go]
+----
+package main
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/DavidGamba/go-getoptions"
+)
+
+// say:hello - This is a greeting
+func Hello(opt *getoptions.GetOpt) getoptions.CommandFn {
+	var lang string
+	opt.StringVar(&lang, "lang", "en", opt.ValidValues("en", "es"))
+	return func(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
+		Logger.Printf("Running %s\n", opt.GetCommandName())
+
+		switch lang {
+		case "en":
+			fmt.Println("Hello")
+		case "es":
+			fmt.Println("Hola")
+		}
+
+		return nil
+	}
+}
+----
+
+Run it:
+
+----
+$ bake say hello
+2023/04/10 14:58:34 Running Hello
+Hello
+
+$ bake say hello --lang=es
+2023/04/10 14:58:38 Running Hello
+Hola
+----
+
+== How does it work?
+
+Bake is a Make like tool that allows you to define and run tasks defined in Go code under a `bake/` dir (or a `bakefiles/` dir).
+
+First it searches for `bake/` inside the current directory,
+next it searches to see if the current directory is named `bake/`,
+finally it searches for a `bake/` directory in the parent directories.
+This allows to run bake from anywhere in the repo.
+
+Once a `bake/` dir is found, it will parse the AST of the Go files in that directory to find functions that match the proper signature.
+It will then generate an entry point file that uses those functions, this file is auto-generated any time your source code changes.
+Finally it will compile the binary and run it.
+
+Having a go binary that bake runs allows you to debug your code directly without having to worry about bake's internals.
+The binary is only recompiled if the source code is changed (using https://github.com/DavidGamba/dgtools/tree/master/fsmodtime[fsmodtime]).
+
+The bake binary loads your functions as tasks and subtasks and makes them and their options available for completion.
+
+The bake Task signature  is `func(opt *getoptions.GetOpt) getoptions.CommandFn`.
+The functions are loaded as https://github.com/DavidGamba/go-getoptions/tree/master[go-getoptions] commands and subcommands, by parsing the comment description.
+
+For example:
+
+[source,go]
+----
+// say:hello - This is a greeting
+func Hello(opt *getoptions.GetOpt) getoptions.CommandFn {
+----
+
+If there is no comment found for the function, the function name will be automatically converted to kebab case.
+
+The above function will be generate two commands, one for `say` and one for `hello`.
+The description for the `hello` command will be `This is a greeting`.
+
+Since the tasks are added to the bake command's `go-getoptions` instance, completions are automatically generated.
+
+It also adds the task to the global task map, the task will automatically be added as `say:hello`.
+This allows to generate custom task graphs using https://github.com/DavidGamba/go-getoptions/blob/master/dag/README.adoc[go-getoptions DAG].
+
+== Debugging
+
+To debug your program go to the `bake/` directory and run `bake` and you should see the `bake` binary.
+
+Set your IDE Debugger to run `./bake` with the proper arguments for your task.
+
+To print `bake` traces, set the env var `BAKE_TRACE=true`.
+
+== ROADMAP
+
+* Currently not all `go-getoptions` types are supported.
+
+* Helper for automated cancellation on timeout when passing -t flag.

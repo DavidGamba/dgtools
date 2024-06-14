@@ -1,0 +1,8 @@
+github.com/DavidGamba/dgtools/buildutils v0.4.0 h1:9qg5/FJaEKwYYiaRh2fVKgJCPcT2U0u4hTTjQvR4VE0=
+github.com/DavidGamba/dgtools/buildutils v0.4.0/go.mod h1:gEikilH0xsJVMydPErNv4mlUPhJGFT5k6v5Ss+Fn+d4=
+github.com/DavidGamba/dgtools/fsmodtime v0.2.0 h1:2GnxhUIsaNzCj1LLrxhKA3wWv9z0KKrY68tIVcXo/QY=
+github.com/DavidGamba/dgtools/fsmodtime v0.2.0/go.mod h1:ruwqMvW2pWDbSQlAupP7F0QaojfbuXPyUOUKR4Ev3pQ=
+github.com/DavidGamba/dgtools/run v0.9.0 h1:Hg0v4ExUMd6Vzf9x9Bqr2yxreZtZpqlcAi8tI86QtIM=
+github.com/DavidGamba/dgtools/run v0.9.0/go.mod h1:GVGYL0p5hdBaQ9uIAslXh1g1TTfr0igMSDVTwhhy9q4=
+github.com/DavidGamba/go-getoptions v0.30.0 h1:8x69Fc8k/mEWVE0GknpwQ3uGj56MXOUp17egPxCEAG4=
+github.com/DavidGamba/go-getoptions v0.30.0/go.mod h1:zE97E3PR9P3BI/HKyNYgdMlYxodcuiC6W68KIgeYT84=
