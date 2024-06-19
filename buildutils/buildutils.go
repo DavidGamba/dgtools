@@ -15,6 +15,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -23,6 +24,8 @@ import (
 
 	"github.com/DavidGamba/dgtools/run"
 )
+
+var Logger = log.New(io.Discard, "", log.LstdFlags)
 
 // GitRepoRoot - Gets the Git repository root directory
 func GitRepoRoot() (string, error) {
@@ -118,6 +121,39 @@ func FindFileUpwards(ctx context.Context, filename string) (string, error) {
 	}
 
 	return "", fmt.Errorf("%w: %s", ErrNotFound, filename)
+}
+
+func FindDirUpwards(ctx context.Context, dir string) (string, error) {
+	cwd, err := os.Getwd()
+	if err != nil {
+		return "", fmt.Errorf("failed to get cwd: %w", err)
+	}
+
+	check := func(target string) bool {
+		if _, err := os.Stat(target); os.IsNotExist(err) {
+			return false
+		}
+		return true
+	}
+	d := cwd
+	for {
+		target := filepath.Join(d, dir)
+		Logger.Printf("Checking %s\n", target)
+		found := check(target)
+		if found {
+			return target, nil
+		}
+		a, err := filepath.Abs(d)
+		if err != nil {
+			return "", fmt.Errorf("failed to get abs path: %w", err)
+		}
+		if a == "/" {
+			break
+		}
+		d = filepath.Join(d, "../")
+	}
+
+	return "", fmt.Errorf("%w: %s", ErrNotFound, dir)
 }
 
 func Touch(filename string) error {
