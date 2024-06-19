@@ -1,6 +1,6 @@
 // This file is part of buildutils.
 //
-// Copyright (C) 2021-2023  David Gamba Rios
+// Copyright (C) 2021-2024  David Gamba Rios
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -26,7 +26,7 @@ import (
 
 // GitRepoRoot - Gets the Git repository root directory
 func GitRepoRoot() (string, error) {
-	out, err := run.CMD("git", "rev-parse", "--show-toplevel").STDOutOutput()
+	out, err := run.CMD("git", "rev-parse", "--show-toplevel").DiscardErr().STDOutOutput()
 	return strings.TrimSpace(string(out)), err
 }
 

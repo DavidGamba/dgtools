@@ -1,6 +1,8 @@
 = Changelog
 :toc:
 
+== v0.5.0: Discard the error output from GitRepoRoot
+
 == v0.4.0: Add Touch function
 
 == v0.3.0: Add FindFileUpwards function

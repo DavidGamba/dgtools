@@ -1,3 +1,13 @@
 = buildutils
 
 image:https://pkg.go.dev/badge/github.com/DavidGamba/dgtools/buildutils.svg[Go Reference, link="https://pkg.go.dev/github.com/DavidGamba/dgtools/buildutils"] link:buildutils[] - Provides functions used when writing build automation.
+
+== LICENSE
+
+This file is part of buildutils.
+
+Copyright (C) 2021-2024  David Gamba Rios
+
+This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at http://mozilla.org/MPL/2.0/.
