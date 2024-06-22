@@ -1,4 +1,4 @@
-github.com/DavidGamba/go-getoptions v0.25.3 h1:lSPcMkwWvVZU05C+Uz4DKnKN5wz4bcD1QvJ/QHCRexo=
-github.com/DavidGamba/go-getoptions v0.25.3/go.mod h1:qLaLSYeQ8sUVOfKuu5JT5qKKS3OCwyhkYSJnoG+ggmo=
-github.com/gorilla/mux v1.8.0 h1:i40aqfkR1h2SlN9hojwV5ZA91wcXFOvkdNIeFDP5koI=
-github.com/gorilla/mux v1.8.0/go.mod h1:DVbg23sWSpFRCP0SfiEN6jmj59UnW/n46BH5rLB71So=
+github.com/DavidGamba/go-getoptions v0.30.0 h1:8x69Fc8k/mEWVE0GknpwQ3uGj56MXOUp17egPxCEAG4=
+github.com/DavidGamba/go-getoptions v0.30.0/go.mod h1:zE97E3PR9P3BI/HKyNYgdMlYxodcuiC6W68KIgeYT84=
+github.com/gorilla/mux v1.8.1 h1:TuBL49tXwgrFYWhqrNgrUNEY92u81SPhu7sTdzQEiWY=
+github.com/gorilla/mux v1.8.1/go.mod h1:AKf9I4AEqPTmMytcMc0KkNouC66V3BtZ4qD5fmWSiMQ=

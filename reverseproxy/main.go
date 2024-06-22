@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -23,6 +24,9 @@ func main() {
 }
 
 func program(args []string) int {
+	ctx, cancel, done := getoptions.InterruptContext()
+	defer func() { cancel(); <-done }()
+
 	opt := getoptions.New()
 	opt.Bool("help", false, opt.Alias("?"))
 	opt.Bool("quiet", false)
@@ -31,6 +35,7 @@ func program(args []string) int {
 	opt.StringSlice("base-path", 1, 1, opt.Required())
 	opt.String("cert", "")
 	opt.String("key", "")
+	opt.SetCommandFn(run)
 	remaining, err := opt.Parse(args[1:])
 	if opt.Called("help") {
 		fmt.Println(opt.Help())
@@ -44,12 +49,15 @@ func program(args []string) int {
 		Logger.SetOutput(io.Discard)
 	}
 
-	ctx, cancel, done := getoptions.InterruptContext()
-	defer func() { cancel(); <-done }()
-
-	err = run(ctx, opt, remaining)
+	err = opt.Dispatch(ctx, remaining)
 	if err != nil {
+		if errors.Is(err, getoptions.ErrorHelpCalled) {
+			return 1
+		}
 		fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
+		if errors.Is(err, getoptions.ErrorParsing) {
+			fmt.Fprintf(os.Stderr, "\n"+opt.Help())
+		}
 		return 1
 	}
 	return 0
@@ -91,13 +99,15 @@ func run(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 		}
 		Logger.Printf("Target URL: host %s, path %s, scheme %s, %s", turl.Host, turl.Path, turl.Scheme, turl.String())
 		basePath := basePaths[i]
+		host := strings.Split(turl.Host, ":")[0]
 
 		rp := &RP{
+			host:      host,
 			targetURL: turl,
 			basePath:  basePath,
 			proto:     proto,
 		}
-		r.PathPrefix(basePath).Handler(rp)
+		r.Host(host).PathPrefix(basePath).Handler(rp)
 	}
 
 	if cert != "" && key != "" {
@@ -115,7 +125,7 @@ func run(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 }
 
 type RP struct {
-	target    string
+	host      string
 	targetURL *url.URL
 	basePath  string
 	proto     string
