@@ -35,6 +35,7 @@ type OptNode struct {
 	DescName    string
 	Description string
 	OptFnName   string
+	FullName    string
 }
 
 func NewOptTree(opt *getoptions.GetOpt) *OptTree {
@@ -47,6 +48,7 @@ func NewOptTree(opt *getoptions.GetOpt) *OptTree {
 			Description: "",
 			Children:    make(map[string]*OptNode),
 			OptFnName:   "",
+			FullName:    "",
 		},
 		fnsList: make(map[string]struct{}),
 	}
@@ -102,6 +104,7 @@ func (ot *OptTree) AddCommand(name, descName, description string) (*getoptions.G
 			Description: desc,
 			DescName:    key,
 			OptFnName:   optFnName,
+			FullName:    descName,
 		}
 
 		// Set the command function
@@ -180,14 +183,8 @@ func (on *OptNode) String() string {
 
 	if on.Name != "" {
 		out += fmt.Sprintf("%sFn := %s(%s)\n", on.OptFnName, on.Name, on.OptFnName)
-		out += fmt.Sprintf("%s.SetCommandFn(%sFn)\n", on.DescName, on.OptFnName)
-
-		// TODO: This is not considering more than two levels of commands
-		if parent == "opt" {
-			out += fmt.Sprintf("TM.Add(\"%s\", %sFn)\n\n", on.DescName, on.OptFnName)
-		} else {
-			out += fmt.Sprintf("TM.Add(\"%s:%s\", %sFn)\n\n", parent, on.DescName, on.OptFnName)
-		}
+		out += fmt.Sprintf("%s.SetCommandFn(%sFn)\n", on.OptFnName, on.OptFnName)
+		out += fmt.Sprintf("TM.Add(\"%s\", %sFn)\n\n", on.FullName, on.OptFnName)
 	}
 	for _, child := range on.Children {
 		out += child.String()
