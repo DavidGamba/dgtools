@@ -64,7 +64,7 @@ func parsedFiles(dir string) iter.Seq2[ParsedFile, error] {
 }
 
 type FnDecl struct {
-	Name        string
+	Name        string // function name
 	Description string
 
 	Node       ast.Node

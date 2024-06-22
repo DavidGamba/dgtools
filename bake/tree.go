@@ -23,7 +23,8 @@ import (
 // type TaskFn func(*getoptions.GetOpt) getoptions.CommandFn
 
 type OptTree struct {
-	Root *OptNode
+	Root    *OptNode
+	fnsList map[string]struct{}
 }
 
 type OptNode struct {
@@ -33,6 +34,7 @@ type OptNode struct {
 	Parent      string
 	DescName    string
 	Description string
+	OptFnName   string
 }
 
 func NewOptTree(opt *getoptions.GetOpt) *OptTree {
@@ -44,7 +46,9 @@ func NewOptTree(opt *getoptions.GetOpt) *OptTree {
 			DescName:    "",
 			Description: "",
 			Children:    make(map[string]*OptNode),
+			OptFnName:   "",
 		},
+		fnsList: make(map[string]struct{}),
 	}
 }
 
@@ -57,9 +61,10 @@ func (ot *OptTree) AddCommand(name, descName, description string) (*getoptions.G
 	node := ot.Root
 	var cmd *getoptions.GetOpt
 	for i, key := range keys {
+		// Check if already defined
 		n, ok := node.Children[key]
 		if ok {
-			// Logger.Printf("key: %v already defined, parent: %s\n", key, node.Name)
+			Logger.Printf("key: %v already defined, parent: %s\n", key, node.DescName)
 			node = n
 			cmd = n.Opt
 			if len(keys) == i+1 {
@@ -67,15 +72,27 @@ func (ot *OptTree) AddCommand(name, descName, description string) (*getoptions.G
 			}
 			continue
 		}
-		// Logger.Printf("key: %v not defined, parent: %s\n", key, node.Name)
+		Logger.Printf("key: %v not defined, parent: %s\n", key, node.DescName)
 		desc := ""
 		if len(keys) == i+1 {
 			desc = description
 		}
+
+		// Ensure the name doesn't collide with a golang keyword
 		err := validateCmdName(key, descName)
 		if err != nil {
 			return nil, err
 		}
+
+		// Ensure the name is unique
+		optFnName := key
+		if _, ok := ot.fnsList[key]; ok {
+			suffix := randString(4)
+			optFnName = fmt.Sprintf("%s_%s", key, suffix)
+		}
+		ot.fnsList[optFnName] = struct{}{}
+
+		// Create the command
 		cmd = node.Opt.NewCommand(key, desc)
 		node.Children[key] = &OptNode{
 			Name:        "",
@@ -84,7 +101,10 @@ func (ot *OptTree) AddCommand(name, descName, description string) (*getoptions.G
 			Children:    make(map[string]*OptNode),
 			Description: desc,
 			DescName:    key,
+			OptFnName:   optFnName,
 		}
+
+		// Set the command function
 		if len(keys) == i+1 {
 			node.Children[key].Name = name
 			cmd.SetCommandFn(func(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
@@ -100,6 +120,8 @@ func (ot *OptTree) AddCommand(name, descName, description string) (*getoptions.G
 				return nil
 			})
 		}
+
+		// Get ready for the next iteration
 		node = node.Children[key]
 	}
 	return cmd, nil
@@ -153,18 +175,18 @@ func (on *OptNode) String() string {
 	}
 
 	if on.DescName != "" {
-		out += fmt.Sprintf("%s := %s.NewCommand(\"%s\", `%s`)\n", on.DescName, parent, on.DescName, on.Description)
+		out += fmt.Sprintf("%s := %s.NewCommand(\"%s\", `%s`)\n", on.OptFnName, parent, on.DescName, on.Description)
 	}
 
 	if on.Name != "" {
-		out += fmt.Sprintf("%sFn := %s(%s)\n", on.DescName, on.Name, on.DescName)
-		out += fmt.Sprintf("%s.SetCommandFn(%sFn)\n", on.DescName, on.DescName)
+		out += fmt.Sprintf("%sFn := %s(%s)\n", on.OptFnName, on.Name, on.OptFnName)
+		out += fmt.Sprintf("%s.SetCommandFn(%sFn)\n", on.DescName, on.OptFnName)
 
 		// TODO: This is not considering more than two levels of commands
 		if parent == "opt" {
-			out += fmt.Sprintf("TM.Add(\"%s\", %sFn)\n\n", on.DescName, on.DescName)
+			out += fmt.Sprintf("TM.Add(\"%s\", %sFn)\n\n", on.DescName, on.OptFnName)
 		} else {
-			out += fmt.Sprintf("TM.Add(\"%s:%s\", %sFn)\n\n", parent, on.DescName, on.DescName)
+			out += fmt.Sprintf("TM.Add(\"%s:%s\", %sFn)\n\n", parent, on.DescName, on.OptFnName)
 		}
 	}
 	for _, child := range on.Children {
