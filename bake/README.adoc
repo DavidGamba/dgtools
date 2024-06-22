@@ -42,6 +42,16 @@ autoload -U +X bashcompinit && bashcompinit
 complete -o default -C bake bake
 ----
 
+=== Gitignore
+
+Add the following to your global gitignore file:
+
+.~/.gitignore
+----
+**/bake/bake
+**/bake/generated_bake.go
+----
+
 == Example Task
 
 NOTE: A more in depth example can be found https://github.com/DavidGamba/go-getoptions/blob/bake/bake/examples/website/README.adoc[here].
@@ -140,3 +150,5 @@ To print `bake` traces, set the env var `BAKE_TRACE=true`.
 * Currently not all `go-getoptions` types are supported.
 
 * Helper for automated cancellation on timeout when passing -t flag.
+
+* Ensure exit codes get passed through.
