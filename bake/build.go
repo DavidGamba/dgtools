@@ -42,7 +42,10 @@ func buildBinary(dir string) error {
 
 var ErrNotFound = fmt.Errorf("not found")
 
-// findBakeDir - searches for bakefiles/ dir first then for bake/ dir.
+// Tried to get the bake folder to be called bake but it conflicts with the source bake folder.
+// bakefiles it is even though it is not as short.
+
+// findBakeDir - searches for bakefiles/ dir.
 // This allows me to use bake in this repo.
 func findBakeDir(ctx context.Context) (string, error) {
 	wd, err := os.Getwd()
@@ -75,27 +78,6 @@ func findBakeDir(ctx context.Context) (string, error) {
 		}
 	}
 
-	// First case, bake folder lives in CWD
-	dir = filepath.Join(wd, "bake")
-	if fi, err := os.Stat(dir); err == nil && fi.Mode().IsDir() {
-		return dir, nil
-	}
-
-	// Second case, we are withing the bake folder
-	if base == "bake" {
-		return ".", nil
-	}
-
-	// Third case, search for bake folder in parent directories
-	d, err = buildutils.FindDirUpwards(ctx, "bake")
-	if err == nil {
-		return d, nil
-	}
-	if err != nil {
-		if !errors.Is(err, buildutils.ErrNotFound) {
-			return ".", fmt.Errorf("failed to find bake folder: %w", err)
-		}
-	}
 	return ".", ErrNotFound
 }
 

@@ -2,15 +2,16 @@
 
 Go Build + Something like Make = Bake ¯\_(ツ)_/¯ 🤷
 
-Bake is a Make like tool that allows you to define and run tasks defined in Go code under a `bake/` dir.
+Bake is a Make like tool that allows you to define and run tasks defined in Go code under a `bakefiles/` dir.
 
 * Tasks have a fully featured argument parser.
 * It allows you to see the description of the tasks and subtasks and autocomplete them and their options.
 * It also bundles a DAG runner that allows you to make tasks depend on other tasks.
+* Built-in cancellation context for tasks.
 
 == Getting Started
 
-In any directory, run: `bake _bake init` to create a `bake/` directory with an empty project.
+In any directory, run: `bake _bake init` to create a `bakefiles/` directory with an empty project.
 
 Then run: `bake` to see the available tasks.
 
@@ -56,6 +57,8 @@ Add the following to your global gitignore file:
 
 NOTE: A more in depth example can be found https://github.com/DavidGamba/go-getoptions/blob/bake/bake/examples/website/README.adoc[here].
 
+Copy the following into a new `bakefiles/main.go` file after running `bake _bake init`:
+
 [source, go]
 ----
 package main
@@ -100,16 +103,16 @@ Hola
 
 == How does it work?
 
-Bake is a Make like tool that allows you to define and run tasks defined in Go code under a `bake/` dir (or a `bakefiles/` dir).
+Bake is a Make like tool that allows you to define and run tasks defined in Go code under a `bakefiles/` dir.
 
-First it searches for `bake/` inside the current directory,
-next it searches to see if the current directory is named `bake/`,
-finally it searches for a `bake/` directory in the parent directories.
+First it searches for `bakefiles/` inside the current directory,
+next it searches to see if the current directory is named `bakefiles/`,
+finally it searches for a `bakefiles/` directory in the parent directories.
 This allows to run bake from anywhere in the repo.
 
-Once a `bake/` dir is found, it will parse the AST of the Go files in that directory to find functions that match the proper signature.
-It will then generate an entry point file that uses those functions, this file is auto-generated any time your source code changes.
-Finally it will compile the binary and run it.
+Once a `bakefiles/` dir is found, it will parse the AST of the Go files in that directory to find functions that match the proper signature.
+It will then generate an entry point file (`generated_bake.go`) that uses those functions, this file is auto-generated any time your source code changes.
+Finally it will compile the Go binary and run it.
 
 Having a go binary that bake runs allows you to debug your code directly without having to worry about bake's internals.
 The binary is only recompiled if the source code is changed (using https://github.com/DavidGamba/dgtools/tree/master/fsmodtime[fsmodtime]).
@@ -125,6 +128,10 @@ For example:
 ----
 // say:hello - This is a greeting
 func Hello(opt *getoptions.GetOpt) getoptions.CommandFn {
+	return func(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
+		return nil
+	}
+}
 ----
 
 If there is no comment found for the function, the function name will be automatically converted to kebab case.
@@ -139,7 +146,7 @@ This allows to generate custom task graphs using https://github.com/DavidGamba/g
 
 == Debugging
 
-To debug your program go to the `bake/` directory and run `bake` and you should see the `bake` binary.
+To debug your program go to the `bakefiles/` directory and run `bake` and you should see the `bake` binary.
 
 Set your IDE Debugger to run `./bake` with the proper arguments for your task.
 

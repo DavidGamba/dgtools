@@ -99,7 +99,6 @@ func program(args []string) int {
 	bld.SetCommandFn(PrintFuncDeclRun(dir))
 
 	binit := b.NewCommand("init", "initialize a new bake project")
-	binit.String("name", "bake", opt.Description("name of the bake directory"), opt.ValidValues("bake", "bakefiles"))
 	binit.SetCommandFn(initRun(dir))
 
 	bforce := b.NewCommand("force", "force rebuild of the generated bake file and the binary on the next run")

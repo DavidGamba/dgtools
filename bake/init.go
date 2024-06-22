@@ -20,8 +20,7 @@ import (
 
 func initRun(dir string) getoptions.CommandFn {
 	return func(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
-		name := opt.Value("name").(string)
-		err := initFn(opt, name)
+		err := initFn(opt)
 		if err != nil {
 			return fmt.Errorf("failed to inspect package: %w", err)
 		}
@@ -29,8 +28,9 @@ func initRun(dir string) getoptions.CommandFn {
 	}
 }
 
-func initFn(opt *getoptions.GetOpt, dir string) error {
-	Logger.Printf("Initializing bake project in %s\n", dir)
+func initFn(opt *getoptions.GetOpt) error {
+	Logger.Printf("Initializing bake project in\n")
+	dir := "bakefiles"
 	os.MkdirAll(dir, 0755)
 
 	_ = run.CMD("go", "mod", "init", "bake").Dir(dir).Log().Run()
