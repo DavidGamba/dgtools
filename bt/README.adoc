@@ -33,7 +33,7 @@ It automatically uses the `TF_WORKSPACE` environment variable rather than select
 +
 ----
 brew tap DavidGamba/dgtools https://github.com/DavidGamba/dgtools
-brew install --HEAD DavidGamba/dgtools/bt
+brew install DavidGamba/dgtools/bt
 ----
 +
 [NOTE]
@@ -53,7 +53,7 @@ Upgrade with:
 +
 ----
 brew update
-brew reinstall bt
+brew upgrade bt
 ----
 
 * Install using go:
