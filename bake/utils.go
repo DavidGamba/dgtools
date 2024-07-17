@@ -14,6 +14,9 @@ import (
 	"strings"
 	"time"
 	"unicode"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 func camelToKebab(camel string) string {
@@ -23,6 +26,20 @@ func camelToKebab(camel string) string {
 			buffer.WriteRune('-')
 		}
 		buffer.WriteRune(unicode.ToLower(ch))
+	}
+	return buffer.String()
+}
+
+// kebabToCamel with first letter in lowercase
+func kebabToCamel(kebab string) string {
+	var buffer bytes.Buffer
+	kebab = strings.ReplaceAll(kebab, "-", " ")
+	for i, word := range strings.Fields(kebab) {
+		if i == 0 {
+			buffer.WriteString(strings.ToLower(word))
+		} else {
+			buffer.WriteString(cases.Title(language.English).String(word))
+		}
 	}
 	return buffer.String()
 }

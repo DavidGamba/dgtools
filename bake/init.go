@@ -53,7 +53,7 @@ func initFn(opt *getoptions.GetOpt) error {
 	_ = run.CMD("go", "get", "-u", "github.com/DavidGamba/dgtools/buildutils").Dir(dir).Log().Run()
 	_ = run.CMD("go", "get", "-u", "github.com/DavidGamba/dgtools/fsmodtime").Dir(dir).Log().Run()
 	_ = run.CMD("go", "get", "-u", "github.com/DavidGamba/dgtools/run").Dir(dir).Log().Run()
-	_ = run.CMD("go", "get", "-u", "github.com/DavidGamba/go-getoptions@command-name").Dir(dir).Log().Run()
+	_ = run.CMD("go", "get", "-u", "github.com/DavidGamba/go-getoptions").Dir(dir).Log().Run()
 
 	ot := NewOptTree(opt)
 	err := GenerateMainFile(ot, dir)

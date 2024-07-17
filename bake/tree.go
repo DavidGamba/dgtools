@@ -63,10 +63,12 @@ func (ot *OptTree) AddCommand(name, descName, description string) (*getoptions.G
 	node := ot.Root
 	var cmd *getoptions.GetOpt
 	for i, key := range keys {
+		keyCamel := kebabToCamel(key)
+
 		// Check if already defined
-		n, ok := node.Children[key]
+		n, ok := node.Children[keyCamel]
 		if ok {
-			Logger.Printf("key: %v already defined, parent: %s\n", key, node.DescName)
+			Logger.Printf("key: %v already defined, parent: %s\n", keyCamel, node.DescName)
 			node = n
 			cmd = n.Opt
 			if len(keys) == i+1 {
@@ -81,16 +83,16 @@ func (ot *OptTree) AddCommand(name, descName, description string) (*getoptions.G
 		}
 
 		// Ensure the name doesn't collide with a golang keyword
-		err := validateCmdName(key, descName)
+		err := validateCmdName(keyCamel, descName)
 		if err != nil {
 			return nil, err
 		}
 
 		// Ensure the name is unique
-		optFnName := key
-		if _, ok := ot.fnsList[key]; ok {
+		optFnName := keyCamel
+		if _, ok := ot.fnsList[keyCamel]; ok {
 			suffix := randString(4)
-			optFnName = fmt.Sprintf("%s_%s", key, suffix)
+			optFnName = fmt.Sprintf("%s_%s", keyCamel, suffix)
 		}
 		ot.fnsList[optFnName] = struct{}{}
 

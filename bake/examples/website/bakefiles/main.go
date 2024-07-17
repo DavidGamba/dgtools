@@ -231,3 +231,21 @@ func Hello(opt *getoptions.GetOpt) getoptions.CommandFn {
 		return nil
 	}
 }
+
+// say:greet:hello-world - This is a greeting
+func Hello2(opt *getoptions.GetOpt) getoptions.CommandFn {
+	var lang string
+	opt.StringVar(&lang, "lang", "en", opt.ValidValues("en", "es"))
+	return func(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
+		Logger.Println("Running Hello2")
+
+		switch lang {
+		case "en":
+			fmt.Println("Hello")
+		case "es":
+			fmt.Println("Hola")
+		}
+
+		return nil
+	}
+}

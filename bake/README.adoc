@@ -75,7 +75,7 @@ func Hello(opt *getoptions.GetOpt) getoptions.CommandFn {
 	var lang string
 	opt.StringVar(&lang, "lang", "en", opt.ValidValues("en", "es"))
 	return func(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
-		Logger.Printf("Running %s\n", opt.GetCommandName())
+		Logger.Printf("Running say:hello\n")
 
 		switch lang {
 		case "en":

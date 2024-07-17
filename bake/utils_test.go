@@ -47,3 +47,49 @@ func TestCamelToKebab(t *testing.T) {
 		})
 	}
 }
+
+func TestKebabToCamel(t *testing.T) {
+	tests := []struct {
+		name string
+		in   string
+		out  string
+	}{
+		{
+			name: "single",
+			in:   "a",
+			out:  "a",
+		},
+		{
+			name: "lower",
+			in:   "abc",
+			out:  "abc",
+		},
+		{
+			name: "upper",
+			in:   "ABC",
+			out:  "abc",
+		},
+		{
+			name: "mixed",
+			in:   "a-bc",
+			out:  "aBc",
+		},
+		{
+			name: "mixed2",
+			in:   "ab-c",
+			out:  "abC",
+		},
+		{
+			name: "mixed10",
+			in:   "ab-cd-ef-gh-ij-k",
+			out:  "abCdEfGhIjK",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := kebabToCamel(tt.in); got != tt.out {
+				t.Errorf("got %v, want %v", got, tt.out)
+			}
+		})
+	}
+}
