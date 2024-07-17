@@ -4,13 +4,15 @@ class Bake < Formula
   @@tool_path = "bake"
 
   desc "#{@@tool_desc}"
-  homepage "https://github.com/DavidGamba/go-getoptions/tree/bake/#{@@tool_name}"
-  head "https://github.com/DavidGamba/go-getoptions.git", branch: "bake"
+  homepage "https://github.com/DavidGamba/go-getoptions/tree/master/#{@@tool_name}"
+  url "https://github.com/DavidGamba/dgtools/archive/refs/tags/bake/v0.1.0.tar.gz"
+  sha256 "c03ea914b3dfb885bd4821118b89411a06b7ac17f9e78b4cf066a4826a85841f"
 
   depends_on "go" => :build
 
   def install
     cd "#{@@tool_path}" do
+      ENV["GOEXPERIMENT"] = "rangefunc"
       system "go", "get"
       system "go", "build"
       bin.install "#{@@tool_name}"
