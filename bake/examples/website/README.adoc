@@ -32,6 +32,6 @@ The above are all the pieces you need to build complex custom build systems.
 
 == Step by step guide
 
-Follow the installation steps from the https://github.com/DavidGamba/go-getoptions/blob/bake/bake/README.adoc[README].
+Follow the installation steps from the link:../../README.adoc[README].
 
-Run: `bake` from the `go-getoptions/bake/examples/website` directory.
+Run: `bake` from the `bake/examples/website` directory.

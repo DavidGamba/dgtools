@@ -76,13 +76,13 @@ Add the following to your global gitignore file:
 
 .~/.gitignore
 ----
-**/bake/bake
-**/bake/generated_bake.go
+**/bakefiles/bake
+**/bakefiles/generated_bake.go
 ----
 
 == Example Task
 
-NOTE: A more in depth example can be found https://github.com/DavidGamba/go-getoptions/blob/bake/bake/examples/website/README.adoc[here].
+NOTE: A more in depth example can be found link:./examples/website/README.adoc[here].
 
 Copy the following into a new `bakefiles/main.go` file after running `bake _bake init`:
 
@@ -163,7 +163,7 @@ func Hello(opt *getoptions.GetOpt) getoptions.CommandFn {
 
 If there is no comment found for the function, the function name will be automatically converted to kebab case.
 
-The above function will be generate two commands, one for `say` and one for `hello`.
+The above function will generate two commands, one for `say` and one for `hello`.
 The description for the `hello` command will be `This is a greeting`.
 
 Since the tasks are added to the bake command's `go-getoptions` instance, completions are automatically generated.
