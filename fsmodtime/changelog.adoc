@@ -1,0 +1,13 @@
+= fsmodtime
+
+== v0.3.0: breaking changes
+
+Change signature of `fsmodtime.ExpandEnv` to accept a map of replacements:
+
+[source, diff]
+----
+- func ExpandEnv(lines []string) ([]string, error)
++ func ExpandEnv(lines []string, replacements map[string]string) ([]string, error)
+----
+
+Since the replacements can be nil, adding nil to the second argument will maintain existing behavior.

@@ -64,12 +64,21 @@ func TestExpandEnv(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			setup(test.env)
-			out, err := ExpandEnv(test.input)
+			out, err := ExpandEnv(test.input, nil)
 			checkError(t, err, test.err)
 			if !reflect.DeepEqual(out, test.expected) {
 				t.Errorf("got: %#v, expected: %#v", out, test.expected)
 			}
 			cleanup(test.env)
+		})
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			out, err := ExpandEnv(test.input, test.env)
+			checkError(t, err, test.err)
+			if !reflect.DeepEqual(out, test.expected) {
+				t.Errorf("got: %#v, expected: %#v", out, test.expected)
+			}
 		})
 	}
 }

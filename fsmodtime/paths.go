@@ -20,11 +20,18 @@ import (
 
 // ExpandEnv - like os.ExpandEnv on many lines, except that it reports error if any of the env vars is
 // not found. It also expands ~/ to $HOME/
-func ExpandEnv(lines []string) ([]string, error) {
+//
+// replacements is a list of additional replacements and can be nil.
+func ExpandEnv(lines []string, replacements map[string]string) ([]string, error) {
 	expanded := []string{}
 	var err error
 	notFound := make(map[string]struct{})
 	mappingFn := func(name string) string {
+		if replacements != nil {
+			if value, ok := replacements[name]; ok {
+				return value
+			}
+		}
 		if value, ok := os.LookupEnv(name); ok {
 			return value
 		}
@@ -72,7 +79,7 @@ func Glob(fsys fs.FS, stop bool, patterns []string) (matches []string, stopped b
 //
 // Use fsmodtime.Recursive(true) to recurse into directories.
 func Target(fsys fs.FS, targets []string, sources []string, opts ...WalkOpt) ([]string, bool, error) {
-	targets, err := ExpandEnv(targets)
+	targets, err := ExpandEnv(targets, nil)
 	if err != nil {
 		return nil, false, err
 	}
@@ -98,7 +105,7 @@ func Target(fsys fs.FS, targets []string, sources []string, opts ...WalkOpt) ([]
 //
 // Use fsmodtime.Recursive(true) to recurse into directories.
 func TargetTime(fsys fs.FS, targetTime time.Time, sources []string, opts ...WalkOpt) ([]string, bool, error) {
-	sources, err := ExpandEnv(sources)
+	sources, err := ExpandEnv(sources, nil)
 	if err != nil {
 		return nil, false, err
 	}
