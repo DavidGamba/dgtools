@@ -60,7 +60,7 @@ func addOptionsToCMD(getOptFn GetOptFn, cmd *getoptions.GetOpt, name string) err
 						// Logger.Printf("handling %s.%s\n", xIdent.Name, fun.Sel.Name)
 
 						switch fun.Sel.Name {
-						case "String", "StringOptional", "Int", "IntOptional", "Increment", "Float64", "Float64Optional":
+						case "Bool", "String", "StringOptional", "Int", "IntOptional", "Increment", "Float64", "Float64Optional":
 							mfns := []getoptions.ModifyFn{}
 							if len(x.Args) > 2 {
 								mfns = handleOptionModifiers(cmd, getOptFn.OptFieldName, x.Args[2:])
@@ -70,44 +70,9 @@ func addOptionsToCMD(getOptFn GetOptFn, cmd *getoptions.GetOpt, name string) err
 								outerErr = err
 								return false
 							}
-							switch fun.Sel.Name {
-							case "String":
-								cmd.String(name, defaultValue, mfns...)
-							case "StringOptional":
-								cmd.StringOptional(name, defaultValue, mfns...)
-							case "Int":
-								x, err := strconv.Atoi(defaultValue)
-								if err != nil {
-									x = 0
-								}
-								cmd.Int(name, x, mfns...)
-							case "IntOptional":
-								x, err := strconv.Atoi(defaultValue)
-								if err != nil {
-									x = 0
-								}
-								cmd.IntOptional(name, x, mfns...)
-							case "Increment":
-								x, err := strconv.Atoi(defaultValue)
-								if err != nil {
-									x = 0
-								}
-								cmd.Increment(name, x, mfns...)
-							case "Float64":
-								x, err := strconv.ParseFloat(defaultValue, 64)
-								if err != nil {
-									x = 0.0
-								}
-								cmd.Float64(name, x, mfns...)
-							case "Float64Optional":
-								x, err := strconv.ParseFloat(defaultValue, 64)
-								if err != nil {
-									x = 0.0
-								}
-								cmd.Float64Optional(name, x, mfns...)
-							}
+							optionTypeSwitch(cmd, fun.Sel.Name, name, defaultValue, mfns)
 
-						case "StringVar":
+						case "BoolVar", "StringVar", "StringVarOptional", "IntVar", "IntVarOptional", "IncrementVar", "Float64Var", "Float64VarOptional":
 							mfns := []getoptions.ModifyFn{}
 							if len(x.Args) > 3 {
 								mfns = handleOptionModifiers(cmd, getOptFn.OptFieldName, x.Args[3:])
@@ -117,7 +82,18 @@ func addOptionsToCMD(getOptFn GetOptFn, cmd *getoptions.GetOpt, name string) err
 								outerErr = err
 								return false
 							}
-							cmd.String(name, defaultValue, mfns...)
+							optionTypeSwitch(cmd, fun.Sel.Name, name, defaultValue, mfns)
+						case "StringSliceVar", "StringMapVar", "IntSliceVar", "Float64SliceVar":
+							mfns := []getoptions.ModifyFn{}
+							if len(x.Args) > 4 {
+								mfns = handleOptionModifiers(cmd, getOptFn.OptFieldName, x.Args[4:])
+							}
+							name, defaultValue, err := extractNameAndDefault(n, 1)
+							if err != nil {
+								outerErr = err
+								return false
+							}
+							optionTypeSwitch(cmd, fun.Sel.Name, name, defaultValue, mfns)
 						}
 
 						return false
@@ -129,6 +105,57 @@ func addOptionsToCMD(getOptFn GetOptFn, cmd *getoptions.GetOpt, name string) err
 		return true
 	})
 	return outerErr
+}
+
+func optionTypeSwitch(cmd *getoptions.GetOpt, identifierName, name, defaultValue string, mfns []getoptions.ModifyFn) {
+	switch identifierName {
+	case "Bool", "BoolVar":
+		d := false
+		if defaultValue == "true" {
+			d = true
+		}
+		cmd.Bool(name, d, mfns...)
+	case "String", "StringVar":
+		cmd.String(name, defaultValue, mfns...)
+	case "StringOptional", "StringVarOptional":
+		cmd.StringOptional(name, defaultValue, mfns...)
+	case "Int", "IntVar":
+		x, err := strconv.Atoi(defaultValue)
+		if err != nil {
+			x = 0
+		}
+		cmd.Int(name, x, mfns...)
+	case "IntOptional", "IntVarOptional":
+		x, err := strconv.Atoi(defaultValue)
+		if err != nil {
+			x = 0
+		}
+		cmd.IntOptional(name, x, mfns...)
+	case "Increment", "IncrementVar":
+		x, err := strconv.Atoi(defaultValue)
+		if err != nil {
+			x = 0
+		}
+		cmd.Increment(name, x, mfns...)
+	case "Float64", "Float64Var":
+		x, err := strconv.ParseFloat(defaultValue, 64)
+		if err != nil {
+			x = 0.0
+		}
+		cmd.Float64(name, x, mfns...)
+	case "Float64Optional", "Float64VarOptional":
+		x, err := strconv.ParseFloat(defaultValue, 64)
+		if err != nil {
+			x = 0.0
+		}
+		cmd.Float64Optional(name, x, mfns...)
+	case "StringSliceVar":
+		cmd.StringSlice(name, 1, 99, mfns...)
+	case "IntSliceVar":
+		cmd.IntSlice(name, 1, 99, mfns...)
+	case "Float64SliceVar":
+		cmd.Float64Slice(name, 1, 99, mfns...)
+	}
 }
 
 func extractNameAndDefault(n ast.Node, offset int) (string, string, error) {
@@ -161,9 +188,16 @@ func extractDefault(args []ast.Expr, offset int) (string, error) {
 	if len(args) < 2+offset {
 		return "", fmt.Errorf("missing default argument")
 	}
-	defaultValue, err := strconv.Unquote(args[1+offset].(*ast.BasicLit).Value)
-	if err != nil {
-		defaultValue = args[1+offset].(*ast.BasicLit).Value
+	defaultValue := ""
+	var err error
+	switch args[1+offset].(type) {
+	case *ast.BasicLit:
+		defaultValue, err = strconv.Unquote(args[1+offset].(*ast.BasicLit).Value)
+		if err != nil {
+			defaultValue = args[1+offset].(*ast.BasicLit).Value
+		}
+	case *ast.Ident:
+		defaultValue = args[1+offset].(*ast.Ident).String()
 	}
 	return defaultValue, nil
 }

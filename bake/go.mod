@@ -1,6 +1,6 @@
 module github.com/DavidGamba/dgtools/bake
 
-go 1.22
+go 1.23
 
 require (
 	github.com/DavidGamba/dgtools/buildutils v0.6.0
