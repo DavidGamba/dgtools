@@ -182,7 +182,7 @@ func getDefaultVarFiles(cfg *config.Config, profile string) ([]string, error) {
 	varFiles := []string{}
 	for _, vars := range cfg.TFProfile[cfg.Profile(profile)].Plan.VarFile {
 		v := strings.ReplaceAll(vars, "~", "$HOME")
-		vv, err := fsmodtime.ExpandEnv([]string{v})
+		vv, err := fsmodtime.ExpandEnv([]string{v}, nil)
 		if err != nil {
 			return varFiles, fmt.Errorf("failed to expand: %w", err)
 		}

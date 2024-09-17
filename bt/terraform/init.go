@@ -34,7 +34,7 @@ func initRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 
 	for _, bvars := range cfg.TFProfile[cfg.Profile(profile)].Init.BackendConfig {
 		b := strings.ReplaceAll(bvars, "~", "$HOME")
-		bb, err := fsmodtime.ExpandEnv([]string{b})
+		bb, err := fsmodtime.ExpandEnv([]string{b}, nil)
 		if err != nil {
 			return fmt.Errorf("failed to expand: %w", err)
 		}

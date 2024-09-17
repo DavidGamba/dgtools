@@ -49,9 +49,10 @@ type TerraformProfile struct {
 }
 
 type Command struct {
-	Name    string
-	Command []string
-	Files   []string
+	Name       string
+	Command    []string
+	Files      []string
+	OutputFile string `json:"output_file,omitempty"`
 }
 
 func (t TerraformProfile) String() string {

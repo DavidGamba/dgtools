@@ -32,4 +32,5 @@ terraform_profile: [ID=_]: #TerraformProfile & {id: ID}
 	name: string
 	command: [...string]
 	files: [...string]
+	output_file?: string
 }

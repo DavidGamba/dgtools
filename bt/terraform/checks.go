@@ -37,6 +37,7 @@ func checksRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error
 	}
 
 	cfg := config.ConfigFromContext(ctx)
+	component := ComponentFromContext(ctx)
 	dir := DirFromContext(ctx)
 	LogConfig(cfg, profile)
 
@@ -49,6 +50,11 @@ func checksRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error
 	if err != nil {
 		return fmt.Errorf("failed to get current dir: %w", err)
 	}
+	if component == "." {
+		component = filepath.Base(cwd)
+	}
+	component = strings.Split(component, ":")[0]
+	Logger.Printf("component: %s\n", component)
 
 	ws, err = getWorkspace(cfg, profile, ws, varFiles)
 	if err != nil {
@@ -65,12 +71,23 @@ func checksRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error
 		checkFile = fmt.Sprintf(".tf.check-%s", ws)
 	}
 	jsonPlan := planFile + ".json"
-	os.Setenv("TERRAFORM_JSON_PLAN", jsonPlan)
-	os.Setenv("CONFIG_ROOT", cfg.ConfigRoot)
+	txtPlan := planFile + ".txt"
+	wsEnv := ws
+	if ws == "" {
+		wsEnv = "default"
+	}
+
+	env := map[string]string{
+		"TERRAFORM_JSON_PLAN": jsonPlan,
+		"TERRAFORM_TXT_PLAN":  txtPlan,
+		"CONFIG_ROOT":         cfg.ConfigRoot,
+		"TF_WORKSPACE":        wsEnv,
+		"BT_COMPONENT":        component,
+	}
 
 	cmdFiles := []string{}
 	for _, cmd := range cfg.TFProfile[cfg.Profile(profile)].PreApplyChecks.Commands {
-		exp, err := fsmodtime.ExpandEnv(cmd.Files)
+		exp, err := fsmodtime.ExpandEnv(cmd.Files, env)
 		if err != nil {
 			return fmt.Errorf("failed to expand: %w", err)
 		}
@@ -114,31 +131,68 @@ func checksRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error
 		Logger.Printf("missing target: %v\n", checkFile)
 	}
 
-	cmd := []string{cfg.TFProfile[cfg.Profile(profile)].BinaryName, "show", "-json", planFile}
 	dataDir := fmt.Sprintf("TF_DATA_DIR=%s", getDataDir(cfg.Config.DefaultTerraformProfile, cfg.Profile(profile)))
 	Logger.Printf("export %s\n", dataDir)
+	cmd := []string{cfg.TFProfile[cfg.Profile(profile)].BinaryName, "show", "-json", planFile}
 	ri := run.CMDCtx(ctx, cmd...).Stdin().Log().Env(dataDir).Dir(dir).DryRun(dryRun)
 	out, err := ri.STDOutOutput()
 	if err != nil {
 		return fmt.Errorf("failed to get plan json output: %w", err)
 	}
 
-	err = os.WriteFile(jsonPlan, out, 0600)
+	err = os.WriteFile(filepath.Join(dir, jsonPlan), out, 0600)
 	if err != nil {
 		return fmt.Errorf("failed to write json plan: %w", err)
 	}
 	Logger.Printf("plan json written to: %s\n", jsonPlan)
 
+	cmd = []string{cfg.TFProfile[cfg.Profile(profile)].BinaryName, "show", planFile}
+	ri = run.CMDCtx(ctx, cmd...).Stdin().Log().Env(dataDir).Dir(dir).DryRun(dryRun)
+	out, err = ri.STDOutOutput()
+	if err != nil {
+		return fmt.Errorf("failed to get plan json output: %w", err)
+	}
+
+	err = os.WriteFile(filepath.Join(dir, txtPlan), out, 0600)
+	if err != nil {
+		return fmt.Errorf("failed to write txt plan: %w", err)
+	}
+	Logger.Printf("plan txt written to: %s\n", txtPlan)
+
 	for _, cmd := range cfg.TFProfile[cfg.Profile(profile)].PreApplyChecks.Commands {
 		Logger.Printf("running check: %s\n", cmd.Name)
-		exp, err := fsmodtime.ExpandEnv(cmd.Command)
+		exp, err := fsmodtime.ExpandEnv(cmd.Command, env)
 		if err != nil {
 			return fmt.Errorf("failed to expand: %w", err)
 		}
-		ri := run.CMDCtx(ctx, exp...).Stdin().Log().Env(dataDir).Dir(dir).DryRun(dryRun)
-		err = ri.Run()
-		if err != nil {
-			return fmt.Errorf("failed to run: %w", err)
+		ri := run.CMDCtx(ctx, exp...).Stdin().Log().
+			Env(dataDir).
+			Env(fmt.Sprintf("TERRAFORM_JSON_PLAN=%s", jsonPlan)).
+			Env(fmt.Sprintf("TERRAFORM_TXT_PLAN=%s", txtPlan)).
+			Env(fmt.Sprintf("CONFIG_ROOT=%s", cfg.ConfigRoot)).
+			Env(fmt.Sprintf("TF_WORKSPACE=%s", wsEnv)).
+			Env(fmt.Sprintf("BT_COMPONENT=%s", component)).
+			Dir(dir).DryRun(dryRun)
+		if cmd.OutputFile == "" {
+			err = ri.Run()
+			if err != nil {
+				return fmt.Errorf("failed to run: %w", err)
+			}
+		} else {
+			f, err := fsmodtime.ExpandEnv([]string{cmd.OutputFile}, env)
+			if err != nil {
+				return fmt.Errorf("failed to expand: %w", err)
+			}
+			fh, err := os.Create(filepath.Join(dir, f[0]))
+			if err != nil {
+				return fmt.Errorf("failed to create cmd output file: %w", err)
+			}
+			defer fh.Close()
+			err = ri.Run(fh, os.Stderr)
+			if err != nil {
+				return fmt.Errorf("failed to run: %w", err)
+			}
+			Logger.Printf("Saving check output to file: %s\n", filepath.Join(dir, f[0]))
 		}
 	}
 

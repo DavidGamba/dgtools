@@ -120,6 +120,8 @@ terraform_profile: {
 }
 ----
 
+See the link:./config/schema.cue[schema] for extra details.
+
 == Usage Basics
 
 . (optional) Run `bt terraform init` to initialize your config.
@@ -207,6 +209,9 @@ Pre apply check commands get the following Env vars exported:
 
 * `CONFIG_ROOT`: The dir of the config file.
 * `TERRAFORM_JSON_PLAN`: The path to the rendered json plan.
+* `TERRAFORM_TXT_PLAN`: The path to the rendered txt plan.
+* `TF_WORKSPACE`: The current workspace or "default".
+* `BT_COMPONENT`: The current component name if running in stack mode or the basename of the current directory.
 
 If pre-apply checks are enabled in the config file, they can be disabled for the current run using the `--no-checks` option.
 
@@ -366,6 +371,8 @@ stack: "prod-us-west-2": {
 	]
 }
 ----
+
+See the link:./stack/config/schema.cue[stack schema] for extra details.
 
 === Usage
 
