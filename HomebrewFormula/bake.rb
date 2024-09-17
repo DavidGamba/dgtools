@@ -5,8 +5,8 @@ class Bake < Formula
 
   desc "#{@@tool_desc}"
   homepage "https://github.com/DavidGamba/go-getoptions/tree/master/#{@@tool_name}"
-  url "https://github.com/DavidGamba/dgtools/archive/refs/tags/bake/v0.1.0.tar.gz"
-  sha256 "c03ea914b3dfb885bd4821118b89411a06b7ac17f9e78b4cf066a4826a85841f"
+  url "https://github.com/DavidGamba/dgtools/archive/refs/tags/bake/v0.2.0.tar.gz"
+  sha256 "4ed3190798f9ccf67ea2c7000fa4375254964a74e55aa2e0a532e12e89cb000a"
 
   depends_on "go" => :build
 
