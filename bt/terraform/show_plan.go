@@ -8,6 +8,7 @@ import (
 	"github.com/DavidGamba/dgtools/bt/config"
 	"github.com/DavidGamba/dgtools/run"
 	"github.com/DavidGamba/go-getoptions"
+	"github.com/DavidGamba/go-getoptions/dag"
 	"github.com/mattn/go-isatty"
 )
 
@@ -26,6 +27,8 @@ func showPlanRun(ctx context.Context, opt *getoptions.GetOpt, args []string) err
 
 	cfg := config.ConfigFromContext(ctx)
 	dir := DirFromContext(ctx)
+	stdout := dag.Stdout(ctx)
+	stderr := dag.Stderr(ctx)
 	LogConfig(cfg, profile)
 
 	ws, err := updateWSIfSelected(cfg.Config.DefaultTerraformProfile, cfg.Profile(profile), ws)
@@ -60,7 +63,7 @@ func showPlanRun(ctx context.Context, opt *getoptions.GetOpt, args []string) err
 		Logger.Printf("export %s\n", wsEnv)
 		ri.Env(wsEnv)
 	}
-	err = ri.Run()
+	err = ri.Run(stdout, stderr)
 	if err != nil {
 		return fmt.Errorf("failed to run: %w", err)
 	}

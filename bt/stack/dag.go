@@ -15,6 +15,7 @@ import (
 func generateDAG(opt *getoptions.GetOpt, id string, cfg *sconfig.Config, normal bool) (*dag.Graph, error) {
 	tm := dag.NewTaskMap()
 	g := dag.NewGraph("stack " + id)
+	g.SetOutputBuffer(os.Stdout)
 
 	wd, err := os.Getwd()
 	if err != nil {

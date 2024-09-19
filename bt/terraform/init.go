@@ -11,6 +11,7 @@ import (
 	"github.com/DavidGamba/dgtools/fsmodtime"
 	"github.com/DavidGamba/dgtools/run"
 	"github.com/DavidGamba/go-getoptions"
+	"github.com/DavidGamba/go-getoptions/dag"
 	"github.com/mattn/go-isatty"
 )
 
@@ -28,6 +29,8 @@ func initRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 
 	cfg := config.ConfigFromContext(ctx)
 	dir := DirFromContext(ctx)
+	stdout := dag.Stdout(ctx)
+	stderr := dag.Stderr(ctx)
 	LogConfig(cfg, profile)
 	os.Setenv("CONFIG_ROOT", cfg.ConfigRoot)
 
@@ -50,7 +53,7 @@ func initRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	cmd = append(cmd, args...)
 	dataDir := fmt.Sprintf("TF_DATA_DIR=%s", getDataDir(cfg.Config.DefaultTerraformProfile, cfg.Profile(profile)))
 	Logger.Printf("export %s\n", dataDir)
-	err := run.CMDCtx(ctx, cmd...).Stdin().Log().Env(dataDir).Dir(dir).DryRun(dryRun).Run()
+	err := run.CMDCtx(ctx, cmd...).Stdin().Log().Env(dataDir).Dir(dir).DryRun(dryRun).Run(stdout, stderr)
 	if err != nil {
 		os.Remove(filepath.Join(dir, ".tf.lock"))
 		return fmt.Errorf("failed to run: %w", err)

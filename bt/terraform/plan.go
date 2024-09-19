@@ -14,6 +14,7 @@ import (
 	"github.com/DavidGamba/dgtools/fsmodtime"
 	"github.com/DavidGamba/dgtools/run"
 	"github.com/DavidGamba/go-getoptions"
+	"github.com/DavidGamba/go-getoptions/dag"
 	"github.com/hashicorp/terraform-config-inspect/tfconfig"
 	"github.com/mattn/go-isatty"
 )
@@ -50,6 +51,8 @@ func planRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 
 	cfg := config.ConfigFromContext(ctx)
 	dir := DirFromContext(ctx)
+	stdout := dag.Stdout(ctx)
+	stderr := dag.Stderr(ctx)
 	LogConfig(cfg, profile)
 	os.Setenv("CONFIG_ROOT", cfg.ConfigRoot)
 
@@ -195,7 +198,7 @@ func planRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 		Logger.Printf("export %s\n", wsEnv)
 		ri.Env(wsEnv)
 	}
-	err = ri.Run()
+	err = ri.Run(stdout, stderr)
 	if err != nil {
 		// exit code 2 with detailed-exitcode means changes found
 		var eerr *exec.ExitError
