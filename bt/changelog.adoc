@@ -1,5 +1,9 @@
 = bt
 
+== v0.9.0: New features
+
+* Add color flag.
+
 == v0.8.0: New features
 
 * Terraform checks have extra ENV vars exported and can run from parallel stack components.
