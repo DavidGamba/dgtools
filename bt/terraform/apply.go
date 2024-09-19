@@ -27,6 +27,7 @@ func applyRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	parallelism := opt.Value("parallelism").(int)
 	ws := opt.Value("ws").(string)
 	profile := opt.Value("profile").(string)
+	color := opt.Value("color").(string)
 
 	cfg := config.ConfigFromContext(ctx)
 	dir := DirFromContext(ctx)
@@ -67,7 +68,7 @@ func applyRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	cmd := []string{cfg.TFProfile[cfg.Profile(profile)].BinaryName, "apply"}
 	cmd = append(cmd, "-parallelism", fmt.Sprintf("%d", parallelism))
 	cmd = append(cmd, "-input", planFile)
-	if !isatty.IsTerminal(os.Stdout.Fd()) {
+	if color == "never" || (color == "auto" && !isatty.IsTerminal(os.Stdout.Fd())) {
 		cmd = append(cmd, "-no-color")
 	}
 	cmd = append(cmd, args...)

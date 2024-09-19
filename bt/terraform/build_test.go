@@ -58,6 +58,7 @@ func TestBuild(t *testing.T) {
 		opt.Int("parallelism", 10)
 		opt.String("profile", "default")
 		opt.String("ws", "")
+		opt.String("color", "auto")
 		opt.Bool("destroy", false)
 		opt.Bool("detailed-exitcode", false)
 		opt.Bool("ignore-cache", false)

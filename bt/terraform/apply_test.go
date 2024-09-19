@@ -46,6 +46,7 @@ func TestApply(t *testing.T) {
 		opt.Int("parallelism", 10)
 		opt.String("profile", "default")
 		opt.String("ws", "dev")
+		opt.String("color", "auto")
 		err := applyRun(ctx, opt, []string{})
 		if err != nil {
 			t.Errorf("TestApply error: %s", err)
@@ -84,6 +85,7 @@ func TestApply(t *testing.T) {
 		opt.Int("parallelism", 10)
 		opt.String("profile", "default")
 		opt.String("ws", "dev")
+		opt.String("color", "auto")
 		err := applyRun(ctx, opt, []string{})
 		if err != nil {
 			t.Errorf("TestApply error: %s", err)
@@ -124,6 +126,7 @@ func TestApply(t *testing.T) {
 		opt.Int("parallelism", 10)
 		opt.String("profile", "dev")
 		opt.String("ws", "dev")
+		opt.String("color", "auto")
 		err := applyRun(ctx, opt, []string{})
 		if err != nil {
 			t.Errorf("TestApply error: %s", err)
@@ -163,6 +166,7 @@ func TestApply(t *testing.T) {
 		opt.Int("parallelism", 10)
 		opt.String("profile", "prod")
 		opt.String("ws", "prod")
+		opt.String("color", "auto")
 		err := applyRun(ctx, opt, []string{})
 		if err != nil {
 			t.Errorf("TestApply error: %s", err)

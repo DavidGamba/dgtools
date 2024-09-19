@@ -49,6 +49,7 @@ func program(args []string) int {
 	opt := getoptions.New()
 	opt.Self("", "Terraform build system built as a no lock-in wrapper")
 	opt.Bool("quiet", false, opt.GetEnv("QUIET"))
+	opt.String("color", "auto", opt.Description("show colored output"), opt.ValidValues("always", "auto", "never"))
 	opt.SetUnknownMode(getoptions.Pass)
 
 	configCMD(ctx, opt)
@@ -76,7 +77,7 @@ func program(args []string) int {
 		}
 		fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
 		if errors.Is(err, getoptions.ErrorParsing) {
-			fmt.Fprintf(os.Stderr, "\n"+opt.Help())
+			fmt.Fprintf(os.Stderr, "\n%s", opt.Help())
 		}
 		return 1
 	}

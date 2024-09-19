@@ -63,6 +63,7 @@ func varFileCMDRun(fn VarFileCMDer, cmd ...string) getoptions.CommandFn {
 		profile := opt.Value("profile").(string)
 		varFiles := opt.Value("var-file").([]string)
 		ws := opt.Value("ws").(string)
+		color := opt.Value("color").(string)
 
 		cfg := config.ConfigFromContext(ctx)
 		dir := DirFromContext(ctx)
@@ -94,7 +95,7 @@ func varFileCMDRun(fn VarFileCMDer, cmd ...string) getoptions.CommandFn {
 		for _, v := range varFiles {
 			cmd = append(cmd, "-var-file", v)
 		}
-		if !isatty.IsTerminal(os.Stdout.Fd()) {
+		if color == "never" || (color == "auto" && !isatty.IsTerminal(os.Stdout.Fd())) {
 			cmd = append(cmd, "-no-color")
 		}
 		cmd = append(cmd, fn.cmdFunction(ws)...)

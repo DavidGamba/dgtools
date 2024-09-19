@@ -44,6 +44,7 @@ func TestInit(t *testing.T) {
 		opt := getoptions.New()
 		opt.Bool("dry-run", false)
 		opt.String("profile", "default")
+		opt.String("color", "auto")
 		err := initRun(ctx, opt, []string{})
 		if err != nil {
 			t.Errorf("TestInit error: %s", err)
@@ -80,6 +81,7 @@ func TestInit(t *testing.T) {
 		opt := getoptions.New()
 		opt.Bool("dry-run", false)
 		opt.String("profile", "default")
+		opt.String("color", "auto")
 		err := initRun(ctx, opt, []string{})
 		if err != nil {
 			t.Errorf("TestInit error: %s", err)
@@ -118,6 +120,7 @@ func TestInit(t *testing.T) {
 		opt := getoptions.New()
 		opt.Bool("dry-run", false)
 		opt.String("profile", "dev")
+		opt.String("color", "auto")
 		err := initRun(ctx, opt, []string{})
 		if err != nil {
 			t.Errorf("TestInit error: %s", err)
@@ -155,6 +158,7 @@ func TestInit(t *testing.T) {
 		opt := getoptions.New()
 		opt.Bool("dry-run", false)
 		opt.String("profile", "prod")
+		opt.String("color", "auto")
 		err := initRun(ctx, opt, []string{})
 		if err != nil {
 			t.Errorf("TestInit error: %s", err)

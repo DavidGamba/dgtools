@@ -46,6 +46,7 @@ func generateDAG(opt *getoptions.GetOpt, id string, cfg *sconfig.Config, normal 
 			nopt.Bool("show", opt.Value("show").(bool))
 			nopt.Bool("lock", opt.Value("lock").(bool))
 			nopt.String("profile", opt.Value("profile").(string))
+			nopt.String("color", opt.Value("color").(string))
 			nopt.String("ws", ws)
 			nopt.StringSlice("replace", 1, 99)
 			nopt.StringSlice("target", 1, 99)

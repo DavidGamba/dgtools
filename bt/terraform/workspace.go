@@ -67,6 +67,7 @@ func workspaceSelectCMD(ctx context.Context, parent *getoptions.GetOpt) *getopti
 // TODO: Allow using both the arg and the --ws flag
 func workspaceSelectRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	profile := opt.Value("profile").(string)
+	color := opt.Value("color").(string)
 	if len(args) < 1 {
 		fmt.Fprintf(os.Stderr, "ERROR: missing <workspace-name>\n")
 		fmt.Fprintf(os.Stderr, "%s", opt.Help(getoptions.HelpSynopsis))
@@ -80,7 +81,7 @@ func workspaceSelectRun(ctx context.Context, opt *getoptions.GetOpt, args []stri
 
 	cmd := []string{cfg.TFProfile[cfg.Profile(profile)].BinaryName, "workspace", "select", wsName}
 
-	if !isatty.IsTerminal(os.Stdout.Fd()) {
+	if color == "never" || (color == "auto" && !isatty.IsTerminal(os.Stdout.Fd())) {
 		cmd = append(cmd, "-no-color")
 	}
 	cmd = append(cmd, args...)
@@ -135,11 +136,12 @@ func workspaceNewRun(ctx context.Context, opt *getoptions.GetOpt, args []string)
 func workspaceFn(cmd ...string) getoptions.CommandFn {
 	return func(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 		profile := opt.Value("profile").(string)
+		color := opt.Value("color").(string)
 
 		cfg := config.ConfigFromContext(ctx)
 		LogConfig(cfg, profile)
 
-		if !isatty.IsTerminal(os.Stdout.Fd()) {
+		if color == "never" || (color == "auto" && !isatty.IsTerminal(os.Stdout.Fd())) {
 			cmd = append(cmd, "-no-color")
 		}
 		cmd = append(cmd, args...)

@@ -46,6 +46,7 @@ func planRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	targets := opt.Value("target").([]string)
 	replacements := opt.Value("replace").([]string)
 	ws := opt.Value("ws").(string)
+	color := opt.Value("color").(string)
 
 	cfg := config.ConfigFromContext(ctx)
 	dir := DirFromContext(ctx)
@@ -181,7 +182,7 @@ func planRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	for _, r := range replacements {
 		cmd = append(cmd, "-replace", r)
 	}
-	if !isatty.IsTerminal(os.Stdout.Fd()) {
+	if color == "never" || (color == "auto" && !isatty.IsTerminal(os.Stdout.Fd())) {
 		cmd = append(cmd, "-no-color")
 	}
 	cmd = append(cmd, args...)

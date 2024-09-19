@@ -24,6 +24,7 @@ func initCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt 
 func initRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	dryRun := opt.Value("dry-run").(bool)
 	profile := opt.Value("profile").(string)
+	color := opt.Value("color").(string)
 
 	cfg := config.ConfigFromContext(ctx)
 	dir := DirFromContext(ctx)
@@ -43,7 +44,7 @@ func initRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 		// }
 		cmd = append(cmd, "-backend-config", bb[0])
 	}
-	if !isatty.IsTerminal(os.Stdout.Fd()) {
+	if color == "never" || (color == "auto" && !isatty.IsTerminal(os.Stdout.Fd())) {
 		cmd = append(cmd, "-no-color")
 	}
 	cmd = append(cmd, args...)

@@ -22,6 +22,7 @@ func showPlanRun(ctx context.Context, opt *getoptions.GetOpt, args []string) err
 	dryRun := opt.Value("dry-run").(bool)
 	profile := opt.Value("profile").(string)
 	ws := opt.Value("ws").(string)
+	color := opt.Value("color").(string)
 
 	cfg := config.ConfigFromContext(ctx)
 	dir := DirFromContext(ctx)
@@ -48,7 +49,7 @@ func showPlanRun(ctx context.Context, opt *getoptions.GetOpt, args []string) err
 	} else {
 		cmd = append(cmd, fmt.Sprintf(".tf.plan-%s", ws))
 	}
-	if !isatty.IsTerminal(os.Stdout.Fd()) {
+	if color == "never" || (color == "auto" && !isatty.IsTerminal(os.Stdout.Fd())) {
 		cmd = append(cmd, "-no-color")
 	}
 	dataDir := fmt.Sprintf("TF_DATA_DIR=%s", getDataDir(cfg.Config.DefaultTerraformProfile, cfg.Profile(profile)))

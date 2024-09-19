@@ -15,6 +15,7 @@ func wsCMDRun(cmd ...string) getoptions.CommandFn {
 	return func(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 		profile := opt.Value("profile").(string)
 		ws := opt.Value("ws").(string)
+		color := opt.Value("color").(string)
 		dryRun := false
 		if opt.Value("dry-run") != nil {
 			dryRun = opt.Value("dry-run").(bool)
@@ -44,7 +45,7 @@ func wsCMDRun(cmd ...string) getoptions.CommandFn {
 			planFile = fmt.Sprintf(".tf.plan-%s", ws)
 		}
 
-		if !isatty.IsTerminal(os.Stdout.Fd()) {
+		if color == "never" || (color == "auto" && !isatty.IsTerminal(os.Stdout.Fd())) {
 			cmd = append(cmd, "-no-color")
 		}
 		cmd = append(cmd, args...)
