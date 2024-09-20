@@ -88,7 +88,9 @@ func Test(opt *getoptions.GetOpt) getoptions.CommandFn {
 			return fmt.Errorf("failed to get env: %w", err)
 		}
 
-		cmd := run.CMD("go", "test", "./...")
+		command := []string{"go", "test", "./..."}
+		command = append(command, args...)
+		cmd := run.CMD(command...)
 		for _, e := range env {
 			cmd.Env(e)
 		}
