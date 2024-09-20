@@ -1,5 +1,14 @@
 = bt
 
+== v0.10.0: Breaking changes
+
+Updated bt to load config files from the directory by default, this allows to split `bt-stacks` into multiple files.
+At least one file named `bt-stacks.cue` is required when using stacks.
+
+* `.bt.cue` config file now requires `package bt` header.
+
+* `bt-stacks.cue` config file now requires `package bt_stacks` header.
+
 == v0.9.0: New features
 
 * Add color flag.

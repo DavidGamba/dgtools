@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"cuelang.org/go/cue"
 	"github.com/DavidGamba/dgtools/buildutils"
 	"github.com/DavidGamba/dgtools/cueutils"
 )
@@ -18,7 +19,7 @@ var f embed.FS
 
 var Logger = log.New(os.Stderr, "", log.LstdFlags)
 
-func Get(ctx context.Context, filename string) (*Config, string, error) {
+func Get(ctx context.Context, value *cue.Value, filename string) (*Config, string, error) {
 	f, err := buildutils.FindFileUpwards(ctx, filename)
 	if err != nil {
 		cfg := &Config{}
@@ -31,7 +32,7 @@ func Get(ctx context.Context, filename string) (*Config, string, error) {
 	}
 	defer configFH.Close()
 
-	cfg, err := Read(ctx, f, configFH)
+	cfg, err := Read(ctx, value, f, configFH)
 	if err != nil {
 		return &Config{}, f, fmt.Errorf("failed to read config: %w", err)
 	}
@@ -42,9 +43,10 @@ func Get(ctx context.Context, filename string) (*Config, string, error) {
 	return cfg, f, nil
 }
 
-func Read(ctx context.Context, filename string, configFH io.Reader) (*Config, error) {
+func Read(ctx context.Context, value *cue.Value, filename string, configFH io.Reader) (*Config, error) {
 	configs := []cueutils.CueConfigFile{}
 
+	dir := filepath.Dir(filename)
 	schemaFilename := "schema.cue"
 	schemaFH, err := f.Open(schemaFilename)
 	if err != nil {
@@ -53,10 +55,8 @@ func Read(ctx context.Context, filename string, configFH io.Reader) (*Config, er
 	defer schemaFH.Close()
 	configs = append(configs, cueutils.CueConfigFile{Data: schemaFH, Name: schemaFilename})
 
-	configs = append(configs, cueutils.CueConfigFile{Data: configFH, Name: filename})
-
 	c := Config{}
-	err = cueutils.Unmarshal(configs, &c)
+	err = cueutils.Unmarshal(configs, dir, "bt_stacks", value, &c)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal: %w", err)
 	}

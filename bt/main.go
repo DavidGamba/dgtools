@@ -12,6 +12,7 @@ import (
 	stacksConfig "github.com/DavidGamba/dgtools/bt/stack/config"
 	"github.com/DavidGamba/dgtools/bt/terraform"
 	"github.com/DavidGamba/dgtools/buildutils"
+	"github.com/DavidGamba/dgtools/cueutils"
 	"github.com/DavidGamba/dgtools/run"
 	"github.com/DavidGamba/go-getoptions"
 )
@@ -26,8 +27,11 @@ func program(args []string) int {
 	ctx, cancel, done := getoptions.InterruptContext()
 	defer func() { cancel(); <-done }()
 
+	os.Setenv("CUE_EXPERIMENT", "embed")
+
 	// Read config and store it in context
-	cfg, _, err := config.Get(ctx, ".bt.cue")
+	cfgValue := cueutils.NewValue()
+	cfg, _, err := config.Get(ctx, cfgValue, ".bt.cue")
 	if err != nil {
 		if !errors.Is(err, buildutils.ErrNotFound) {
 			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
@@ -37,7 +41,8 @@ func program(args []string) int {
 	ctx = config.NewConfigContext(ctx, cfg)
 
 	// Read config and store it in context
-	stackCfg, _, err := stacksConfig.Get(ctx, "bt-stacks.cue")
+	stackValue := cueutils.NewValue()
+	stackCfg, _, err := stacksConfig.Get(ctx, stackValue, "bt-stacks.cue")
 	if err != nil {
 		if !errors.Is(err, buildutils.ErrNotFound) {
 			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
@@ -49,6 +54,7 @@ func program(args []string) int {
 	opt := getoptions.New()
 	opt.Self("", "Terraform build system built as a no lock-in wrapper")
 	opt.Bool("quiet", false, opt.GetEnv("QUIET"))
+	opt.Bool("print-raw-config", false)
 	opt.String("color", "auto", opt.Description("show colored output"), opt.ValidValues("always", "auto", "never"))
 	opt.SetUnknownMode(getoptions.Pass)
 
@@ -68,6 +74,13 @@ func program(args []string) int {
 		config.Logger.SetOutput(io.Discard)
 		stack.Logger.SetOutput(io.Discard)
 		terraform.Logger.SetOutput(io.Discard)
+		cueutils.Logger.SetOutput(io.Discard)
+	}
+
+	if opt.Called("print-raw-config") {
+		fmt.Printf("config value:\n%v\n", cfgValue)
+		fmt.Printf("stack value:\n%v\n", stackValue)
+		return 0
 	}
 
 	err = opt.Dispatch(ctx, remaining)

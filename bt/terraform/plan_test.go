@@ -11,6 +11,7 @@ import (
 
 	"github.com/DavidGamba/dgtools/bt/config"
 	"github.com/DavidGamba/dgtools/buildutils"
+	"github.com/DavidGamba/dgtools/cueutils"
 	"github.com/DavidGamba/dgtools/run"
 	"github.com/DavidGamba/go-getoptions"
 )
@@ -21,7 +22,8 @@ func TestPlan(t *testing.T) {
 	t.Run("TestPlan without config", func(t *testing.T) {
 		buf := setupLogging()
 		ctx := context.Background()
-		cfg, _, _ := config.Get(ctx, "x")
+		value := cueutils.NewValue()
+		cfg, _, _ := config.Get(ctx, value, "x")
 		ctx = config.NewConfigContext(ctx, cfg)
 		tDir := t.TempDir()
 		ctx = NewDirContext(ctx, tDir)

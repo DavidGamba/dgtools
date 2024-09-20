@@ -92,6 +92,8 @@ Example:
 .Config file .bt.cue
 [source, cue]
 ----
+package bt
+
 config: {
 	default_terraform_profile: "default"
 	terraform_profile_env_var: "BT_TERRAFORM_PROFILE"
@@ -272,6 +274,8 @@ The other is the stack definition, where the workspaces that compose a given sta
 .bt-stacks.cue
 [source, cue]
 ----
+package bt_stacks
+
 // Define the list of components
 component: "networking": {}
 component: "kubernetes": {

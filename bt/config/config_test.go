@@ -4,11 +4,15 @@ import (
 	"context"
 	"strings"
 	"testing"
+
+	"github.com/DavidGamba/dgtools/cueutils"
 )
 
 func TestConfig(t *testing.T) {
 	t.Run("default", func(t *testing.T) {
 		c := `
+package bt
+
 _common: {
 	workspaces: {
 		enabled: true
@@ -43,7 +47,8 @@ terraform_profile: {
 `
 		ctx := context.Background()
 		r := strings.NewReader(c)
-		cfg, err := Read(ctx, "config.cue", r)
+		cfgValue := cueutils.NewValue()
+		cfg, err := Read(ctx, cfgValue, "config.cue", r)
 		if err != nil {
 			t.Fatalf("failed to read config: %s", err)
 		}
