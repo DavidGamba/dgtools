@@ -1,0 +1,2 @@
+en: "hello"
+es: "hola"

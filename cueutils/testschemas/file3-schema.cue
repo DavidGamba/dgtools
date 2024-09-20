@@ -1,0 +1,2 @@
+en: string
+es: string
