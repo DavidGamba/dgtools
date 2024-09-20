@@ -22,6 +22,7 @@ import (
 	"cuelang.org/go/cue/build"
 	"cuelang.org/go/cue/cuecontext"
 	cueErrors "cuelang.org/go/cue/errors"
+	"cuelang.org/go/cue/interpreter/embed"
 	"cuelang.org/go/cue/load"
 	"cuelang.org/go/encoding/gocode/gocodec"
 )
@@ -43,7 +44,10 @@ func NewValue() *cue.Value {
 // Because CUE doesn't support hidden files, hidden files need to be passed as configs.
 // value is a pointer receiver to a cue.Value and can be used on the caller side to print the cue values.
 func Unmarshal(configs []CueConfigFile, dir, packageName string, value *cue.Value, target any) error {
-	c := cuecontext.New()
+	embedding := cuecontext.Interpreter(embed.New())
+	ctxOpts := []cuecontext.Option{embedding}
+	c := cuecontext.New(ctxOpts...)
+
 	insts := []*build.Instance{}
 	var err error
 	dirAbs, err := filepath.Abs(dir)
