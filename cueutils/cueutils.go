@@ -48,6 +48,7 @@ func Unmarshal(configs []CueConfigFile, dir, packageName string, value *cue.Valu
 	ctxOpts := []cuecontext.Option{embedding}
 	c := cuecontext.New(ctxOpts...)
 
+	packagePaths := []string{"."}
 	insts := []*build.Instance{}
 	var err error
 	dirAbs, err := filepath.Abs(dir)
@@ -58,9 +59,6 @@ func Unmarshal(configs []CueConfigFile, dir, packageName string, value *cue.Valu
 
 	overlay := map[string]load.Source{}
 	for i, cf := range configs {
-		if strings.HasPrefix(filepath.Base(cf.Name), ".") {
-			continue
-		}
 		Logger.Printf("config: n: %d, name: %s\n", i, cf.Name)
 		d, err := io.ReadAll(cf.Data)
 		if err != nil {
@@ -77,6 +75,9 @@ func Unmarshal(configs []CueConfigFile, dir, packageName string, value *cue.Valu
 		overlayPath := filepath.Join(dirAbs, filepath.Base(cf.Name))
 		overlay[overlayPath] = load.FromBytes(d)
 		Logger.Printf("overlay: %s\n", overlayPath)
+		if strings.HasPrefix(filepath.Base(cf.Name), ".") {
+			packagePaths = append(packagePaths, overlayPath)
+		}
 	}
 
 	if dir == "" {
@@ -91,7 +92,6 @@ func Unmarshal(configs []CueConfigFile, dir, packageName string, value *cue.Valu
 		Dir:                 dir,
 		Overlay:             overlay,
 	}
-	packagePaths := []string{"."}
 	Logger.Printf("dir: %s\nModuleRoot: %s\npackagePaths: %v\n", dir, lc.ModuleRoot, packagePaths)
 	ii := load.Instances(packagePaths, lc)
 	logInstancesFiles(dir, ii)
@@ -104,20 +104,6 @@ func Unmarshal(configs []CueConfigFile, dir, packageName string, value *cue.Valu
 	}
 	for _, v := range vv {
 		*value = (*value).Unify(v)
-	}
-
-	for i, cf := range configs {
-		if !strings.HasPrefix(filepath.Base(cf.Name), ".") {
-			continue
-		}
-		Logger.Printf("Loading hidden file %d: %s\n", i, cf.Name)
-		d, err := io.ReadAll(cf.Data)
-		if err != nil {
-			return fmt.Errorf("failed to read: %w", err)
-		}
-
-		v := c.CompileBytes(d, cue.Filename(cf.Name), cue.Scope(*value))
-		*value = value.Unify(v)
 	}
 
 	if value.Err() != nil {
