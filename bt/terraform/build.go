@@ -97,22 +97,22 @@ func BuildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	}
 
 	g := dag.NewGraph(fmt.Sprintf("%s:build", component))
-	g.TaskDependensOn(tm.Get("plan"), tm.Get("init"))
+	g.TaskDependsOn(tm.Get("plan"), tm.Get("init"))
 	if lock {
-		g.TaskDependensOn(tm.Get("lock"), tm.Get("init"))
-		g.TaskDependensOn(tm.Get("plan"), tm.Get("lock"))
+		g.TaskDependsOn(tm.Get("lock"), tm.Get("init"))
+		g.TaskDependsOn(tm.Get("plan"), tm.Get("lock"))
 	}
 	if cfg.TFProfile[cfg.Profile(profile)].PreApplyChecks.Enabled {
-		g.TaskDependensOn(tm.Get("checks"), tm.Get("plan"))
+		g.TaskDependsOn(tm.Get("checks"), tm.Get("plan"))
 	}
 
 	if show {
-		g.TaskDependensOn(tm.Get("show"), tm.Get("plan"))
+		g.TaskDependsOn(tm.Get("show"), tm.Get("plan"))
 	}
 	if apply {
-		g.TaskDependensOn(tm.Get("apply"), tm.Get("plan"))
+		g.TaskDependsOn(tm.Get("apply"), tm.Get("plan"))
 		if cfg.TFProfile[cfg.Profile(profile)].PreApplyChecks.Enabled {
-			g.TaskDependensOn(tm.Get("apply"), tm.Get("checks"))
+			g.TaskDependsOn(tm.Get("apply"), tm.Get("checks"))
 		}
 	}
 	err = g.Validate(tm)

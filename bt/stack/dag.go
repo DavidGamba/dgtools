@@ -80,9 +80,9 @@ func generateDAG(opt *getoptions.GetOpt, id string, cfg *sconfig.Config, normal 
 				Logger.Printf("adding task %s on %s ws %s vars: %v\n", wID, c.Path, w, variables)
 
 				if normal {
-					g.TaskDependensOn(tm.Get(cID), tm.Get(wID))
+					g.TaskDependsOn(tm.Get(cID), tm.Get(wID))
 				} else {
-					g.TaskDependensOn(tm.Get(wID), tm.Get(cID))
+					g.TaskDependsOn(tm.Get(wID), tm.Get(cID))
 				}
 			}
 		} else {
@@ -103,11 +103,11 @@ func generateDAG(opt *getoptions.GetOpt, id string, cfg *sconfig.Config, normal 
 					// workspace mode
 					for _, w := range c.Workspaces {
 						wID := fmt.Sprintf("%s:%s", cID, w)
-						g.TaskDependensOn(tm.Get(wID), tm.Get(eID))
+						g.TaskDependsOn(tm.Get(wID), tm.Get(eID))
 					}
 				} else {
 					// normal mode
-					g.TaskDependensOn(tm.Get(cID), tm.Get(eID))
+					g.TaskDependsOn(tm.Get(cID), tm.Get(eID))
 				}
 			}
 		} else {
@@ -117,11 +117,11 @@ func generateDAG(opt *getoptions.GetOpt, id string, cfg *sconfig.Config, normal 
 					// workspace mode
 					for _, w := range c.Workspaces {
 						wID := fmt.Sprintf("%s:%s", cID, w)
-						g.TaskDependensOn(tm.Get(eID), tm.Get(wID))
+						g.TaskDependsOn(tm.Get(eID), tm.Get(wID))
 					}
 				} else {
 					// normal mode
-					g.TaskDependensOn(tm.Get(eID), tm.Get(cID))
+					g.TaskDependsOn(tm.Get(eID), tm.Get(cID))
 				}
 			}
 		}
