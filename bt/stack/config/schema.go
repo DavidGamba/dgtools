@@ -15,6 +15,7 @@ type Component struct {
 	DependsOn  []string   `json:"depends_on"`
 	Variables  []Variable `json:"variables"`
 	Workspaces []string   `json:"workspaces"`
+	Retries    int        `json:"retries"`
 }
 
 type ID string
@@ -30,7 +31,7 @@ type Stack struct {
 }
 
 func (c Component) String() string {
-	return fmt.Sprintf("id: %s, path: %s, depends_on: %v, variables: %v, workspaces: %v", c.ID, c.Path, c.DependsOn, c.Variables, c.Workspaces)
+	return fmt.Sprintf("id: %s, path: %s, depends_on: %v, variables: %v, workspaces: %v, retries: %d", c.ID, c.Path, c.DependsOn, c.Variables, c.Workspaces, c.Retries)
 }
 
 func (s Stack) String() string {

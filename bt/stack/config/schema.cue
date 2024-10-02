@@ -13,6 +13,7 @@ package bt_stacks
 	depends_on: [...#Component.id]
 	variables: [...#Variable]
 	workspaces: [...string]
+	retries: int | *0
 }
 
 #Stack: {

@@ -84,12 +84,18 @@ func generateDAG(opt *getoptions.GetOpt, id string, cfg *sconfig.Config, normal 
 				} else {
 					g.TaskDependsOn(tm.Get(wID), tm.Get(cID))
 				}
+				if c.Retries > 0 {
+					g.TaskRetries(tm.Get(wID), c.Retries)
+				}
 			}
 		} else {
 			// normal mode
 			tm.Add(cID, wsFn(cID, c.Path, "", variables))
 			Logger.Printf("adding task %s on %s vars: %v\n", cID, c.Path, variables)
 			g.AddTask(tm.Get(cID))
+			if c.Retries > 0 {
+				g.TaskRetries(tm.Get(cID), c.Retries)
+			}
 		}
 	}
 
