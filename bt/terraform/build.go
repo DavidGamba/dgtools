@@ -22,7 +22,7 @@ func buildCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt
 	opt.Bool("detailed-exitcode", false)
 	opt.Bool("dry-run", false)
 	opt.Bool("ignore-cache", false, opt.Description("Ignore the cache and re-run the plan"), opt.Alias("ic"))
-	opt.Bool("no-checks", false, opt.Description("Do not run pre-apply checks"), opt.Alias("nc"))
+	opt.Bool("no-checks", false, opt.Description("Do not run pre-apply/post-apply checks"), opt.Alias("nc"))
 	opt.Bool("show", false, opt.Description("Show Terraform plan"))
 	opt.Bool("lock", false, opt.Description("Run 'terraform providers lock' after init"))
 	opt.Int("parallelism", 10*runtime.NumCPU())
@@ -89,11 +89,14 @@ func BuildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	if cfg.TFProfile[cfg.Profile(profile)].PreApplyChecks.Enabled {
 		tm.Add("checks", checksRun)
 	}
+	if show {
+		tm.Add("show", showPlanRun)
+	}
 	if apply {
 		tm.Add("apply", applyRun)
 	}
-	if show {
-		tm.Add("show", showPlanRun)
+	if cfg.TFProfile[cfg.Profile(profile)].PostApplyChecks.Enabled {
+		tm.Add("post-checks", postChecksRun)
 	}
 
 	g := dag.NewGraph(fmt.Sprintf("%s:build", component))
@@ -113,6 +116,9 @@ func BuildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 		g.TaskDependsOn(tm.Get("apply"), tm.Get("plan"))
 		if cfg.TFProfile[cfg.Profile(profile)].PreApplyChecks.Enabled {
 			g.TaskDependsOn(tm.Get("apply"), tm.Get("checks"))
+		}
+		if cfg.TFProfile[cfg.Profile(profile)].PostApplyChecks.Enabled {
+			g.TaskDependsOn(tm.Get("post-checks"), tm.Get("apply"))
 		}
 	}
 	err = g.Validate(tm)

@@ -30,6 +30,10 @@ type TerraformProfile struct {
 		Enabled  bool
 		Commands []Command
 	} `json:"pre_apply_checks"`
+	PostApplyChecks struct {
+		Enabled  bool
+		Commands []Command
+	} `json:"post_apply_checks"`
 	BinaryName string   `json:"binary_name"`
 	Platforms  []string `json:"platforms"`
 }
@@ -53,6 +57,14 @@ func (t TerraformProfile) String() string {
 		output += ", pre_apply_checks: "
 		names := []string{}
 		for _, cmd := range t.PreApplyChecks.Commands {
+			names = append(names, cmd.Name)
+		}
+		output += fmt.Sprintf("%v", names)
+	}
+	if t.PostApplyChecks.Enabled {
+		output += ", post_apply_checks: "
+		names := []string{}
+		for _, cmd := range t.PostApplyChecks.Commands {
 			names = append(names, cmd.Name)
 		}
 		output += fmt.Sprintf("%v", names)

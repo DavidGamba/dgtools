@@ -58,6 +58,7 @@ func NewCommand(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetO
 	// Custom
 	buildCMD(ctx, opt)
 	checksCMD(ctx, opt)
+	postChecksCMD(ctx, opt)
 
 	return opt
 }
