@@ -55,6 +55,10 @@ func Read(ctx context.Context, value *cue.Value, filename string, configFH io.Re
 	defer schemaFH.Close()
 	configs = append(configs, cueutils.CueConfigFile{Data: schemaFH, Name: schemaFilename})
 
+	if configFH != nil {
+		configs = append(configs, cueutils.CueConfigFile{Data: configFH, Name: filename})
+	}
+
 	c := Config{}
 	err = cueutils.Unmarshal(configs, dir, "bt_stacks", value, &c)
 	if err != nil {
