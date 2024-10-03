@@ -5,7 +5,8 @@ class Ffind < Formula
 
   desc "#{@@tool_desc}"
   homepage "https://github.com/DavidGamba/dgtools/tree/master/#{@@tool_name}"
-  head "https://github.com/DavidGamba/dgtools.git", branch: "master"
+  url "https://github.com/DavidGamba/dgtools/archive/refs/tags/ffind/v0.7.0.tar.gz"
+  sha256 "680ec5d7c3024f964741cbaee7e9882bfccb7f0b38b4ed70cea913358497465d"
 
   depends_on "go" => :build
 
