@@ -5,7 +5,8 @@ class Csvtable < Formula
 
   desc "#{@@tool_desc}"
   homepage "https://github.com/DavidGamba/dgtools/tree/master/#{@@tool_name}"
-  head "https://github.com/DavidGamba/dgtools.git", branch: "master"
+  url "https://github.com/DavidGamba/dgtools/archive/refs/tags/clitable/v0.4.0.tar.gz"
+  sha256 "3994aceee2ab6f87405d322f78e9382b0f2505a633b0896a525a8fbcfc5543cb"
 
   depends_on "go" => :build
 
