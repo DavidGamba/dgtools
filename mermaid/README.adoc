@@ -8,7 +8,7 @@ Render mermaid files to SVG or PNG on the CLI
 +
 ----
 brew tap DavidGamba/dgtools https://github.com/DavidGamba/dgtools
-brew install --HEAD DavidGamba/dgtools/mermaid
+brew install DavidGamba/dgtools/mermaid
 ----
 +
 [NOTE]
@@ -28,7 +28,7 @@ Upgrade with:
 +
 ----
 brew update
-brew reinstall mermaid
+brew upgrade mermaid
 ----
 
 * Install using go:
