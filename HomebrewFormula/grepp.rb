@@ -5,7 +5,8 @@ class Grepp < Formula
 
   desc "#{@@tool_desc}"
   homepage "https://github.com/DavidGamba/dgtools/tree/master/#{@@tool_name}"
-  head "https://github.com/DavidGamba/dgtools.git", branch: "master"
+  url "https://github.com/DavidGamba/dgtools/archive/refs/tags/grepp/v0.2.0.tar.gz"
+  sha256 "4f7a8134d819597f7b0170258d38c9a539ed15eca7f6148fc410ca31ccd76b22"
 
   depends_on "go" => :build
 
