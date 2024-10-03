@@ -5,7 +5,8 @@ class Kcherry < Formula
 
   desc "#{@@tool_desc}"
   homepage "https://github.com/DavidGamba/dgtools/tree/master/#{@@tool_name}"
-  head "https://github.com/DavidGamba/dgtools.git", branch: "master"
+  url "https://github.com/DavidGamba/dgtools/archive/refs/tags/kcherry/v0.1.0.tar.gz"
+  sha256 "dd8a441f43f0a2bcceb3d8d2047e75cb2dbdb706bb65c5b4aa8a0acbdf5cb84b"
 
   depends_on "go" => :build
 
