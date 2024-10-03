@@ -5,7 +5,8 @@ class Tz < Formula
 
   desc "#{@@tool_desc}"
   homepage "https://github.com/DavidGamba/dgtools/tree/master/#{@@tool_name}"
-  head "https://github.com/DavidGamba/dgtools.git", branch: "master"
+  url "https://github.com/DavidGamba/dgtools/archive/refs/tags/kdecode/v0.1.0.tar.gz"
+  sha256 "91e3567f3e0078900eb144b94e8a1950343fcfb39a5f840c7d7d707207c61900"
 
   depends_on "go" => :build
 
