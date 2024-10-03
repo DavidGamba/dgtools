@@ -5,7 +5,8 @@ class Patchseam < Formula
 
   desc "#{@@tool_desc}"
   homepage "https://github.com/DavidGamba/dgtools/tree/master/#{@@tool_name}"
-  head "https://github.com/DavidGamba/dgtools.git", branch: "master"
+  url "https://github.com/DavidGamba/dgtools/archive/refs/tags/patch-seam/v0.1.0.tar.gz"
+  sha256 "cb3b985260b60f79e120ed60bc7c31e5e202472682daff28a7cd2efcdccee1e5"
 
   depends_on "go" => :build
 
