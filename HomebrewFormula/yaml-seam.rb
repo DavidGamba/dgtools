@@ -5,7 +5,8 @@ class Yamlseam < Formula
 
   desc "#{@@tool_desc}"
   homepage "https://github.com/DavidGamba/dgtools/tree/master/#{@@tool_name}"
-  head "https://github.com/DavidGamba/dgtools.git", branch: "master"
+  url "https://github.com/DavidGamba/dgtools/archive/refs/tags/yaml-seam/v0.1.0.tar.gz"
+  sha256 "0818d14a3a0cfbac8077f973eae44e00315a8440ab924a9060928367bca59b7f"
 
   depends_on "go" => :build
 
