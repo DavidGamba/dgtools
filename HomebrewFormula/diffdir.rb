@@ -5,7 +5,8 @@ class Diffdir < Formula
 
   desc "#{@@tool_desc}"
   homepage "https://github.com/DavidGamba/dgtools/tree/master/#{@@tool_name}"
-  head "https://github.com/DavidGamba/dgtools.git", branch: "master"
+  url "https://github.com/DavidGamba/dgtools/archive/refs/tags/diffdir/v0.1.0.tar.gz"
+  sha256 "a2ed9763dac5e35bedf9aae003a4eb12d7145b3319fb16591bb84006dcbf6976"
 
   depends_on "go" => :build
 
