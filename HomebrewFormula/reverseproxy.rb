@@ -5,7 +5,8 @@ class Reverseproxy < Formula
 
   desc "#{@@tool_desc}"
   homepage "https://github.com/DavidGamba/dgtools/tree/master/#{@@tool_name}"
-  head "https://github.com/DavidGamba/dgtools.git", branch: "master"
+  url "https://github.com/DavidGamba/dgtools/archive/refs/tags/reverseproxy/v0.1.0.tar.gz"
+  sha256 "858c1ad49859ad8672fd51eef74d8ff667bd9d699c905a6071f5fca296e1df0b"
 
   depends_on "go" => :build
 
