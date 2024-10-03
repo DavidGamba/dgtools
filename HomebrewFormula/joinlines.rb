@@ -5,7 +5,8 @@ class Joinlines < Formula
 
   desc "#{@@tool_desc}"
   homepage "https://github.com/DavidGamba/dgtools/tree/master/#{@@tool_name}"
-  head "https://github.com/DavidGamba/dgtools.git", branch: "master"
+  url "https://github.com/DavidGamba/dgtools/archive/refs/tags/joinlines/v0.2.0.tar.gz"
+  sha256 "d38968ae507237352acdfb1e872b6aedbad2b0e4eaf1f0e6899b93bbfd5d1e72"
 
   depends_on "go" => :build
 
