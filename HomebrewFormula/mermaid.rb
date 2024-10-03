@@ -5,7 +5,8 @@ class Mermaid < Formula
 
   desc "#{@@tool_desc}"
   homepage "https://github.com/DavidGamba/dgtools/tree/master/#{@@tool_name}"
-  head "https://github.com/DavidGamba/dgtools.git", branch: "master"
+  url "https://github.com/DavidGamba/dgtools/archive/refs/tags/mermaid/v0.1.0.tar.gz"
+  sha256 "7bc5c578b80a41f15f06f862a0cb74ffb8897c7ea8b01caf18655d646e713e16"
 
   depends_on "go" => :build
 
