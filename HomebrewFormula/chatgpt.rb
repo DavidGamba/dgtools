@@ -5,7 +5,8 @@ class Chatgpt < Formula
 
   desc "#{@@tool_desc}"
   homepage "https://github.com/DavidGamba/dgtools/tree/master/#{@@tool_name}"
-  head "https://github.com/DavidGamba/dgtools.git", branch: "master"
+  url "https://github.com/DavidGamba/dgtools/archive/refs/tags/chatgpt/v0.1.0.tar.gz"
+  sha256 "de08fda70d2b2366d1dbd144cf8b1579c5fc7d0b6bdab32e67d1c24e49e518fd"
 
   depends_on "go" => :build
 
