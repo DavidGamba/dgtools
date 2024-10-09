@@ -12,6 +12,7 @@ import (
 	"github.com/DavidGamba/dgtools/bt/config"
 	"github.com/DavidGamba/go-getoptions"
 	"github.com/DavidGamba/go-getoptions/dag"
+	"github.com/mattn/go-isatty"
 )
 
 func buildCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
@@ -41,6 +42,7 @@ func BuildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	lock := opt.Value("lock").(bool)
 	detailedExitcode := opt.Value("detailed-exitcode").(bool)
 	ws := opt.Value("ws").(string)
+	color := opt.Value("color").(string)
 
 	cfg := config.ConfigFromContext(ctx)
 	component := ComponentFromContext(ctx)
@@ -100,6 +102,11 @@ func BuildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	}
 
 	g := dag.NewGraph(fmt.Sprintf("%s:build", component))
+
+	if color == "always" || (color == "auto" && isatty.IsTerminal(os.Stdout.Fd())) {
+		g.UseColor = true
+	}
+
 	g.TaskDependsOn(tm.Get("plan"), tm.Get("init"))
 	if lock {
 		g.TaskDependsOn(tm.Get("lock"), tm.Get("init"))

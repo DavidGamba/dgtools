@@ -10,11 +10,18 @@ import (
 	"github.com/DavidGamba/dgtools/bt/terraform"
 	"github.com/DavidGamba/go-getoptions"
 	"github.com/DavidGamba/go-getoptions/dag"
+	"github.com/mattn/go-isatty"
 )
 
 func generateDAG(opt *getoptions.GetOpt, id string, cfg *sconfig.Config, normal bool) (*dag.Graph, error) {
+	color := opt.Value("color").(string)
+
 	tm := dag.NewTaskMap()
 	g := dag.NewGraph("stack " + id)
+
+	if color == "always" || (color == "auto" && isatty.IsTerminal(os.Stdout.Fd())) {
+		g.UseColor = true
+	}
 
 	wd, err := os.Getwd()
 	if err != nil {
