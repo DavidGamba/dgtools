@@ -27,6 +27,25 @@ It automatically uses the `TF_WORKSPACE` environment variable rather than select
 
 * Allows you to define stacks of components and their dependencies and orchestrate their deployment (and destruction in the reverse order).
 
+* Allows to define retries for stack components that fail due to race conditions.
+
+* TODO: Add post apply tasks with the ability to run a different task for success or error.
+For example, to check for the last change in the failing component and notify the owner, or to run a post apply test.
+
+* TODO: Ensure logs for parallel component runs are printed in serial.
+This one might be nice to combine with a progress indicator in the dag library.
+
+* TODO: Figure out how to invalidate plan cache after apply when running in target mode.
+
+* TODO: Recursive inspection of modified local sources of a local module within a local module.
+
+* TODO: Run terraform providers lock after init. Add `init --lock` option.
+
+* TODO: Add option to skip component in stack if ws doesn't exist.
+
+* TODO: Add progress indicator x out of y > this can be written to the argo workflow progress file:
+https://argo-workflows.readthedocs.io/en/latest/progress/
+
 == Install
 
 * Install using homebrew:
@@ -269,6 +288,8 @@ The other is the stack definition, where the workspaces that compose a given sta
 
 * Components can have variables defined in the stack config file, since these variables are passed after the workspace var files they have higher precedence and allow for stack specific overrides.
 
+* Components can define retries when they fail due to race conditions.
+
 === Stack config file
 
 .bt-stacks.cue
@@ -289,6 +310,7 @@ component: "addons": {
 }
 component: "dns": {
 	depends_on: ["kubernetes"]
+	retries: 3
 }
 component: "dev-rbac": {
 	path: "dev-rbac/terraform"
