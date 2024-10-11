@@ -1,5 +1,11 @@
 = bt
 
+== v0.11.0: New features
+
+* Add retries to stack components.
+
+* Add initial support for colors to the output.
+
 == v0.10.0: Breaking changes
 
 Updated bt to load config files from the directory by default, this allows to split `bt-stacks` into multiple files.
