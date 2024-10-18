@@ -29,6 +29,10 @@ It automatically uses the `TF_WORKSPACE` environment variable rather than select
 
 * Allows to define retries for stack components that fail due to race conditions.
 
+* TODO: Allow option to skip component in destroy if the state shows no resources.
+
+* TODO: Collect component exit codes and have a return code based on whether there were any changes in the stack or not.
+
 * TODO: Add post apply tasks with the ability to run a different task for success or error.
 For example, to check for the last change in the failing component and notify the owner, or to run a post apply test.
 
@@ -45,6 +49,22 @@ This one might be nice to combine with a progress indicator in the dag library.
 
 * TODO: Add progress indicator x out of y > this can be written to the argo workflow progress file:
 https://argo-workflows.readthedocs.io/en/latest/progress/
+
+* TODO: Automatically handle when Terraform is unable to write the state to the backend.
++
+----
+│ Error: Failed to persist state to backend
+│
+│ The error shown above has prevented Terraform from writing the updated
+│ state to the configured backend. To allow for recovery, the state has been
+│ written to the file "errored.tfstate" in the current working directory.
+│
+│ Running "terraform apply" again at this point will create a forked state,
+│ making it harder to recover.
+│
+│ To retry writing this state, use the following command:
+│     terraform state push errored.tfstate
+----
 
 == Install
 
