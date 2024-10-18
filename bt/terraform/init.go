@@ -17,6 +17,7 @@ import (
 func initCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
 	opt := parent.NewCommand("init", "")
 	opt.Bool("dry-run", false)
+	opt.Bool("ignore-cache", false, opt.Description("Ignore the cache and re-run the init"), opt.Alias("ic"))
 	opt.SetCommandFn(initRun)
 	return opt
 }
@@ -25,11 +26,28 @@ func initRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	dryRun := opt.Value("dry-run").(bool)
 	profile := opt.Value("profile").(string)
 	color := opt.Value("color").(string)
+	ignoreCache := opt.Value("ignore-cache").(bool)
 
 	cfg := config.ConfigFromContext(ctx)
 	dir := DirFromContext(ctx)
 	LogConfig(cfg, profile)
 	os.Setenv("CONFIG_ROOT", cfg.ConfigRoot)
+
+	lockFile := ".terraform.lock.hcl"
+	initFile := ".tf.init"
+	files, modified, err := fsmodtime.Target(os.DirFS(dir), []string{initFile}, []string{lockFile})
+	if err != nil {
+		Logger.Printf("failed to check changes for: '%s'\n", lockFile)
+	}
+	if !ignoreCache && !modified {
+		Logger.Printf("no changes: skipping init\n")
+		return nil
+	}
+	if len(files) > 0 {
+		Logger.Printf("modified: %v\n", files)
+	} else {
+		Logger.Printf("missing target: %v\n", initFile)
+	}
 
 	cmd := []string{cfg.TFProfile[cfg.Profile(profile)].BinaryName, "init"}
 
@@ -50,7 +68,7 @@ func initRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	cmd = append(cmd, args...)
 	dataDir := fmt.Sprintf("TF_DATA_DIR=%s", getDataDir(cfg.Config.DefaultTerraformProfile, cfg.Profile(profile)))
 	Logger.Printf("export %s\n", dataDir)
-	err := run.CMDCtx(ctx, cmd...).Stdin().Log().Env(dataDir).Dir(dir).DryRun(dryRun).Run()
+	err = run.CMDCtx(ctx, cmd...).Stdin().Log().Env(dataDir).Dir(dir).DryRun(dryRun).Run()
 	if err != nil {
 		os.Remove(filepath.Join(dir, ".tf.lock"))
 		return fmt.Errorf("failed to run: %w", err)
@@ -61,13 +79,13 @@ func initRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	}
 
 	os.Remove(filepath.Join(dir, ".tf.lock"))
-	initFile := filepath.Join(dir, ".tf.init")
-	fh, err := os.Create(initFile)
+	initFilePath := filepath.Join(dir, initFile)
+	fh, err := os.Create(initFilePath)
 	if err != nil {
 		return fmt.Errorf("failed to create file: %w", err)
 	}
 	fh.Close()
-	Logger.Printf("Create %s\n", initFile)
+	Logger.Printf("Create %s\n", initFilePath)
 
 	return nil
 }

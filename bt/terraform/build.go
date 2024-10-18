@@ -22,7 +22,7 @@ func buildCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt
 	opt.Bool("destroy", false)
 	opt.Bool("detailed-exitcode", false)
 	opt.Bool("dry-run", false)
-	opt.Bool("ignore-cache", false, opt.Description("Ignore the cache and re-run the plan"), opt.Alias("ic"))
+	opt.Bool("ignore-cache", false, opt.Description("Ignore the cache and re-run the init and plan"), opt.Alias("ic"))
 	opt.Bool("no-checks", false, opt.Description("Do not run pre-apply/post-apply checks"), opt.Alias("nc"))
 	opt.Bool("show", false, opt.Description("Show Terraform plan"))
 	opt.Bool("lock", false, opt.Description("Run 'terraform providers lock' after init"))
@@ -61,15 +61,6 @@ func BuildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 		}
 	}
 
-	initFn := func(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
-		// TODO: Add logic to only run when files have been modified
-		initFile := filepath.Join(dir, ".tf.init")
-		if _, err := os.Stat(initFile); os.IsNotExist(err) {
-			return initRun(ctx, opt, args)
-		}
-		return nil
-	}
-
 	lockFn := func(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 		lockFile := filepath.Join(dir, ".tf.lock")
 		if _, err := os.Stat(lockFile); os.IsNotExist(err) {
@@ -83,7 +74,7 @@ func BuildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	}
 
 	tm := dag.NewTaskMap()
-	tm.Add("init", initFn)
+	tm.Add("init", initRun)
 	if lock {
 		tm.Add("lock", lockFn)
 	}

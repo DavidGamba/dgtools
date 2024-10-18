@@ -1,5 +1,9 @@
 = bt
 
+== v0.12.0: New features
+
+* Invalidate init when the `.terraform.lock.hcl` file has been modified.
+
 == v0.11.0: New features
 
 * Add retries to stack components.
