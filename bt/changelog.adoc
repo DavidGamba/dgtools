@@ -6,6 +6,11 @@
 
 * Add default profile if the `.bt.cue` file is empty.
 
+* Stack handle detailed-exitcode.
++
+If the --detailed-exitcode flag was passed, track if any of the stack components has changes.
+If they do, exit with exit code 2.
+
 == v0.11.0: New features
 
 * Add retries to stack components.

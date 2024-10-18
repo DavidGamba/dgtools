@@ -15,6 +15,8 @@ import (
 	"github.com/mattn/go-isatty"
 )
 
+var HasChanges = false
+
 func buildCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
 	opt := parent.NewCommand("build", "Wraps init, plan and apply into a single operation with a cache")
 	opt.SetCommandFn(BuildRun)

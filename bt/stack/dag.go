@@ -36,6 +36,7 @@ func generateDAG(opt *getoptions.GetOpt, id string, cfg *sconfig.Config, normal 
 	wsFn := func(component, dir, ws string, variables []string) getoptions.CommandFn {
 		return func(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 			ctx = terraform.NewComponentContext(ctx, fmt.Sprintf("%s:%s", component, ws))
+			ctx = terraform.NewStackContext(ctx, true)
 			d := filepath.Join(cfg.ConfigRoot, dir)
 			d, err = filepath.Rel(wd, d)
 			if err != nil {

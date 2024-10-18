@@ -49,3 +49,19 @@ func ComponentFromContext(ctx context.Context) string {
 	}
 	return "."
 }
+
+type stackContextKey string
+
+const stackKey stackContextKey = "stack"
+
+func NewStackContext(ctx context.Context, value bool) context.Context {
+	return context.WithValue(ctx, stackKey, value)
+}
+
+func StackFromContext(ctx context.Context) bool {
+	v, ok := ctx.Value(stackKey).(bool)
+	if ok {
+		return v
+	}
+	return false
+}

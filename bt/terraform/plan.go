@@ -50,6 +50,7 @@ func planRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 
 	cfg := config.ConfigFromContext(ctx)
 	dir := DirFromContext(ctx)
+	stackContext := StackFromContext(ctx)
 	LogConfig(cfg, profile)
 	os.Setenv("CONFIG_ROOT", cfg.ConfigRoot)
 
@@ -201,6 +202,10 @@ func planRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 		var eerr *exec.ExitError
 		if detailedExitcode && errors.As(err, &eerr) && eerr.ExitCode() == 2 {
 			Logger.Printf("plan has changes\n")
+			if stackContext {
+				HasChanges = true
+				return nil
+			}
 			return eerr
 		}
 		os.Remove(planFile)

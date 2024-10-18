@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"os/exec"
 
 	"github.com/DavidGamba/dgtools/bt/config"
 	"github.com/DavidGamba/dgtools/bt/stack"
@@ -91,6 +92,14 @@ func program(args []string) int {
 		fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
 		if errors.Is(err, getoptions.ErrorParsing) {
 			fmt.Fprintf(os.Stderr, "\n%s", opt.Help())
+		}
+		var eerr *exec.ExitError
+		if errors.As(err, &eerr) {
+			return eerr.ExitCode()
+		}
+		var serr *stack.ExitError
+		if errors.As(err, &serr) {
+			return serr.ExitCode()
 		}
 		return 1
 	}

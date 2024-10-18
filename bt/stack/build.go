@@ -8,8 +8,21 @@ import (
 
 	"github.com/DavidGamba/dgtools/bt/config"
 	sconfig "github.com/DavidGamba/dgtools/bt/stack/config"
+	"github.com/DavidGamba/dgtools/bt/terraform"
 	"github.com/DavidGamba/go-getoptions"
 )
+
+type ExitError struct {
+	exitCode int
+}
+
+func (e *ExitError) Error() string {
+	return fmt.Sprintf("exit status %d", e.exitCode)
+}
+
+func (e *ExitError) ExitCode() int {
+	return e.exitCode
+}
 
 func BuildCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
 	cfg := config.ConfigFromContext(ctx)
@@ -36,6 +49,7 @@ func BuildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	id := opt.Value("id").(string)
 	reverse := opt.Value("reverse").(bool)
 	serial := opt.Value("serial").(bool)
+	detailedExitcode := opt.Value("detailed-exitcode").(bool)
 
 	if id == "" {
 		fmt.Fprintf(os.Stderr, "ERROR: missing stack id\n")
@@ -60,6 +74,11 @@ func BuildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	err = g.Run(ctx, opt, args)
 	if err != nil {
 		return fmt.Errorf("failed to run graph: %w", err)
+	}
+
+	if detailedExitcode && terraform.HasChanges {
+		eerr := &ExitError{exitCode: 2}
+		return fmt.Errorf("stack has changes: %w", eerr)
 	}
 
 	return nil
