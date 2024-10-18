@@ -84,6 +84,15 @@ func SetDefaults(ctx context.Context, cfg *Config, filename string) error {
 	}
 	cfg.ConfigRoot = filepath.Dir(filename)
 	cfg.ConfigFile = filename
+	if len(cfg.TFProfile) == 0 {
+		cfg.TFProfile = map[string]TerraformProfile{
+			"default": {
+				ID:         "default",
+				BinaryName: "terraform",
+			},
+		}
+		cfg.Config.DefaultTerraformProfile = "default"
+	}
 	return nil
 }
 
