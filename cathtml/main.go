@@ -3,7 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"text/template"
@@ -11,7 +11,7 @@ import (
 	"github.com/DavidGamba/go-getoptions"
 )
 
-var logger = log.New(ioutil.Discard, "", log.LstdFlags)
+var logger = log.New(io.Discard, "", log.LstdFlags)
 
 func main() {
 	os.Exit(program(os.Args))
@@ -24,7 +24,8 @@ func program(args []string) int {
 	opt.Bool("debug", false, opt.GetEnv("DEBUG"))
 	opt.String("title", "", opt.Alias("t"))
 	opt.String("class-separator", "")
-	opt.String("toc", "", opt.Description("If defined, adds table of contents with the given words as the Title + index."))
+	opt.String("toc-prefix", "", opt.Description("If defined, adds table of contents with the given words as the Prefix + index."))
+	opt.Bool("toc-from-file", false, opt.Description("If true, adds table of contents with the filename as the link"))
 	opt.String("toc-title", "Table Of Contents", opt.Description(""))
 	opt.Int("toc-skip", 0)
 	opt.StringSlice("stylesheets", 1, 99)
@@ -55,17 +56,27 @@ func realMain(opt *getoptions.GetOpt) error {
 	stylesheets := opt.Value("stylesheets").([]string)
 	files := opt.Value("files").([]string)
 	classSeparator := opt.Value("class-separator").(string)
-	toc := opt.Value("toc").(string)
+	tocPrefix := opt.Value("toc-prefix").(string)
+	tocFromFile := opt.Value("toc-from-file").(bool)
 	tocSkip := opt.Value("toc-skip").(int)
 	tocTitle := opt.Value("toc-title").(string)
 
-	bodyEntries := [][]byte{}
+	toc := false
+	if tocFromFile || tocPrefix != "" {
+		toc = true
+	}
+
+	bodyEntries := []FileData{}
 	for _, file := range files {
-		b, err := ioutil.ReadFile(file)
+		b, err := os.ReadFile(file)
 		if err != nil {
 			return err
 		}
-		bodyEntries = append(bodyEntries, b)
+		fd := FileData{
+			Content: b,
+			Name:    file,
+		}
+		bodyEntries = append(bodyEntries, fd)
 	}
 
 	data := HTMLData{
@@ -74,6 +85,7 @@ func realMain(opt *getoptions.GetOpt) error {
 		BodyEntries:      bodyEntries,
 		BodyEntriesClass: classSeparator,
 		TOC:              toc,
+		TOCPrefix:        tocPrefix,
 		TOCSkip:          tocSkip,
 		TOCTitle:         tocTitle,
 	}
@@ -87,13 +99,19 @@ func realMain(opt *getoptions.GetOpt) error {
 	return nil
 }
 
+type FileData struct {
+	Content []byte
+	Name    string
+}
+
 // HTMLData - Struct that holds HTML content
 type HTMLData struct {
 	Title            string
 	Stylesheets      []string
-	BodyEntries      [][]byte
+	BodyEntries      []FileData
 	BodyEntriesClass string
-	TOC              string
+	TOC              bool
+	TOCPrefix        string
 	TOCSkip          int
 	TOCTitle         string
 }
@@ -115,7 +133,11 @@ func htmlOutput(data HTMLData) (string, error) {
 			<ul class="toc_list">
 			  {{- range $i, $e := $.BodyEntries }}
 				{{- if ge $i $.TOCSkip }}
-				<li><a href="#{{ $.TOC }}_{{ toc_index $i $.TOCSkip }}">{{ $.TOC }} {{ toc_index $i $.TOCSkip }}</a></li>
+				{{- if ne $.TOCPrefix "" }}
+				<li><a href="#{{ $.TOCPrefix }}_{{ toc_index $i $.TOCSkip }}">{{ $.TOCPrefix }} {{ toc_index $i $.TOCSkip }}</a></li>
+				{{- else }}
+				<li><a href="#{{ $e.Name }}">{{ $e.Name }}</a></li>
+				{{- end -}}
 				{{- end -}}
 			{{ end }}
 			</ul>
@@ -125,9 +147,13 @@ func htmlOutput(data HTMLData) (string, error) {
 		{{- range $i, $a := .BodyEntries }}
 		<div{{with $.BodyEntriesClass }} class="{{ . }}" {{ end }}>
 			{{- if ge $i $.TOCSkip }}
-			<h2 id="{{ $.TOC }}_{{ toc_index $i $.TOCSkip }}"><a href="#toc">{{ $.TOC }} {{ toc_index $i $.TOCSkip }}</a></h2>
+			{{- if ne $.TOCPrefix "" }}
+			<h2 id="{{ $.TOCPrefix }}_{{ toc_index $i $.TOCSkip }}"><a href="#toc">{{ $.TOCPrefix }} {{ toc_index $i $.TOCSkip }}</a></h2>
+			{{- else }}
+			<h2 id="{{ .Name }}"><a href="#toc">{{ .Name }}</a></h2>
+			{{- end }}
 			{{ end }}
-			{{ printf "%s" . }}
+			{{ printf "%s" .Content }}
 		</div>
 		<div class="pagebreak"></div>
 		{{ end }}
