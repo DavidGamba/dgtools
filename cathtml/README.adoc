@@ -1,3 +1,11 @@
 = cathtml
 
-Toy tool, nothing to see here!
+Allows concatenating multiple HTML files or portions into a single one.
+
+Example:
+
+----
+cathtml --toc-from-file --files *.html > summary.html
+----
+
+It pairs well with concatenating the output of https://github.com/buildkite/terminal-to-html[terminal-to-html] into a single HTML file.
