@@ -161,6 +161,14 @@ func Homebrew(opt *getoptions.GetOpt) getoptions.CommandFn {
 		if err != nil {
 			return fmt.Errorf("failed to run grepp: %w", err)
 		}
+		err = run.CMD("git", "add", fmt.Sprintf("../HomebrewFormula/%s.rb", tool)).Log().Run()
+		if err != nil {
+			return fmt.Errorf("failed to run git add: %w", err)
+		}
+		err = run.CMD("git", "commit", "-m", fmt.Sprintf("HomebrewFormula: latest version of %s", tool)).Log().Run()
+		if err != nil {
+			return fmt.Errorf("failed to run git commit: %w", err)
+		}
 
 		return nil
 	}
