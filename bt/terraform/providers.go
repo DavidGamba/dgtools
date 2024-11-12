@@ -18,6 +18,13 @@ func providersCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.Ge
 	lock.SetCommandFn(providersLockRun)
 	lock.StringSlice("platform", 1, 99, opt.Description("Target platform"), opt.ArgName("os_arch"))
 
+	mirror := opt.NewCommand("mirror", "")
+	mirror.SetCommandFn(providersMirrorRun)
+	mirror.StringSlice("platform", 1, 99, opt.Description("Target platform"), opt.ArgName("os_arch"))
+
+	schema := opt.NewCommand("schema", "")
+	schema.SetCommandFn(providersSchemaRun)
+
 	return opt
 }
 
@@ -53,5 +60,38 @@ func providersLockRun(ctx context.Context, opt *getoptions.GetOpt, args []string
 	}
 	fh.Close()
 	Logger.Printf("Create %s\n", lockFile)
+	return nil
+}
+
+func providersMirrorRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
+	profile := opt.Value("profile").(string)
+	platforms := opt.Value("platform").([]string)
+	cfg := config.ConfigFromContext(ctx)
+	LogConfig(cfg, profile)
+
+	cmd := []string{cfg.TFProfile[cfg.Profile(profile)].BinaryName, "providers", "mirror"}
+	// No need to specify all platforms in the lock file, the mirror only requires the current arch in use
+	for _, p := range platforms {
+		cmd = append(cmd, "-platform="+p)
+	}
+	err := wsCMDRun(cmd...)(ctx, opt, args)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func providersSchemaRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
+	profile := opt.Value("profile").(string)
+	cfg := config.ConfigFromContext(ctx)
+	LogConfig(cfg, profile)
+
+	cmd := []string{cfg.TFProfile[cfg.Profile(profile)].BinaryName, "providers", "mirror"}
+	err := wsCMDRun(cmd...)(ctx, opt, args)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
