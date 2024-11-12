@@ -19,7 +19,7 @@ func providersCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.Ge
 	lock.StringSlice("platform", 1, 99, opt.Description("Target platform"), opt.ArgName("os_arch"))
 
 	mirror := opt.NewCommand("mirror", "")
-	mirror.SetCommandFn(providersMirrorRun)
+	mirror.SetCommandFn(ProvidersMirrorRun)
 	mirror.StringSlice("platform", 1, 99, opt.Description("Target platform"), opt.ArgName("os_arch"))
 
 	schema := opt.NewCommand("schema", "")
@@ -63,7 +63,7 @@ func providersLockRun(ctx context.Context, opt *getoptions.GetOpt, args []string
 	return nil
 }
 
-func providersMirrorRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
+func ProvidersMirrorRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	profile := opt.Value("profile").(string)
 	platforms := opt.Value("platform").([]string)
 	cfg := config.ConfigFromContext(ctx)
