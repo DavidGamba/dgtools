@@ -40,7 +40,13 @@ func GraphRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 
 	cfg := sconfig.ConfigFromContext(ctx)
 
-	g, err := generateDAG(opt, id, cfg, normal)
+	wsFn := func(component, dir, ws string, variables []string) getoptions.CommandFn {
+		return func(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
+			return nil
+		}
+	}
+
+	g, err := generateDAG(opt, id, cfg, normal, wsFn)
 	if err != nil {
 		return err
 	}
