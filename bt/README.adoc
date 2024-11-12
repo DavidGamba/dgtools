@@ -30,6 +30,7 @@ It automatically uses the `TF_WORKSPACE` environment variable rather than select
 * Allows to define retries for stack components that fail due to race conditions.
 
 * TODO: Allow option to skip component in destroy if the state shows no resources.
+use `terraform state list` and count the output lines.
 
 * TODO: Collect component exit codes and have a return code based on whether there were any changes in the stack or not.
 
