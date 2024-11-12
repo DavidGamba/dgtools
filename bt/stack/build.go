@@ -40,7 +40,8 @@ func BuildCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt
 	opt.Bool("show", false, opt.Description("Show Terraform plan"))
 	opt.Bool("lock", false, opt.Description("Run 'terraform providers lock' after init"))
 	opt.String("profile", "default", opt.Description("BT Terraform Profile to use"), opt.GetEnv(cfg.Config.TerraformProfileEnvVar))
-	opt.Int("parallelism", 10*runtime.NumCPU())
+	opt.Int("parallelism", 10*runtime.GOMAXPROCS(0), opt.Description("Pass through to Terraform -parallelism flag"))
+	opt.Int("stack-parallelism", runtime.GOMAXPROCS(0), opt.Description("Max number of stack components to run in parallel"))
 
 	return opt
 }
@@ -50,6 +51,7 @@ func BuildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	reverse := opt.Value("reverse").(bool)
 	serial := opt.Value("serial").(bool)
 	detailedExitcode := opt.Value("detailed-exitcode").(bool)
+	stackParallelism := opt.Value("stack-parallelism").(int)
 
 	if id == "" {
 		fmt.Fprintf(os.Stderr, "ERROR: missing stack id\n")
@@ -65,7 +67,8 @@ func BuildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	if err != nil {
 		return err
 	}
-	g.SetMaxParallel(runtime.NumCPU())
+	g.SetMaxParallel(stackParallelism)
+	Logger.Printf("stack parallelism: %d\n", stackParallelism)
 
 	if serial {
 		g.SetSerial()

@@ -28,7 +28,7 @@ func buildCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt
 	opt.Bool("no-checks", false, opt.Description("Do not run pre-apply/post-apply checks"), opt.Alias("nc"))
 	opt.Bool("show", false, opt.Description("Show Terraform plan"))
 	opt.Bool("lock", false, opt.Description("Run 'terraform providers lock' after init"))
-	opt.Int("parallelism", 10*runtime.NumCPU())
+	opt.Int("parallelism", 10*runtime.GOMAXPROCS(0), opt.Description("Pass through to Terraform -parallelism flag"))
 	opt.StringSlice("replace", 1, 99)
 	opt.StringSlice("target", 1, 99)
 	opt.StringSlice("var", 1, 99)

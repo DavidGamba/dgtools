@@ -44,6 +44,7 @@ func TestStack(t *testing.T) {
 		opt.Bool("lock", false)
 		opt.String("profile", "default")
 		opt.Int("parallelism", 10)
+		opt.Int("stack-parallelism", 4)
 
 		err := BuildRun(ctx, opt, []string{})
 		if err == nil {
@@ -109,6 +110,7 @@ stack: x: {
 		opt.Bool("lock", false)
 		opt.String("profile", "default")
 		opt.Int("parallelism", 10)
+		opt.Int("stack-parallelism", 4)
 
 		err = BuildRun(ctx, opt, []string{})
 		if err != nil {

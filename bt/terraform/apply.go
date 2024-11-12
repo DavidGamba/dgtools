@@ -17,7 +17,7 @@ import (
 func applyCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
 	opt := parent.NewCommand("apply", "")
 	opt.Bool("dry-run", false)
-	opt.Int("parallelism", 10*runtime.NumCPU())
+	opt.Int("parallelism", 10*runtime.GOMAXPROCS(0), opt.Description("Pass through to Terraform -parallelism flag"))
 	opt.SetCommandFn(applyRun)
 	return opt
 }

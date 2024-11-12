@@ -1,3 +1,5 @@
+package bt_stacks
+
 // Define the list of components
 component: "networking": {}
 component: "kubernetes": {

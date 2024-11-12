@@ -24,7 +24,7 @@ func planCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt 
 	opt.Bool("destroy", false)
 	opt.Bool("detailed-exitcode", false)
 	opt.Bool("ignore-cache", false, opt.Description("ignore the cache and re-run the plan"), opt.Alias("ic"))
-	opt.Int("parallelism", 10*runtime.NumCPU())
+	opt.Int("parallelism", 10*runtime.GOMAXPROCS(0), opt.Description("Pass through to Terraform -parallelism flag"))
 	opt.StringSlice("var-file", 1, 1)
 	opt.StringSlice("var", 1, 99)
 	opt.StringSlice("target", 1, 99)
