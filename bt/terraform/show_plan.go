@@ -20,6 +20,7 @@ func showPlanCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.Get
 
 func showPlanRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	dryRun := opt.Value("dry-run").(bool)
+	automation := opt.Value("tf-in-automation").(bool)
 	profile := opt.Value("profile").(string)
 	ws := opt.Value("ws").(string)
 	color := opt.Value("color").(string)
@@ -53,6 +54,9 @@ func showPlanRun(ctx context.Context, opt *getoptions.GetOpt, args []string) err
 		cmd = append(cmd, "-no-color")
 	}
 	dataDir := fmt.Sprintf("TF_DATA_DIR=%s", getDataDir(cfg.Config.DefaultTerraformProfile, cfg.Profile(profile)))
+	if ws != "" && automation {
+		dataDir = fmt.Sprintf("%s-%s", dataDir, ws)
+	}
 	Logger.Printf("export %s\n", dataDir)
 	ri := run.CMDCtx(ctx, cmd...).Stdin().Log().Env(dataDir).Dir(dir).DryRun(dryRun)
 	if ws != "" {

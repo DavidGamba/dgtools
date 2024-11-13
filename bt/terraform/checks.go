@@ -26,6 +26,7 @@ func checksCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOp
 
 func checksRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	dryRun := opt.Value("dry-run").(bool)
+	automation := opt.Value("tf-in-automation").(bool)
 	profile := opt.Value("profile").(string)
 	varFiles := opt.Value("var-file").([]string)
 	ws := opt.Value("ws").(string)
@@ -132,6 +133,9 @@ func checksRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error
 	}
 
 	dataDir := fmt.Sprintf("TF_DATA_DIR=%s", getDataDir(cfg.Config.DefaultTerraformProfile, cfg.Profile(profile)))
+	if ws != "" && automation {
+		dataDir = fmt.Sprintf("%s-%s", dataDir, ws)
+	}
 	Logger.Printf("export %s\n", dataDir)
 	cmd := []string{cfg.TFProfile[cfg.Profile(profile)].BinaryName, "show", "-json", planFile}
 	ri := run.CMDCtx(ctx, cmd...).Stdin().Log().Env(dataDir).Dir(dir).DryRun(dryRun)
