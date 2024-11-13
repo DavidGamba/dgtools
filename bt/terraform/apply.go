@@ -24,6 +24,7 @@ func applyCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt
 
 func applyRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	dryRun := opt.Value("dry-run").(bool)
+	automation := opt.Value("tf-in-automation").(bool)
 	parallelism := opt.Value("parallelism").(int)
 	ws := opt.Value("ws").(string)
 	profile := opt.Value("profile").(string)
@@ -73,6 +74,9 @@ func applyRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	}
 	cmd = append(cmd, args...)
 	dataDir := fmt.Sprintf("TF_DATA_DIR=%s", getDataDir(cfg.Config.DefaultTerraformProfile, cfg.Profile(profile)))
+	if ws != "" && automation {
+		dataDir = fmt.Sprintf("%s-%s", dataDir, ws)
+	}
 	Logger.Printf("export %s\n", dataDir)
 	ri := run.CMDCtx(ctx, cmd...).Stdin().Log().Env(dataDir).Dir(dir).DryRun(dryRun)
 	if ws != "" {

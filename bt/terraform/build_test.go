@@ -68,6 +68,7 @@ func TestBuild(t *testing.T) {
 		opt.Bool("apply", false)
 		opt.Bool("show", false)
 		opt.Bool("lock", false)
+		opt.Bool("tf-in-automation", false)
 		opt.StringSlice("var", 1, 1)
 		opt.StringSlice("var-file", 1, 1)
 		opt.StringSlice("target", 1, 99)

@@ -40,6 +40,7 @@ func planRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	destroy := opt.Value("destroy").(bool)
 	detailedExitcode := opt.Value("detailed-exitcode").(bool)
 	ignoreCache := opt.Value("ignore-cache").(bool)
+	automation := opt.Value("tf-in-automation").(bool)
 	parallelism := opt.Value("parallelism").(int)
 	varFiles := opt.Value("var-file").([]string)
 	variables := opt.Value("var").([]string)
@@ -189,6 +190,9 @@ func planRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	cmd = append(cmd, args...)
 
 	dataDir := fmt.Sprintf("TF_DATA_DIR=%s", getDataDir(cfg.Config.DefaultTerraformProfile, cfg.Profile(profile)))
+	if ws != "" && automation {
+		dataDir = fmt.Sprintf("%s-%s", dataDir, ws)
+	}
 	Logger.Printf("export %s\n", dataDir)
 	ri := run.CMDCtx(ctx, cmd...).Stdin().Log().Env(dataDir).Dir(dir).DryRun(dryRun)
 	if ws != "" {

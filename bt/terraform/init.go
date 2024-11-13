@@ -27,11 +27,26 @@ func InitRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	profile := opt.Value("profile").(string)
 	color := opt.Value("color").(string)
 	ignoreCache := opt.Value("ignore-cache").(bool)
+	automation := opt.Value("tf-in-automation").(bool)
+	ws := opt.Value("ws").(string)
 
 	cfg := config.ConfigFromContext(ctx)
 	dir := DirFromContext(ctx)
 	LogConfig(cfg, profile)
 	os.Setenv("CONFIG_ROOT", cfg.ConfigRoot)
+
+	ws, err := updateWSIfSelected(cfg.Config.DefaultTerraformProfile, cfg.Profile(profile), ws)
+	if err != nil {
+		return err
+	}
+
+	if cfg.TFProfile[cfg.Profile(profile)].Workspaces.Enabled {
+		if automation && !workspaceSelected(cfg.Config.DefaultTerraformProfile, profile) {
+			if ws == "" {
+				return fmt.Errorf("running in workspace mode in automation but no workspace selected or --ws given")
+			}
+		}
+	}
 
 	lockFile := ".terraform.lock.hcl"
 	initFile := ".tf.init"
@@ -67,6 +82,13 @@ func InitRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	}
 	cmd = append(cmd, args...)
 	dataDir := fmt.Sprintf("TF_DATA_DIR=%s", getDataDir(cfg.Config.DefaultTerraformProfile, cfg.Profile(profile)))
+	if ws != "" {
+		wsEnv := fmt.Sprintf("TF_WORKSPACE=%s", ws)
+		Logger.Printf("export %s\n", wsEnv)
+		if automation {
+			dataDir = fmt.Sprintf("%s-%s", dataDir, ws)
+		}
+	}
 	Logger.Printf("export %s\n", dataDir)
 	err = run.CMDCtx(ctx, cmd...).Stdin().Log().Env(dataDir).Dir(dir).DryRun(dryRun).Run()
 	if err != nil {

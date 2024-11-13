@@ -40,6 +40,8 @@ func BuildCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt
 	opt.Bool("serial", false)
 	opt.Bool("show", false, opt.Description("Show Terraform plan"))
 	opt.Bool("lock", false, opt.Description("Run 'terraform providers lock' after init"))
+	opt.Bool("tf-in-automation", false, opt.Description(`Determine if we are running in automation.
+It will use a separate TF_DATA_DIR per workspace.`), opt.GetEnv("TF_IN_AUTOMATION"), opt.GetEnv("BT_IN_AUTOMATION"))
 	opt.String("profile", "default", opt.Description("BT Terraform Profile to use"), opt.GetEnv(cfg.Config.TerraformProfileEnvVar))
 	opt.Int("parallelism", 10*runtime.GOMAXPROCS(0), opt.Description("Pass through to Terraform -parallelism flag"))
 	opt.Int("stack-parallelism", runtime.GOMAXPROCS(0), opt.Description("Max number of stack components to run in parallel"))
@@ -89,6 +91,7 @@ func BuildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 			nopt.Bool("no-checks", opt.Value("no-checks").(bool))
 			nopt.Bool("show", opt.Value("show").(bool))
 			nopt.Bool("lock", opt.Value("lock").(bool))
+			nopt.Bool("tf-in-automation", opt.Value("tf-in-automation").(bool))
 			nopt.String("profile", opt.Value("profile").(string))
 			nopt.String("color", opt.Value("color").(string))
 			nopt.String("ws", ws)

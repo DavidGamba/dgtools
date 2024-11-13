@@ -226,6 +226,7 @@ func postChecksRun(ctx context.Context, opt *getoptions.GetOpt, args []string) e
 	varFiles := opt.Value("var-file").([]string)
 	ws := opt.Value("ws").(string)
 	ignoreCache := opt.Value("ignore-cache").(bool)
+	automation := opt.Value("tf-in-automation").(bool)
 	nc := opt.Value("no-checks").(bool)
 	if nc {
 		Logger.Printf("WARNING: no-checks flag passed. Skipping post-apply checks.\n")
@@ -320,6 +321,9 @@ func postChecksRun(ctx context.Context, opt *getoptions.GetOpt, args []string) e
 	}
 
 	dataDir := fmt.Sprintf("TF_DATA_DIR=%s", getDataDir(cfg.Config.DefaultTerraformProfile, cfg.Profile(profile)))
+	if ws != "" && automation {
+		dataDir = fmt.Sprintf("%s-%s", dataDir, ws)
+	}
 	Logger.Printf("export %s\n", dataDir)
 
 	for _, cmd := range cfg.TFProfile[cfg.Profile(profile)].PostApplyChecks.Commands {

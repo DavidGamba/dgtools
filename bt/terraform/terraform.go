@@ -22,6 +22,8 @@ func NewCommand(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetO
 
 	opt := parent.NewCommand("terraform", "terraform related tasks")
 	opt.String("profile", "default", opt.Description("BT Terraform Profile to use"), opt.GetEnv(cfg.Config.TerraformProfileEnvVar))
+	opt.Bool("tf-in-automation", false, opt.Description(`Determine if we are running in automation.
+It will use a separate TF_DATA_DIR per workspace.`), opt.GetEnv("TF_IN_AUTOMATION"), opt.GetEnv("BT_IN_AUTOMATION"))
 
 	wss, err := validWorkspaces(cfg, opt.Value("profile").(string))
 	if err != nil {
