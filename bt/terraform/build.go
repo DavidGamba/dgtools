@@ -76,7 +76,7 @@ func BuildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	}
 
 	tm := dag.NewTaskMap()
-	tm.Add("init", initRun)
+	tm.Add("init", InitRun)
 	if lock {
 		tm.Add("lock", lockFn)
 	}

@@ -48,7 +48,7 @@ func TestInit(t *testing.T) {
 		opt.Bool("ignore-cache", false)
 		opt.String("profile", "default")
 		opt.String("color", "auto")
-		err := initRun(ctx, opt, []string{})
+		err := InitRun(ctx, opt, []string{})
 		if err != nil {
 			t.Errorf("TestInit error: %s", err)
 		}
@@ -86,7 +86,7 @@ func TestInit(t *testing.T) {
 		opt.Bool("ignore-cache", false)
 		opt.String("profile", "default")
 		opt.String("color", "auto")
-		err := initRun(ctx, opt, []string{})
+		err := InitRun(ctx, opt, []string{})
 		if err != nil {
 			t.Errorf("TestInit error: %s", err)
 		}
@@ -126,7 +126,7 @@ func TestInit(t *testing.T) {
 		opt.Bool("ignore-cache", false)
 		opt.String("profile", "dev")
 		opt.String("color", "auto")
-		err := initRun(ctx, opt, []string{})
+		err := InitRun(ctx, opt, []string{})
 		if err != nil {
 			t.Errorf("TestInit error: %s", err)
 		}
@@ -165,7 +165,7 @@ func TestInit(t *testing.T) {
 		opt.Bool("ignore-cache", false)
 		opt.String("profile", "prod")
 		opt.String("color", "auto")
-		err := initRun(ctx, opt, []string{})
+		err := InitRun(ctx, opt, []string{})
 		if err != nil {
 			t.Errorf("TestInit error: %s", err)
 		}

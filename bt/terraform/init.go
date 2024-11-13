@@ -18,11 +18,11 @@ func initCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt 
 	opt := parent.NewCommand("init", "")
 	opt.Bool("dry-run", false)
 	opt.Bool("ignore-cache", false, opt.Description("Ignore the cache and re-run the init"), opt.Alias("ic"))
-	opt.SetCommandFn(initRun)
+	opt.SetCommandFn(InitRun)
 	return opt
 }
 
-func initRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
+func InitRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	dryRun := opt.Value("dry-run").(bool)
 	profile := opt.Value("profile").(string)
 	color := opt.Value("color").(string)
