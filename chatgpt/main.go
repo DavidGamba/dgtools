@@ -56,7 +56,7 @@ func program(args []string) int {
 	opt.SetUnknownMode(getoptions.Pass)
 	opt.Bool("quiet", false, opt.GetEnv("QUIET"))
 	opt.String("config-file", "", opt.GetEnv("CHATGPT_CONFIG_FILE"))
-	opt.SetCommandFn(Run)
+	opt.SetCommandFn(UIRun)
 	opt.HelpCommand("help", opt.Alias("?"))
 	remaining, err := opt.Parse(args[1:])
 	if err != nil {
@@ -223,39 +223,6 @@ func printMessageHistoryContext(messageHistory *[]openai.ChatCompletionMessage) 
 
 	historyContext := color.New(color.FgGreen)
 	historyContext.Printf("History Size: %d messages, %d bytes\n", len(*messageHistory), size)
-	return nil
-}
-
-func chat(ctx context.Context, messageHistory *[]openai.ChatCompletionMessage, message string) error {
-	// Post message to OpenAI
-	client := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
-
-	// Add new user message
-	*messageHistory = append(*messageHistory, openai.ChatCompletionMessage{
-		Role:    openai.ChatMessageRoleUser,
-		Content: message,
-	})
-
-	resp, err := client.CreateChatCompletion(
-		ctx,
-		openai.ChatCompletionRequest{
-			Model:    openai.GPT3Dot5Turbo,
-			Messages: *messageHistory,
-		},
-	)
-
-	if err != nil {
-		return fmt.Errorf("ChatCompletion error: %v", err)
-	}
-
-	content := resp.Choices[0].Message.Content
-	// 🤖 ⏩
-	fmt.Println("🤖 " + content)
-	*messageHistory = append(*messageHistory, openai.ChatCompletionMessage{
-		Role:    openai.ChatMessageRoleAssistant,
-		Content: content,
-	})
-
 	return nil
 }
 
