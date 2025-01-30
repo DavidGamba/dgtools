@@ -3,17 +3,17 @@ package passwordcache
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"strings"
 	"syscall"
 
 	"github.com/DavidGamba/dgtools/run"
-	"golang.org/x/crypto/ssh/terminal"
+	"golang.org/x/term"
 )
 
-var Logger = log.New(ioutil.Discard, "", log.LstdFlags)
+var Logger = log.New(io.Discard, "", log.LstdFlags)
 
 // GetSecret - Gets a secret from the User Session Keyring.
 // If the key doesn't exist, it asks the user to enter the password value.
@@ -30,7 +30,7 @@ func GetSecret(name, msg string) ([]byte, error) {
 
 	// If not found promt user
 	fmt.Print(msg)
-	password, err := terminal.ReadPassword(int(syscall.Stdin))
+	password, err := term.ReadPassword(int(syscall.Stdin))
 	fmt.Println()
 	if err != nil {
 		return nil, fmt.Errorf("failed to read secret: %w", err)
@@ -44,11 +44,11 @@ func GetSecret(name, msg string) ([]byte, error) {
 // To invalidate a secret, save it with a 1 second timeout.
 func CacheSecret(name string, password []byte, timeoutSeconds uint) error {
 	if timeoutSeconds <= 1 {
-		return run.CMD("security", "delete-generic-password", "-a", os.Getenv("USER"), "-s", name).Run(ioutil.Discard)
+		return run.CMD("security", "delete-generic-password", "-a", os.Getenv("USER"), "-s", name).Run(io.Discard)
 	}
-	err := run.CMD("security", "find-generic-password", "-a", os.Getenv("USER"), "-s", name, "-w").Run(ioutil.Discard)
+	err := run.CMD("security", "find-generic-password", "-a", os.Getenv("USER"), "-s", name, "-w").Run(io.Discard)
 	if err != nil {
-		return run.CMD("security", "add-generic-password", "-a", os.Getenv("USER"), "-s", name, "-w", string(password)).Run(ioutil.Discard)
+		return run.CMD("security", "add-generic-password", "-a", os.Getenv("USER"), "-s", name, "-w", string(password)).Run(io.Discard)
 	}
 	return nil
 }

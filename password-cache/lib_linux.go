@@ -3,15 +3,15 @@ package passwordcache
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"syscall"
 
 	"github.com/jsipprell/keyctl"
-	"golang.org/x/crypto/ssh/terminal"
+	"golang.org/x/term"
 )
 
-var logger = log.New(ioutil.Discard, "", log.LstdFlags)
+var logger = log.New(io.Discard, "", log.LstdFlags)
 
 // GetSecret - Gets a secret from the User Session Keyring.
 // If the key doesn't exist, it asks the user to enter the password value.
@@ -40,7 +40,7 @@ func GetSecret(name, msg string) ([]byte, error) {
 
 	// If not found promt user
 	fmt.Print(msg)
-	password, err := terminal.ReadPassword(int(syscall.Stdin))
+	password, err := term.ReadPassword(int(syscall.Stdin))
 	fmt.Println()
 	if err != nil {
 		return nil, fmt.Errorf("failed to read secret: %w", err)

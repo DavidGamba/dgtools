@@ -1,8 +1,8 @@
 = password-cache
 
-Cache credentials using the Linux keyring in Go
+Cache credentials using the Linux keyring/MacOS security in Go
 
-For a detailed blogpost see: https://www.davids-blog.gamba.ca/posts/caching-credentials-linux-keyring-golang/
+For a detailed blogpost see: https://www.davids-blog.gamba.ca/posts/caching-credentials-linux-keyring-golang.html
 
 == Library
 
@@ -27,3 +27,38 @@ Simplest use:
 	}
 	fmt.Printf("%s", data)
 ----
+
+== CLI
+
+Password cache also comes as a handy CLI that works for both Linux and MacOS.
+When called from bash, it will handle the user prompt.
+
+[source, bash]
+----
+#!/bin/bash
+
+# Allow interactive operation
+./password-cache mykey -t 60
+if [[ $? == 0 ]]; then
+	# Read from store
+	password=$(./password-cache mykey -t 60 --print)
+	# Use
+	echo "|$password|"
+fi
+----
+
+Then we call it the first time:
+
+----
+$ bash bash-script.sh
+Enter 'mykey' password:
+|password|
+----
+
+The second time around it just retrieves the key as expected:
+
+----
+$ bash bash-script.sh
+|password|
+----
+

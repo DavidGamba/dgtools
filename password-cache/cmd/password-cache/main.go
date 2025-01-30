@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 
@@ -10,7 +10,7 @@ import (
 	"github.com/DavidGamba/go-getoptions"
 )
 
-var logger = log.New(ioutil.Discard, "", log.LstdFlags)
+var logger = log.New(io.Discard, "", log.LstdFlags)
 
 func main() {
 	os.Exit(program(os.Args))
@@ -27,7 +27,7 @@ func program(args []string) int {
 	opt.Bool("print", false, opt.Description("Print password to STDOUT"))
 	opt.IntVar(&timeout, "timeout", 900, opt.ArgName("seconds"),
 		opt.Description("Timeout in seconds, default 15 minutes"))
-	opt.HelpSynopsisArgs("<key-name>")
+	opt.HelpSynopsisArg("<key-name>", "Password key name")
 	remaining, err := opt.Parse(args[1:])
 	if opt.Called("help") {
 		fmt.Println(opt.Help())
