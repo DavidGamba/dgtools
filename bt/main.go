@@ -59,6 +59,8 @@ func program(args []string) int {
 	opt.String("color", "auto", opt.Description("show colored output"), opt.ValidValues("always", "auto", "never"))
 	opt.SetUnknownMode(getoptions.Pass)
 
+	opt.NewCommand("version", "Show version").SetCommandFn(printVersion())
+
 	configCMD(ctx, opt)
 	terraform.NewCommand(ctx, opt)
 	stack.NewCommand(ctx, opt)
