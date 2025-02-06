@@ -1,4 +1,4 @@
-class Tz < Formula
+class Kdecode < Formula
   @@tool_name = "kdecode"
   @@tool_desc = "Decodes K8s secret's data block"
   @@tool_path = "kdecode"
