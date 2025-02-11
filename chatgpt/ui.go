@@ -221,8 +221,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.waiting = true
 				m.viewport.GotoBottom()
 
-				cmds = append(cmds, m.threads.sendQueryMsg(context.Background(), v))
 				cmds = append(cmds, m.stopwatch.Reset(), m.stopwatch.Start())
+				cmds = append(cmds, m.threads.sendQueryMsg(context.Background(), v))
 			default:
 				// Send all other keypresses to the textarea.
 				var cmd tea.Cmd
