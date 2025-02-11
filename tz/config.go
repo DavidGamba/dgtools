@@ -40,6 +40,7 @@ func ReadConfig(ctx context.Context, filename string) (*Config, error) {
 	configs = append(configs, cueutils.CueConfigFile{Data: schemaFH, Name: schemaFilename})
 
 	configFilename := filepath.Clean(filename)
+	configDir := filepath.Base(filename)
 	configFH, err := os.Open(configFilename)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open '%s': %w", configFilename, err)
@@ -48,7 +49,7 @@ func ReadConfig(ctx context.Context, filename string) (*Config, error) {
 	configs = append(configs, cueutils.CueConfigFile{Data: configFH, Name: configFilename})
 
 	c := Config{}
-	err = cueutils.Unmarshal(configs, &c)
+	err = cueutils.Unmarshal(configs, configDir, "tz", nil, &c)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal: %w", err)
 	}
