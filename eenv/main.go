@@ -20,9 +20,13 @@ func main() {
 
 func program(args []string) int {
 	opt := getoptions.New()
+	opt.Self("", `Print your environment like env but with the keys, passwords and tokens hidden
+
+   Source: https://github.com/DavidGamba/dgtools`)
 	opt.SetUnknownMode(getoptions.Pass)
 	opt.Bool("debug", false)
 	opt.SetCommandFn(Run)
+	opt.HelpSynopsisArg("", "")
 	opt.HelpCommand("help", opt.Alias("?"))
 	remaining, err := opt.Parse(args[1:])
 	if err != nil {
