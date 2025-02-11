@@ -13,6 +13,13 @@ Install the binary into your `~/go/bin`:
 go install github.com/DavidGamba/dgtools/eenv@latest
 ----
 
+* Install using homebrew:
++
+----
+brew tap DavidGamba/dgtools https://github.com/DavidGamba/dgtools
+brew install DavidGamba/dgtools/eenv
+----
+
 == How it works
 
 Prints your env vars but hides the values of any of the keys that match `key`, `password` or `token`.
