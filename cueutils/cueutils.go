@@ -43,7 +43,53 @@ func NewValue() *cue.Value {
 // packageName can be set to _ to load files without a package.
 // Because CUE doesn't support hidden files, hidden files need to be passed as configs.
 // value is a pointer receiver to a cue.Value and can be used on the caller side to print the cue values.
+// Initialize with cueutils.NewValue()
 func Unmarshal(configs []CueConfigFile, dir, packageName string, value *cue.Value, target any) error {
+	err := GetValue(configs, dir, packageName, value)
+	if err != nil {
+		return err
+	}
+
+	err = value.Validate(
+		cue.Final(),
+		cue.Concrete(true),
+		cue.Definitions(true),
+		cue.Hidden(true),
+		cue.Optional(true),
+	)
+	if err != nil {
+		return fmt.Errorf("failed config validation: %v", cueErrors.Details(err, nil))
+	}
+
+	g := gocodec.New(cuecontext.New(), nil)
+	err = g.Encode(*value, target)
+	if err != nil {
+		return fmt.Errorf("failed to encode cue values: %w", err)
+	}
+	return nil
+}
+
+// Given a set of cue files, it will aggregate them into a single cue config and update the given cue.Value.
+// This allows for incomplete configuration that can be completed by the caller.
+//
+// If dir == "" it will default to the current directory.
+// packageName can be set to _ to load files without a package.
+// Because CUE doesn't support hidden files, hidden files need to be passed as configs.
+//
+// Completing the value can be done in a couple of ways:
+//
+// Using a go struct:
+//
+//	p := &GoStruct{}
+//	c := cuecontext.New()
+//	targetCue := c.Encode(p)
+//	*value = (*value).Unify(targetCue)
+//
+// Using value.Fillpath (or cueutils.FillPaths):
+//
+//	data := "some data"
+//	*value = value.FillPath(cue.ParsePath("path.in.cue"), data)
+func GetValue(configs []CueConfigFile, dir, packageName string, value *cue.Value) error {
 	embedding := cuecontext.Interpreter(embed.New())
 	ctxOpts := []cuecontext.Option{embedding}
 	c := cuecontext.New(ctxOpts...)
@@ -109,22 +155,7 @@ func Unmarshal(configs []CueConfigFile, dir, packageName string, value *cue.Valu
 	if value.Err() != nil {
 		return fmt.Errorf("failed to compile: %s", cueErrors.Details(value.Err(), nil))
 	}
-	err = value.Validate(
-		cue.Final(),
-		cue.Concrete(true),
-		cue.Definitions(true),
-		cue.Hidden(true),
-		cue.Optional(true),
-	)
-	if err != nil {
-		return fmt.Errorf("failed config validation: %v", cueErrors.Details(err, nil))
-	}
 
-	g := gocodec.New(c, nil)
-	err = g.Encode(*value, &target)
-	if err != nil {
-		return fmt.Errorf("failed to encode cue values: %w", err)
-	}
 	return nil
 }
 
