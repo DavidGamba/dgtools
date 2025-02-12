@@ -166,3 +166,30 @@ func logInstancesFiles(kind string, insts []*build.Instance) {
 		}
 	}
 }
+
+// Fill multiple paths in a cue.Value with the given data.
+// The fillMap is a map of paths and data to fill.
+func FillPaths(value *cue.Value, fillMap map[string]any) error {
+	for path, data := range fillMap {
+		*value = value.FillPath(cue.ParsePath(path), data)
+		if value.Err() != nil {
+			return fmt.Errorf("%s", cueErrors.Details(value.Err(), nil))
+		}
+	}
+	return nil
+}
+
+// Validate a cue.Value
+func Validate(value *cue.Value) error {
+	err := value.Validate(
+		cue.Final(),
+		cue.Concrete(true),
+		cue.Definitions(true),
+		cue.Hidden(true),
+		cue.Optional(true),
+	)
+	if err != nil {
+		return fmt.Errorf("%s", cueErrors.Details(err, nil))
+	}
+	return nil
+}
