@@ -41,11 +41,12 @@ func NewValue() *cue.Value {
 // Given a set of cue files, it will aggregate them into a single cue config and then Unmarshal it unto the given data structure.
 // If dir == "" it will default to the current directory.
 // packageName can be set to _ to load files without a package.
+// virtualCueModuleName can be set to a module name to add a module overlay or blank if the dir has a module already.
 // Because CUE doesn't support hidden files, hidden files need to be passed as configs.
 // value is a pointer receiver to a cue.Value and can be used on the caller side to print the cue values.
 // Initialize with cueutils.NewValue()
-func Unmarshal(configs []CueConfigFile, dir, packageName string, value *cue.Value, target any) error {
-	err := GetValue(configs, dir, packageName, value)
+func Unmarshal(configs []CueConfigFile, dir, packageName, virtualCueModuleName string, value *cue.Value, target any) error {
+	err := GetValue(configs, dir, packageName, virtualCueModuleName, value)
 	if err != nil {
 		return err
 	}
@@ -74,7 +75,8 @@ func Unmarshal(configs []CueConfigFile, dir, packageName string, value *cue.Valu
 //
 // If dir == "" it will default to the current directory.
 // packageName can be set to _ to load files without a package.
-// Because CUE doesn't support hidden files, hidden files need to be passed as configs.
+// virtualCueModuleName can be set to a module name to add a module overlay or blank if the dir has a module already.
+// Because CUE doesn't support hidden files, hidden files need to be passed as configs so that they can be loaded as an overlay.
 //
 // Completing the value can be done in a couple of ways:
 //
@@ -89,12 +91,11 @@ func Unmarshal(configs []CueConfigFile, dir, packageName string, value *cue.Valu
 //
 //	data := "some data"
 //	*value = value.FillPath(cue.ParsePath("path.in.cue"), data)
-func GetValue(configs []CueConfigFile, dir, packageName string, value *cue.Value) error {
+func GetValue(configs []CueConfigFile, dir, packageName, virtualCueModuleName string, value *cue.Value) error {
 	embedding := cuecontext.Interpreter(embed.New())
 	ctxOpts := []cuecontext.Option{embedding}
 	c := cuecontext.New(ctxOpts...)
 
-	packagePaths := []string{"."}
 	insts := []*build.Instance{}
 	var err error
 	dirAbs, err := filepath.Abs(dir)
@@ -103,27 +104,9 @@ func GetValue(configs []CueConfigFile, dir, packageName string, value *cue.Value
 	}
 	Logger.Printf("dir abs: %s\n", dirAbs)
 
-	overlay := map[string]load.Source{}
-	for i, cf := range configs {
-		Logger.Printf("config: n: %d, name: %s\n", i, cf.Name)
-		d, err := io.ReadAll(cf.Data)
-		if err != nil {
-			return fmt.Errorf("failed to read: %w", err)
-		}
-
-		abs, err := filepath.Abs(cf.Name)
-		if err != nil {
-			return fmt.Errorf("failed to get absolute path: %w", err)
-		}
-		fdir := filepath.Dir(abs)
-		Logger.Printf("abs: %s, dir: %s\n", abs, fdir)
-
-		overlayPath := filepath.Join(dirAbs, filepath.Base(cf.Name))
-		overlay[overlayPath] = load.FromBytes(d)
-		Logger.Printf("overlay: %s\n", overlayPath)
-		if strings.HasPrefix(filepath.Base(cf.Name), ".") {
-			packagePaths = append(packagePaths, overlayPath)
-		}
+	overlay, packagePaths, err := BuildOverlay(configs, dirAbs, virtualCueModuleName)
+	if err != nil {
+		return fmt.Errorf("failed to build overlay: %w", err)
 	}
 
 	if dir == "" {
@@ -157,6 +140,44 @@ func GetValue(configs []CueConfigFile, dir, packageName string, value *cue.Value
 	}
 
 	return nil
+}
+
+// BuildOverlay - Builds an overlay of cue configs files.
+// If virtualCueModuleName is not empty, it will add a module overlay with the given name.
+// Returns an overlay map and the package paths found.
+// Initially the package paths are set to the current directory but hidden files will be added so that they can be read.
+func BuildOverlay(configs []CueConfigFile, overlayRootDir, virtualCueModuleName string) (map[string]load.Source, []string, error) {
+	packagePaths := []string{"."}
+	overlay := map[string]load.Source{}
+
+	for i, cf := range configs {
+		Logger.Printf("config: n: %d, name: %s\n", i, cf.Name)
+		d, err := io.ReadAll(cf.Data)
+		if err != nil {
+			return overlay, packagePaths, fmt.Errorf("failed to read: %w", err)
+		}
+
+		abs, err := filepath.Abs(cf.Name)
+		if err != nil {
+			return overlay, packagePaths, fmt.Errorf("failed to get absolute path: %w", err)
+		}
+		fdir := filepath.Dir(abs)
+		Logger.Printf("abs: %s, dir: %s\n", abs, fdir)
+
+		overlayPath := filepath.Join(overlayRootDir, filepath.Base(cf.Name))
+		overlay[overlayPath] = load.FromBytes(d)
+		Logger.Printf("overlay: %s\n", overlayPath)
+		// Add hidden file to the package paths
+		if strings.HasPrefix(filepath.Base(cf.Name), ".") {
+			packagePaths = append(packagePaths, overlayPath)
+		}
+	}
+	if virtualCueModuleName != "" {
+		modPath := filepath.Join(overlayRootDir, "cue.mod/module.cue")
+		overlay[modPath] = load.FromString(fmt.Sprintf(`module: "%s"`, virtualCueModuleName))
+		Logger.Printf("overlay: %s\n", modPath)
+	}
+	return overlay, packagePaths, nil
 }
 
 func logInstancesFiles(kind string, insts []*build.Instance) {

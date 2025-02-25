@@ -19,12 +19,13 @@ func setupLogging() *bytes.Buffer {
 func TestUnmarshal(t *testing.T) {
 	// Given
 	tests := []struct {
-		name     string
-		p        string
-		files    []string
-		schema   string
-		data     any
-		expected any
+		name       string
+		p          string
+		files      []string
+		schema     string
+		data       any
+		moduleName string
+		expected   any
 	}{
 		{
 			name:     "package file1 from dir",
@@ -131,7 +132,7 @@ func TestUnmarshal(t *testing.T) {
 			}
 
 			value := cueutils.NewValue()
-			err = cueutils.Unmarshal(configs, dir, tt.p, value, &tt.data)
+			err = cueutils.Unmarshal(configs, dir, tt.p, tt.moduleName, value, &tt.data)
 			t.Logf("value:\n%#v\n", value)
 			if err != nil {
 				t.Log(buf.String())
