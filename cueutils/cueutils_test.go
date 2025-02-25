@@ -103,6 +103,14 @@ func TestUnmarshal(t *testing.T) {
 			data:     struct{}{},
 			expected: map[string]any{"en": "hello", "es": "hola"},
 		},
+		{
+			name:       "package file5 from dir using embed",
+			p:          "file5",
+			schema:     "testschemas/file5-schema.cue",
+			data:       struct{}{},
+			moduleName: "file5.cue", // required for embed
+			expected:   map[string]any{"en": "hello", "es": "hola"},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
