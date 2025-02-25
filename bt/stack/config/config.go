@@ -23,18 +23,18 @@ func Get(ctx context.Context, value *cue.Value, filename string) (*Config, strin
 	f, err := buildutils.FindFileUpwards(ctx, filename)
 	if err != nil {
 		cfg := &Config{}
-		return cfg, f, fmt.Errorf("failed to find config file: %w", err)
+		return cfg, f, fmt.Errorf("failed to find stacks config file: %w", err)
 	}
 
 	configFH, err := os.Open(f)
 	if err != nil {
-		return &Config{}, f, fmt.Errorf("failed to open config file '%s': %w", f, err)
+		return &Config{}, f, fmt.Errorf("failed to open stacks config file '%s': %w", f, err)
 	}
 	defer configFH.Close()
 
 	cfg, err := Read(ctx, value, f, configFH)
 	if err != nil {
-		return &Config{}, f, fmt.Errorf("failed to read config: %w", err)
+		return &Config{}, f, fmt.Errorf("failed to read stacks config: %w", err)
 	}
 
 	cfg.ConfigFile = f
@@ -60,7 +60,7 @@ func Read(ctx context.Context, value *cue.Value, filename string, configFH io.Re
 	}
 
 	c := Config{}
-	err = cueutils.Unmarshal(configs, dir, "bt_stacks", value, &c)
+	err = cueutils.Unmarshal(configs, dir, "bt_stacks", "bt.cue", value, &c)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal: %w", err)
 	}

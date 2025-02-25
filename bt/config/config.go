@@ -110,7 +110,7 @@ func Read(ctx context.Context, value *cue.Value, filename string, configFH io.Re
 	configs = append(configs, cueutils.CueConfigFile{Data: configFH, Name: filename})
 
 	c := Config{}
-	err = cueutils.Unmarshal(configs, "", "bt", value, &c)
+	err = cueutils.Unmarshal(configs, "", "bt", "bt.cue", value, &c)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal: %w", err)
 	}

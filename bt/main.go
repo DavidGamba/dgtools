@@ -54,7 +54,8 @@ func program(args []string) int {
 
 	opt := getoptions.New()
 	opt.Self("", "Terraform build system built as a no lock-in wrapper")
-	opt.Bool("quiet", false, opt.GetEnv("QUIET"))
+	opt.Bool("quiet", false, opt.GetEnv("BT_QUIET"))
+	opt.Bool("debug", false, opt.GetEnv("BT_DEBUG"))
 	opt.Bool("print-raw-config", false)
 	opt.String("color", "auto", opt.Description("show colored output"), opt.ValidValues("always", "auto", "never"))
 	opt.SetUnknownMode(getoptions.Pass)
@@ -78,6 +79,9 @@ func program(args []string) int {
 		stack.Logger.SetOutput(io.Discard)
 		terraform.Logger.SetOutput(io.Discard)
 		cueutils.Logger.SetOutput(io.Discard)
+	}
+	if opt.Called("debug") {
+		cueutils.Logger.SetOutput(os.Stderr)
 	}
 
 	if opt.Called("print-raw-config") {
