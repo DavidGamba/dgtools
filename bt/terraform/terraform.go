@@ -39,6 +39,7 @@ It will use a separate TF_DATA_DIR per workspace.`), opt.GetEnv("TF_IN_AUTOMATIO
 	importCMD(ctx, opt)
 	refreshCMD(ctx, opt)
 	consoleCMD(ctx, opt)
+	testCMD(ctx, opt)
 
 	// workspace management
 	workspaceCMD(ctx, opt)
@@ -53,7 +54,6 @@ It will use a separate TF_DATA_DIR per workspace.`), opt.GetEnv("TF_IN_AUTOMATIO
 	taintCMD(ctx, opt)
 	untaintCMD(ctx, opt)
 	validateCMD(ctx, opt)
-	testCMD(ctx, opt)
 	providersCMD(ctx, opt)
 	graphCMD(ctx, opt)
 

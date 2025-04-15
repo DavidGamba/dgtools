@@ -9,6 +9,7 @@ import (
 
 func testCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
 	opt := parent.NewCommand("test", "")
+	opt.StringSlice("var-file", 1, 1)
 	opt.SetCommandFn(testRun)
 
 	return opt
@@ -16,9 +17,10 @@ func testCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt 
 
 func testRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	profile := opt.Value("profile").(string)
+	i := noOp{}
+
 	cfg := config.ConfigFromContext(ctx)
 	LogConfig(cfg, profile)
 
-	cmd := []string{cfg.TFProfile[cfg.Profile(profile)].BinaryName, "test"}
-	return wsCMDRun(cmd...)(ctx, opt, args)
+	return varFileCMDRun(i, cfg.TFProfile[cfg.Profile(profile)].BinaryName, "test")(ctx, opt, args)
 }
