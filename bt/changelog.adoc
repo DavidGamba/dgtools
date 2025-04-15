@@ -1,5 +1,21 @@
 = bt
 
+== v0.13.0: New features
+
+* Allow defining stack-parallelism and read GOMAXPROCS.
+
+* Add terraform providers mirror and schema command.
+
+* Add var-file vars to terraform test.
+
+* Add stack providers mirror.
+
+* Add stack init.
+
+* Add tf-in-automation flag, if set, it will use a separate TF_DATA_DIR per workspace.
+
+* Add version command.
+
 == v0.12.0: New features
 
 * Invalidate init when the `.terraform.lock.hcl` file has been modified.
