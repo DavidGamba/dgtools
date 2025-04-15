@@ -3,9 +3,9 @@ module github.com/DavidGamba/dgtools/bt
 go 1.24.0
 
 require (
-	cuelang.org/go v0.12.1
+	cuelang.org/go v0.13.0-alpha.3
 	github.com/DavidGamba/dgtools/buildutils v0.6.0
-	github.com/DavidGamba/dgtools/cueutils v0.4.1-0.20250225081445-104681d37b85
+	github.com/DavidGamba/dgtools/cueutils v0.5.0
 	github.com/DavidGamba/dgtools/fsmodtime v0.3.0
 	github.com/DavidGamba/dgtools/run v0.9.0
 	github.com/DavidGamba/go-getoptions v0.33.0

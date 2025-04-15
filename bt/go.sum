@@ -1,11 +1,11 @@
 cuelabs.dev/go/oci/ociregistry v0.0.0-20250304105642-27e071d2c9b1 h1:Dmbd5Q+ENb2C6carvwrMsrOUwJ9X9qfL5JdW32gYAHo=
 cuelabs.dev/go/oci/ociregistry v0.0.0-20250304105642-27e071d2c9b1/go.mod h1:dqrnoZx62xbOZr11giMPrWbhlaV8euHwciXZEy3baT8=
-cuelang.org/go v0.12.1 h1:5I+zxmXim9MmiN2tqRapIqowQxABv2NKTgbOspud1Eo=
-cuelang.org/go v0.12.1/go.mod h1:B4+kjvGGQnbkz+GuAv1dq/R308gTkp0sO28FdMrJ2Kw=
+cuelang.org/go v0.13.0-alpha.3 h1:NIFQ29Avm4grWD/jVnNCvWwbvHVsh6EXGMhh5vGacnE=
+cuelang.org/go v0.13.0-alpha.3/go.mod h1:rbQk2fEXw8zp5shrCAIXGbj2eIaeQsq68IB/n94vZD0=
 github.com/DavidGamba/dgtools/buildutils v0.6.0 h1:sbiwJPAdbXF+Gc8L9C+BldaaMRje/qf5BfVYyp0qBMk=
 github.com/DavidGamba/dgtools/buildutils v0.6.0/go.mod h1:j7DC6tKOOoMy4s6ICP220y2jgRlIGpzLH2wXZo2WF7g=
-github.com/DavidGamba/dgtools/cueutils v0.4.1-0.20250225081445-104681d37b85 h1:J4tl05FYpJlRkgef5YeXHwZxvkvNEr+L08FhA18++oU=
-github.com/DavidGamba/dgtools/cueutils v0.4.1-0.20250225081445-104681d37b85/go.mod h1:be2yef8dRTdMZtGGQrUdA/rw+d6pBd4t9uqYy73AbkA=
+github.com/DavidGamba/dgtools/cueutils v0.5.0 h1:BZkH78f2pjMR6gV1LFnl9lh1VkNMEKzfRhIxZuPm608=
+github.com/DavidGamba/dgtools/cueutils v0.5.0/go.mod h1:H0th4C4/VLbbAsYwCW3oFq/T+tDn10ufifP55I3cM3k=
 github.com/DavidGamba/dgtools/fsmodtime v0.3.0 h1:unnbwD+JSadgcqlBI2v524dWcX6dxqD44TSAP5V7sA8=
 github.com/DavidGamba/dgtools/fsmodtime v0.3.0/go.mod h1:ruwqMvW2pWDbSQlAupP7F0QaojfbuXPyUOUKR4Ev3pQ=
 github.com/DavidGamba/dgtools/run v0.9.0 h1:Hg0v4ExUMd6Vzf9x9Bqr2yxreZtZpqlcAi8tI86QtIM=
