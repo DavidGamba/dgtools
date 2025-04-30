@@ -22,4 +22,10 @@ brew install DavidGamba/dgtools/eenv
 
 == How it works
 
-Prints your env vars but hides the values of any of the keys that match `key`, `password` or `token`.
+Prints your env vars but hides the values of any of the keys or values that match `key`, `password` or `token`.
+
+It also hides values that start with known secret prefixes: `sk-`, `ghp_`.
+
+Finally, it calculates the value's entropy using Shannon's entropy formula and hides anything that passes the default threshold of 4.0 bits.
+
+There is a list of known safe Env vars that are not checked, for example `PATH`.
