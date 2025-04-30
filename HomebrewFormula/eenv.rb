@@ -5,8 +5,8 @@ class Eenv < Formula
 
   desc "#{@@tool_desc}"
   homepage "https://github.com/DavidGamba/dgtools/tree/master/#{@@tool_name}"
-  url "https://github.com/DavidGamba/dgtools/archive/refs/tags/eenv/v0.1.0.tar.gz"
-  sha256 "c8e41817b473597a33734aec43474e41a124ace29dc551cf43ba042f4b72cbed"
+  url "https://github.com/DavidGamba/dgtools/archive/refs/tags/eenv/v0.2.0.tar.gz"
+  sha256 "f06871f44b11ed0d3544d4d0d1be9591dcb86b1ef018cd9559a1df8d909982d7"
 
   depends_on "go" => :build
 
