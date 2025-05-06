@@ -25,11 +25,15 @@ func NewCommand(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetO
 	opt.Bool("tf-in-automation", false, opt.Description(`Determine if we are running in automation.
 It will use a separate TF_DATA_DIR per workspace.`), opt.GetEnv("TF_IN_AUTOMATION"), opt.GetEnv("BT_IN_AUTOMATION"))
 
-	wss, err := validWorkspaces(cfg, opt.Value("profile").(string))
-	if err != nil {
-		Logger.Printf("WARNING: failed to list workspaces: %s\n", err)
-	}
-	opt.String("ws", "", opt.SuggestedValues(wss...), opt.Description("Workspace to use"))
+	opt.String("ws", "", opt.Description("Workspace to use"),
+		opt.SuggestedValuesFn(func(target string, partialCompletion string) []string {
+			wss, err := validWorkspaces(cfg, opt.Value("profile").(string))
+			if err != nil {
+				Logger.Printf("WARNING: failed to list workspaces: %s\n", err)
+			}
+			return wss
+		}),
+	)
 
 	// backend-config
 	initCMD(ctx, opt)
