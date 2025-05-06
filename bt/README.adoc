@@ -50,6 +50,9 @@ This one might be nice to combine with a progress indicator in the dag library.
 
 * TODO: Add option to skip component in stack if ws doesn't exist.
 
+* TODO: Write all cache files to a single dir to be able to store the cache and retrieve it.
+This would require a way to ignore the cache dates because retrieving the cache after cloning the repo can't be guaranteed in CI.
+
 * TODO: Add progress indicator x out of y > this can be written to the argo workflow progress file:
 https://argo-workflows.readthedocs.io/en/latest/progress/
 
