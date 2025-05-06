@@ -5,6 +5,8 @@ It also makes working with workspaces a breeze.
 
 == Features
 
+* Custom implementation of <<_stacks,Terraform Stacks>> to define a collection of components using a DAG of dependencies to deploy in parallel and in the correct order.
+
 * Run `terraform init`, `terraform providers lock`, `terraform plan`, `conftest` and `terraform apply` with a single command and with caching.
 
 * Automatically inject init backend tfvars and plan tfvars based on config values.
@@ -173,7 +175,7 @@ If `init` wasn't run, it will run `init` once and cache the run so further calls
 
 . Run `bt terraform build --lock` to ensure that `terraform providers lock` has run after `init` with the list of archs provided in the config file.
 
-. Run `bt terraform build --ic` to generate a plan again even when it detects there are no file changes.
+. Run `bt terraform build --ic` to run init and generate a plan again even when it detects there are no file changes.
 
 . Run `bt terraform build --show` to view the generated plan.
 
@@ -277,6 +279,7 @@ This allows to work with multiple profiles pointing to different backends under 
 
 Use `bt terraform providers lock` to generate a lock file using all the os archs in the `platforms` list for a given profile.
 
+[[_stacks]]
 == Stacks: A different take
 
 Hashicorp recently https://www.hashicorp.com/blog/terraform-stacks-explained[introduced their solution] for deploying stacks of resources.
