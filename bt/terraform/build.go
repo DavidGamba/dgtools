@@ -70,6 +70,7 @@ func BuildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 			nopt.String("profile", opt.Value("profile").(string))
 			nopt.StringSlice("platform", 1, 99)
 			nopt.String("ws", ws)
+			nopt.String("color", color)
 			return providersLockRun(ctx, nopt, args)
 		}
 		return nil
