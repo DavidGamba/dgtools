@@ -1,5 +1,9 @@
 = bt
 
+== v0.13.1: Bug fix
+
+* Fix panic when running `bt terraform build --lock`.
+
 == v0.13.0: New features
 
 * Allow defining stack-parallelism and read GOMAXPROCS.
