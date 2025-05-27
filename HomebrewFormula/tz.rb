@@ -5,8 +5,8 @@ class Tz < Formula
 
   desc "#{@@tool_desc}"
   homepage "https://github.com/DavidGamba/dgtools/tree/master/#{@@tool_name}"
-  url "https://github.com/DavidGamba/dgtools/archive/refs/tags/tz/v0.3.0.tar.gz"
-  sha256 "cc8455a94f57874c36a1acfb4067a95a3ece3a3c9d960472153e646caee4f49c"
+  url "https://github.com/DavidGamba/dgtools/archive/refs/tags/tz/v0.4.0.tar.gz"
+  sha256 "7d97851699707dd093c33fe02c4eb2fd1f69af2d6320cc36d91fa936956740a6"
 
   depends_on "go" => :build
 
