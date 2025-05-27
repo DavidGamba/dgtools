@@ -12,7 +12,9 @@ import (
 
 	"github.com/DavidGamba/go-getoptions"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/cli-runtime/pkg/printers"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes/scheme"
 )
 
 var Logger = log.New(os.Stderr, "", log.LstdFlags)
@@ -38,6 +40,7 @@ Source: https://github.com/DavidGamba/dgtools`)
 NOTE: This only works when you are not in a subshell
       that sets a KUBECONFIG subset like 'kubie'.
 `))
+	opt.String("output", "", opt.Description("Provide an output format to get the raw YAML/JSON"), opt.ValidValues("yaml", "json"), opt.ArgName("yaml|json"))
 	opt.HelpSynopsisArg("[<secret>]", "secret name")
 	opt.HelpCommand("help", opt.Alias("?"))
 	remaining, err := opt.Parse(args[1:])
@@ -68,6 +71,7 @@ func Run(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	cluster := opt.Value("cluster").(string)
 	key := opt.Value("key").(string)
 	pem := opt.Value("pem").(bool)
+	output := opt.Value("output").(string)
 	secret := ""
 	if len(args) >= 1 {
 		secret = args[0]
@@ -100,6 +104,25 @@ func Run(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	k8sSecret, err := clientset.CoreV1().Secrets(namespace).Get(ctx, secret, metav1.GetOptions{})
 	if err != nil {
 		return fmt.Errorf("failed to get secret: %w", err)
+	}
+	if output != "" {
+		var printer printers.ResourcePrinter
+		switch output {
+		case "yaml":
+			printer = &printers.YAMLPrinter{}
+		case "json":
+			printer = &printers.JSONPrinter{}
+		default:
+			return fmt.Errorf("unknown output format: %s", output)
+		}
+		printer = &printers.OmitManagedFieldsPrinter{Delegate: printer}
+		p := printers.NewTypeSetter(scheme.Scheme).ToPrinter(printer)
+		err := p.PrintObj(k8sSecret, os.Stdout)
+		if err != nil {
+			return err
+		}
+		fmt.Println()
+		return nil
 	}
 	for k, v := range k8sSecret.Data {
 		if (key != "" && k == key) || key == "" {
