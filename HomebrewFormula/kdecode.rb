@@ -5,8 +5,8 @@ class Kdecode < Formula
 
   desc "#{@@tool_desc}"
   homepage "https://github.com/DavidGamba/dgtools/tree/master/#{@@tool_name}"
-  url "https://github.com/DavidGamba/dgtools/archive/refs/tags/kdecode/v0.3.0.tar.gz"
-  sha256 "e52f0efb84b392f66523a731aea4d89471a56d2a74dfb02b360fcea0acb9b718"
+  url "https://github.com/DavidGamba/dgtools/archive/refs/tags/kdecode/v0.4.0.tar.gz"
+  sha256 "b550c2b4d1f4e7cf3e845bc9dd51e73a98836a9af9035d2fd53df004f6c7e62c"
 
   depends_on "go" => :build
 
