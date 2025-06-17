@@ -35,17 +35,11 @@ func InitRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	LogConfig(cfg, profile)
 	os.Setenv("CONFIG_ROOT", cfg.ConfigRoot)
 
+	// For init we use the workspace if set to set the TF_DATA_DIR but we do not enforce it since init is an operation that does not require it.
+	// For example, when we just want to run init to update the provider cache.
 	ws, err := updateWSIfSelected(cfg.Config.DefaultTerraformProfile, cfg.Profile(profile), ws)
 	if err != nil {
 		return err
-	}
-
-	if cfg.TFProfile[cfg.Profile(profile)].Workspaces.Enabled {
-		if automation && !workspaceSelected(cfg.Config.DefaultTerraformProfile, profile) {
-			if ws == "" {
-				return fmt.Errorf("running in workspace mode in automation but no workspace selected or --ws given")
-			}
-		}
 	}
 
 	lockFile := ".terraform.lock.hcl"
