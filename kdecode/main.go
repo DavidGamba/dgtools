@@ -9,6 +9,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"slices"
 
 	"github.com/DavidGamba/go-getoptions"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -124,7 +125,21 @@ func Run(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 		fmt.Println()
 		return nil
 	}
-	for k, v := range k8sSecret.Data {
+
+	// sort output
+	dataKeys := []string{}
+	for k := range k8sSecret.Data {
+		dataKeys = append(dataKeys, k)
+	}
+	slices.Sort(dataKeys)
+	stringKeys := []string{}
+	for k := range k8sSecret.StringData {
+		stringKeys = append(stringKeys, k)
+	}
+	slices.Sort(stringKeys)
+
+	for _, k := range dataKeys {
+		v := k8sSecret.Data[k]
 		if (key != "" && k == key) || key == "" {
 			fmt.Printf("%s=", k)
 			if pem {
@@ -140,7 +155,9 @@ func Run(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 			}
 		}
 	}
-	for k, v := range k8sSecret.StringData {
+
+	for _, k := range stringKeys {
+		v := k8sSecret.StringData[k]
 		if (key != "" && k == key) || key == "" {
 			fmt.Printf("%s=", k)
 			if pem {
