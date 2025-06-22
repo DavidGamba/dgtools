@@ -196,10 +196,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		return m, nil
 	case cursor.BlinkMsg:
-		// Textarea should also process cursor blinks.
-		var cmd tea.Cmd
-		m.textarea, cmd = m.textarea.Update(msg)
-		return m, cmd
+		// Textarea should also process cursor blinks but not when in raw mode to allow selecting without a refresh
+		if !m.showRaw {
+			var cmd tea.Cmd
+			m.textarea, cmd = m.textarea.Update(msg)
+			return m, cmd
+		}
 	case tea.KeyMsg:
 		switch m.mode {
 		case textMode:
