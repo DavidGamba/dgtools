@@ -102,11 +102,11 @@ func newModel() model {
 	// m.spinner.Spinner = spinner.Points
 
 	ta := textarea.New()
+	ta.CharLimit = 0
 	ta.Placeholder = "Send a message..."
 	ta.Focus()
 
 	ta.Prompt = "┃ "
-	ta.CharLimit = width
 
 	ta.SetHeight(3)
 
