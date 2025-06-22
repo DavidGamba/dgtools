@@ -244,9 +244,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.mode = textMode
 				return m, nil
 			case key.Matches(msg, m.keymap.j):
-				m.viewport.LineDown(1)
+				m.viewport.ScrollDown(1)
 			case key.Matches(msg, m.keymap.k):
-				m.viewport.LineUp(1)
+				m.viewport.ScrollUp(1)
 			case key.Matches(msg, m.keymap.showRaw):
 				m.showRaw = !m.showRaw
 				var content string
