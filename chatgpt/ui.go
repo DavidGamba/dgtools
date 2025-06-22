@@ -218,7 +218,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 				m.messages = append(m.messages, senderStyle.Render("You: ")+v)
 				m.rawMessages = append(m.rawMessages, v)
-				m.viewport.SetContent(strings.Join(m.messages, "\n"))
+
+				content := strings.Join(m.messages, "\n")
+				str := lipgloss.NewStyle().Width(width).Render(content)
+				m.viewport.SetContent(str)
+
 				m.textarea.Reset()
 				m.waiting = true
 				m.viewport.GotoBottom()
@@ -245,11 +249,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.viewport.LineUp(1)
 			case key.Matches(msg, m.keymap.showRaw):
 				m.showRaw = !m.showRaw
+				var content string
 				if m.showRaw {
-					m.viewport.SetContent(strings.Join(m.rawMessages, "\n"))
+					content = strings.Join(m.rawMessages, "\n")
 				} else {
-					m.viewport.SetContent(strings.Join(m.messages, "\n"))
+					content = strings.Join(m.messages, "\n")
 				}
+				str := lipgloss.NewStyle().Width(width).Render(content)
+				m.viewport.SetContent(str)
 			case key.Matches(msg, m.keymap.reset):
 				m.textarea.Reset()
 				m.viewport.SetContent("")
@@ -280,7 +287,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.rawMessages = append(m.rawMessages, msg.content)
 			m.messages = append(m.messages, md)
 		}
-		m.viewport.SetContent(strings.Join(m.messages, "\n"))
+		content := strings.Join(m.messages, "\n")
+		str := lipgloss.NewStyle().Width(width).Render(content)
+		m.viewport.SetContent(str)
+
 		m.viewport.GotoBottom()
 		m.waiting = false
 
