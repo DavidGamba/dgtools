@@ -174,8 +174,7 @@ fg: no-op
 
 .clear, clear: Clear the terminal
 
-.quit, .exit: Quit the program
-`)
+.quit, .exit: Quit the program`)
 		default:
 			switch mode {
 			case "image":
