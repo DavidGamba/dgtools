@@ -1,0 +1,117 @@
+=  🧵 🪡 ✂ YAML Seam
+
+Read, Join, Split multi document YAML files.
+
+YAML seam is a quick way to inspect a multi document YAML file.
+
+For individual document manipulation take a look at link:../yaml-parse[yaml-parse].
+
+== Introduction
+
+Get a sample multi document YAML file.
+For example, this YAML from the istio examples documentation:
+
+----
+$ wget https://raw.githubusercontent.com/istio/istio/fc3ff90a82a67c7d14ac81615e76104cad10c268/samples/httpbin/httpbin.yaml
+----
+
+Read the file with `yaml-seam`:
+
+----
+$ yaml-seam read httpbin.yaml
+2025/07/31 21:12:27 [httpbin.yaml]
+2025/07/31 21:12:27 Reading from file: httpbin.yaml
+# httpbin.yaml 01
+# httpbin.yaml 02
+# httpbin.yaml 03
+----
+
+Show some of the content (pipe the output to a tool like `yq` for coloring):
+
+[source, yaml]
+----
+$ yaml-seam read httpbin.yaml -k kind -k metadata/name -k metadata/labels/app 2>/dev/null | yq
+# httpbin.yaml 01
+kind: ServiceAccount
+name: httpbin
+# httpbin.yaml 02
+kind: Service
+name: httpbin
+app: httpbin
+# httpbin.yaml 03
+kind: Deployment
+name: httpbin
+----
+
+Split the file into individual YAML documents and name it based on the content of the file:
+
+----
+$ yaml-seam split httpbin.yaml -k kind -k metadata/name -k metadata/labels/app -d example -f
+2025/07/31 21:19:13 [httpbin.yaml]
+2025/07/31 21:19:13 Reading from file: httpbin.yaml
+example/ServiceAccount-httpbin-01.yaml
+example/Service-httpbin-httpbin-01.yaml
+example/Deployment-httpbin-01.yaml
+----
+
+Join the files back into a single file:
+
+----
+$ yaml-seam join example/* -o example.yaml
+2025/07/31 21:20:55 [example/Deployment-httpbin-01.yaml example/Service-httpbin-httpbin-01.yaml example/ServiceAccount-httpbin-01.yaml]
+----
+
+== Installation
+
+* Install using go:
++
+----
+go install github.com/DavidGamba/dgtools/yaml-seam@latest
+----
++
+Ensure your Go bin is in your PATH.
++
+Then setup the completion.
++
+For bash:
++
+----
+complete -o default -C yaml-seam yaml-seam
+----
++
+For zsh:
++
+[source, zsh]
+----
+export ZSHELL="true"
+autoload -U +X compinit && compinit
+autoload -U +X bashcompinit && bashcompinit
+complete -o default -C yaml-seam yaml-seam
+----
+
+* Install using homebrew:
++
+----
+brew tap DavidGamba/dgtools https://github.com/DavidGamba/dgtools
+brew install DavidGamba/dgtools/yaml-seam
+----
++
+[NOTE]
+====
+Completion is auto setup for bash.
+
+For `zsh` completions, an additional step is required, add the following to your `.zshrc`:
+
+[source, zsh]
+----
+export ZSHELL="true"
+source "$(brew --prefix)/share/zsh/site-functions/dgtools.yaml-seam.zsh"
+----
+====
++
+Upgrade with:
++
+----
+brew update
+brew upgrade yaml-seam
+----

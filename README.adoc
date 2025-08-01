@@ -46,6 +46,8 @@ link:tz[] - Show time zones based on user defined groups.
 
 link:yaml-parse[] - Parse and extract data from YAML files.
 
+link:yaml-seam[] - Read, Join, Split multi document YAML files.
+
 link:reverseproxy[] - Creates a very simple reverse proxy that allows to proxy multiple local services at different base paths dynamically with CLI args.
 
 link:clitable[csvtable] - Pretty print csv input as a table.

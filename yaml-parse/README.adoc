@@ -2,9 +2,7 @@
 
 Parses YAML input passed from file or piped to STDIN and filters it by key or index
 
-== Install
-
-`$ go install github.com/DavidGamba/dgtools/yaml-parse@master`
+For additional multi YAML document manipulation take a look at link:../yaml-seam[yaml-seam].
 
 == Examples
 
@@ -114,4 +112,59 @@ bool: true
 float: 123.123
 hola: mundo
 numero: 123
+----
+
+== Installation
+
+* Install using go:
++
+----
+go install github.com/DavidGamba/dgtools/yaml-parse@latest
+----
++
+Ensure your Go bin is in your PATH.
++
+Then setup the completion.
++
+For bash:
++
+----
+complete -o default -C yaml-parse yaml-parse
+----
++
+For zsh:
++
+[source, zsh]
+----
+export ZSHELL="true"
+autoload -U +X compinit && compinit
+autoload -U +X bashcompinit && bashcompinit
+complete -o default -C yaml-parse yaml-parse
+----
+
+* Install using homebrew:
++
+----
+brew tap DavidGamba/dgtools https://github.com/DavidGamba/dgtools
+brew install DavidGamba/dgtools/yaml-parse
+----
++
+[NOTE]
+====
+Completion is auto setup for bash.
+
+For `zsh` completions, an additional step is required, add the following to your `.zshrc`:
+
+[source, zsh]
+----
+export ZSHELL="true"
+source "$(brew --prefix)/share/zsh/site-functions/dgtools.yaml-parse.zsh"
+----
+====
++
+Upgrade with:
++
+----
+brew update
+brew upgrade yaml-parse
 ----
