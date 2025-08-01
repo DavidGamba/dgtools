@@ -5,8 +5,8 @@ class Yamlseam < Formula
 
   desc "#{@@tool_desc}"
   homepage "https://github.com/DavidGamba/dgtools/tree/master/#{@@tool_name}"
-  url "https://github.com/DavidGamba/dgtools/archive/refs/tags/yaml-seam/v0.1.0.tar.gz"
-  sha256 "0818d14a3a0cfbac8077f973eae44e00315a8440ab924a9060928367bca59b7f"
+  url "https://github.com/DavidGamba/dgtools/archive/refs/tags/yaml-seam/v0.2.0.tar.gz"
+  sha256 "6ffe20406ca91e5e1832ca3995510703a0b7df16492546ee14f0bc52cfa2368d"
 
   depends_on "go" => :build
 
