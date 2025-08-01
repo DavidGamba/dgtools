@@ -216,8 +216,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					// Don't send empty messages.
 					return m, nil
 				}
-				m.messages = append(m.messages, senderStyle.Render("You: ")+v)
-				m.rawMessages = append(m.rawMessages, v)
+				// m.messages = append(m.messages, senderStyle.Render("You: ")+v)
+				// m.rawMessages = append(m.rawMessages, v)
+				// prepend
+
+				m.messages = append([]string{senderStyle.Render("You: ") + v}, m.messages...)
+				m.rawMessages = append([]string{v}, m.rawMessages...)
 
 				content := strings.Join(m.messages, "\n")
 				str := lipgloss.NewStyle().Width(width).Render(content)
@@ -225,7 +229,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 				m.textarea.Reset()
 				m.waiting = true
-				m.viewport.GotoBottom()
+				m.viewport.GotoTop()
 
 				cmds = append(cmds, m.stopwatch.Reset(), m.stopwatch.Start())
 				cmds = append(cmds, m.threads.sendQueryMsg(context.Background(), v))
@@ -269,23 +273,32 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				// cmds = append(cmds, m.stopwatch.Reset())
 			}
 		}
+
 	case spinner.TickMsg:
 		m.spinner, cmd = m.spinner.Update(msg)
 		cmds = append(cmds, cmd)
 
 	case queryMsg:
 		if msg.err != nil {
-			m.messages = append(m.messages, msg.err.Error())
+			// m.messages = append(m.messages, msg.err.Error())
+			// prepend
+			m.messages = append([]string{msg.err.Error()}, m.messages...)
 		} else {
 			md, err := glamour.Render(msg.content, "dark")
 			if err != nil {
-				m.messages = append(m.messages, err.Error())
-				m.messages = append(m.messages, msg.content)
-				m.rawMessages = append(m.rawMessages, err.Error())
-				m.rawMessages = append(m.rawMessages, msg.content)
+				// m.messages = append(m.messages, err.Error())
+				// m.messages = append(m.messages, msg.content)
+				// m.rawMessages = append(m.rawMessages, err.Error())
+				// m.rawMessages = append(m.rawMessages, msg.content)
+				// prepend
+				m.messages = append([]string{err.Error(), msg.content}, m.messages...)
+				m.rawMessages = append([]string{err.Error(), msg.content}, m.rawMessages...)
 			}
-			m.rawMessages = append(m.rawMessages, msg.content)
-			m.messages = append(m.messages, md)
+			// m.rawMessages = append(m.rawMessages, msg.content)
+			// m.messages = append(m.messages, md)
+			// prepend
+			m.rawMessages = append([]string{msg.content}, m.rawMessages...)
+			m.messages = append([]string{md}, m.messages...)
 		}
 		content := strings.Join(m.messages, "\n")
 		str := lipgloss.NewStyle().Width(width).Render(content)
