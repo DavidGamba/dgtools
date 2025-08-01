@@ -57,6 +57,9 @@ Indexes are positive integers.`))
 	split.Bool("force", false, opt.Description("Apply split"))
 	split.String("dir", "", opt.Description("Output directory to write files to. Defaults to same as source."))
 	split.String("output-prefix", "", opt.Alias("prefix"), opt.Description("Output Filename prefix"))
+	split.StringSlice("key", 1, 99, opt.Alias("k"), opt.ArgName("key/index"),
+		opt.Description(`Make keys data part of the filename, for example: -k kind -k metadata/name
+If not used, the default name is the filename-<document-number>.yaml`))
 	split.SetCommandFn(SplitRun)
 
 	join := opt.NewCommand("join", "join multiple YAML files into a single multi document one")
@@ -182,6 +185,7 @@ func SplitRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	force := opt.Value("force").(bool)
 	useStdIn := opt.Value("-").(bool)
 	oPrefix := opt.Value("output-prefix").(string)
+	keys := opt.Value("key").([]string)
 
 	if len(args) < 1 && !useStdIn {
 		fmt.Fprintf(os.Stderr, "ERROR: missing <file> or STDIN input '-'\n")
@@ -216,15 +220,38 @@ func SplitRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 
 	oPrefix = filepath.Base(oPrefix)
 
-	tformat := `%[1]s-%02[2]d.yaml`
+	nameKeys := [][]string{}
+	for _, e := range keys {
+		nameKeys = append(nameKeys, strings.Split(e, "/"))
+	}
 
 	ymlList, err := readInput(ctx, useStdIn, file)
 	if err != nil {
 		return fmt.Errorf("failed to read input: %w", err)
 	}
 
+	filenameCounter := map[string]int{}
 	for i, yml := range ymlList {
-		filename := fmt.Sprintf(tformat, oPrefix, i+1)
+		filename := fmt.Sprintf(`%[1]s-%02[2]d.yaml`, oPrefix, i+1)
+		nameParts := []string{}
+		for _, e := range nameKeys {
+			es, err := yml.GetString(false, e)
+			if err == nil {
+				nameParts = append(nameParts, strings.TrimSpace(es))
+			}
+		}
+		if len(nameParts) != 0 {
+			filename = strings.Join(nameParts, "-")
+			v, ok := filenameCounter[filename]
+			if ok {
+				filenameCounter[filename] = v + 1
+				filename += fmt.Sprintf(`-%02d`, v+1)
+			} else {
+				filenameCounter[filename] = 1
+				filename += "-01"
+			}
+			filename += ".yaml"
+		}
 		filename = filepath.Join(outputDir, filename)
 		fmt.Printf("%s\n", filename)
 		if force {
