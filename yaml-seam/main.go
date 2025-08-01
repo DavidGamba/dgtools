@@ -48,6 +48,7 @@ func program(args []string) int {
 		opt.Description(`Key or index to descend to.
 Multiple keys allow to descend further.
 Indexes are positive integers.`))
+	read.Bool("hide-keys", false, opt.Alias("hk"), opt.Description("don't show keys in output"))
 	read.SetCommandFn(ReadRun)
 
 	split := opt.NewCommand("split", "split a multi document YAML file")
@@ -63,7 +64,7 @@ Indexes are positive integers.`))
 	join.String("output", "", opt.Required(), opt.Description("Output file"))
 	join.SetCommandFn(JoinRun)
 
-	opt.HelpCommand("help", opt.Alias("?"))
+	opt.HelpCommand("help", opt.Alias("h", "?"))
 	remaining, err := opt.Parse(args[1:])
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
@@ -119,6 +120,7 @@ func readInput(ctx context.Context, useStdIn bool, file string) ([]*yamlutils.YM
 func ReadRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	keys := opt.Value("key").([]string)
 	useStdIn := opt.Value("-").(bool)
+	hideKeys := opt.Value("hide-keys").(bool)
 
 	if len(args) < 1 && !useStdIn {
 		fmt.Fprintf(os.Stderr, "ERROR: missing <file> or STDIN input '-'\n")
@@ -153,7 +155,7 @@ func ReadRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 		for i, yml := range ymlList {
 			fmt.Printf("# %s %02d\n", file, i+1)
 			for _, xpath := range xpaths {
-				str, err := yml.GetString(false, xpath)
+				str, err := yml.GetString(!hideKeys, xpath)
 				if err != nil {
 					errorCount++
 					fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
