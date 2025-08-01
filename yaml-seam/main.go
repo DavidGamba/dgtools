@@ -42,7 +42,7 @@ func program(args []string) int {
 	opt.Bool("silent", false, opt.Description("Don't print full context errors."))
 
 	read := opt.NewCommand("read", "read a multi document yaml file")
-	read.HelpSynopsisArgs("<file>...")
+	read.HelpSynopsisArg("<file>...", "input file(s)")
 	read.Bool("-", false, opt.Description("Read from STDIN"))
 	read.StringSlice("key", 1, 99, opt.Alias("k"), opt.ArgName("key/index"),
 		opt.Description(`Key or index to descend to.
@@ -52,7 +52,7 @@ Indexes are positive integers.`))
 	read.SetCommandFn(ReadRun)
 
 	split := opt.NewCommand("split", "split a multi document YAML file")
-	split.HelpSynopsisArgs("<file>...")
+	split.HelpSynopsisArg("<file>...", "input file(s)")
 	split.Bool("-", false, opt.Description("Read from STDIN"))
 	split.Bool("force", false, opt.Description("Apply split"))
 	split.String("dir", "", opt.Description("Output directory to write files to. Defaults to same as source."))
@@ -63,7 +63,7 @@ If not used, the default name is the filename-<document-number>.yaml`))
 	split.SetCommandFn(SplitRun)
 
 	join := opt.NewCommand("join", "join multiple YAML files into a single multi document one")
-	join.HelpSynopsisArgs("<file>...")
+	join.HelpSynopsisArg("<file>...", "input file(s)")
 	join.String("output", "", opt.Required(), opt.Description("Output file"))
 	join.SetCommandFn(JoinRun)
 
