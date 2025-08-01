@@ -13,18 +13,6 @@ import (
 	"github.com/DavidGamba/go-getoptions"
 )
 
-type ExitError struct {
-	exitCode int
-}
-
-func (e *ExitError) Error() string {
-	return fmt.Sprintf("exit status %d", e.exitCode)
-}
-
-func (e *ExitError) ExitCode() int {
-	return e.exitCode
-}
-
 func BuildCMD(ctx context.Context, parent *getoptions.GetOpt) *getoptions.GetOpt {
 	cfg := config.ConfigFromContext(ctx)
 
@@ -126,7 +114,7 @@ func BuildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	}
 
 	if detailedExitcode && terraform.HasChanges {
-		eerr := &ExitError{exitCode: 2}
+		eerr := &terraform.ExitError{ExitCode: 2}
 		return fmt.Errorf("stack has changes: %w", eerr)
 	}
 

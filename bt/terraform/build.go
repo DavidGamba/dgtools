@@ -2,10 +2,8 @@ package terraform
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"runtime"
 
@@ -14,6 +12,14 @@ import (
 	"github.com/DavidGamba/go-getoptions/dag"
 	"github.com/mattn/go-isatty"
 )
+
+type ExitError struct {
+	ExitCode int
+}
+
+func (e *ExitError) Error() string {
+	return fmt.Sprintf("exit status %d", e.ExitCode)
+}
 
 var HasChanges = false
 
@@ -49,6 +55,9 @@ func BuildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	cfg := config.ConfigFromContext(ctx)
 	component := ComponentFromContext(ctx)
 	dir := DirFromContext(ctx)
+	stackContext := StackFromContext(ctx)
+
+	ctx = NewBuildContext(ctx, true)
 
 	ws, err := updateWSIfSelected(cfg.Config.DefaultTerraformProfile, cfg.Profile(profile), ws)
 	if err != nil {
@@ -129,18 +138,12 @@ func BuildRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 
 	err = g.Run(ctx, opt, args)
 	if err != nil {
-		var errs *dag.Errors
-		if errors.As(err, &errs) {
-			if len(errs.Errors) == 1 {
-				// If we are returning an exit code of 2 when asking for terraform plan's detailed-exitcode then pass that exit code
-				var eerr *exec.ExitError
-				if detailedExitcode && errors.As(errs.Errors[0], &eerr) && eerr.ExitCode() == 2 {
-					Logger.Printf("plan has changes\n")
-					return eerr
-				}
-			}
-		}
 		return fmt.Errorf("failed to run graph: %w", err)
+	}
+
+	if !stackContext && (detailedExitcode && HasChanges) {
+		eerr := &ExitError{ExitCode: 2}
+		return fmt.Errorf("build has changes: %w", eerr)
 	}
 
 	return nil

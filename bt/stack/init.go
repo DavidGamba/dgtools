@@ -50,7 +50,7 @@ func InitRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	wsFn := func(component, dir, ws string, variables []string) getoptions.CommandFn {
 		return func(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 			ctx = terraform.NewComponentContext(ctx, fmt.Sprintf("%s:%s", component, ws))
-			ctx = terraform.NewStackContext(ctx, true)
+			ctx = terraform.NewBuildContext(ctx, true)
 			d := filepath.Join(cfg.ConfigRoot, dir)
 			d, err = filepath.Rel(wd, d)
 			if err != nil {

@@ -54,10 +54,26 @@ type stackContextKey string
 
 const stackKey stackContextKey = "stack"
 
+// NewBuildContext - indicates if the operation is running inside a build command or independently.
+func NewBuildContext(ctx context.Context, value bool) context.Context {
+	return context.WithValue(ctx, stackKey, value)
+}
+
+// BuildFromContext - indicates if the operation is running inside a build command or independently.
+func BuildFromContext(ctx context.Context) bool {
+	v, ok := ctx.Value(stackKey).(bool)
+	if ok {
+		return v
+	}
+	return false
+}
+
+// NewStackContext - indicates if the operation is running inside a stack command or independently.
 func NewStackContext(ctx context.Context, value bool) context.Context {
 	return context.WithValue(ctx, stackKey, value)
 }
 
+// StackFromContext - indicates if the operation is running inside a stack command or independently.
 func StackFromContext(ctx context.Context) bool {
 	v, ok := ctx.Value(stackKey).(bool)
 	if ok {

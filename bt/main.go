@@ -103,9 +103,9 @@ func program(args []string) int {
 		if errors.As(err, &eerr) {
 			return eerr.ExitCode()
 		}
-		var serr *stack.ExitError
+		var serr *terraform.ExitError
 		if errors.As(err, &serr) {
-			return serr.ExitCode()
+			return serr.ExitCode
 		}
 		return 1
 	}
