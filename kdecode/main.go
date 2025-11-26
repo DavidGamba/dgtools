@@ -7,13 +7,10 @@ import (
 	"io"
 	"log"
 	"os"
-	"slices"
 
 	"github.com/DavidGamba/go-getoptions"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/cli-runtime/pkg/printers"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/kubernetes/scheme"
 )
 
 var Logger = log.New(os.Stderr, "", log.LstdFlags)
@@ -105,72 +102,9 @@ func Run(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 		return fmt.Errorf("failed to get secret: %w", err)
 	}
 	if output != "" {
-		var printer printers.ResourcePrinter
-		switch output {
-		case "yaml":
-			printer = &printers.YAMLPrinter{}
-		case "json":
-			printer = &printers.JSONPrinter{}
-		default:
-			return fmt.Errorf("unknown output format: %s", output)
-		}
-		printer = &printers.OmitManagedFieldsPrinter{Delegate: printer}
-		p := printers.NewTypeSetter(scheme.Scheme).ToPrinter(printer)
-		err := p.PrintObj(k8sSecret, os.Stdout)
-		if err != nil {
-			return err
-		}
-		fmt.Println()
-		return nil
+		return resourcePrint(output, k8sSecret, os.Stdout)
 	}
-
-	// sort output
-	dataKeys := []string{}
-	for k := range k8sSecret.Data {
-		dataKeys = append(dataKeys, k)
-	}
-	slices.Sort(dataKeys)
-	stringKeys := []string{}
-	for k := range k8sSecret.StringData {
-		stringKeys = append(stringKeys, k)
-	}
-	slices.Sort(stringKeys)
-
-	for _, k := range dataKeys {
-		v := k8sSecret.Data[k]
-		if (key != "" && k == key) || key == "" {
-			fmt.Printf("%s=", k)
-			if pem {
-				info, err := ParseCert(string(v))
-				if err != nil {
-					fmt.Printf("%s\n", string(v))
-					Logger.Printf("%s\n", err)
-				} else {
-					fmt.Printf("\n%s\n", info)
-				}
-			} else {
-				fmt.Printf("%s\n", string(v))
-			}
-		}
-	}
-
-	for _, k := range stringKeys {
-		v := k8sSecret.StringData[k]
-		if (key != "" && k == key) || key == "" {
-			fmt.Printf("%s=", k)
-			if pem {
-				info, err := ParseCert(v)
-				if err != nil {
-					fmt.Printf("%s\n", v)
-					Logger.Printf("%s\n", err)
-				} else {
-					fmt.Printf("\n%s\n", info)
-				}
-			} else {
-				fmt.Printf("%s\n", v)
-			}
-		}
-	}
+	SecretPrint(k8sSecret, pem, key)
 
 	return nil
 }
