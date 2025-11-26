@@ -19,7 +19,7 @@ type ExternalSecretWrapper struct {
 	Name           string
 	SecretStoreRef SecretStoreRef
 	Status         StatusConditions
-	Spec           interface{}
+	Spec           any
 }
 
 type SecretStoreRef struct {
@@ -31,9 +31,22 @@ type StatusConditions struct {
 	Reason string
 }
 
-// SecretStoreSpecWrapper provides version-agnostic access to SecretStore spec
+// SecretStoreSpecWrapper provides version-agnostic access to SecretStore spec and status
 type SecretStoreSpecWrapper struct {
-	Spec interface{}
+	Spec   any
+	Status SecretStoreStatus
+}
+
+type SecretStoreStatus struct {
+	Capabilities string
+	Conditions   []SecretStoreCondition
+}
+
+type SecretStoreCondition struct {
+	Type    string
+	Status  string
+	Reason  string
+	Message string
 }
 
 func ESChain(ctx context.Context, config *rest.Config, name, namespace, version string) error {
@@ -134,6 +147,14 @@ func ESChain(ctx context.Context, config *rest.Config, name, namespace, version 
 
 	fmt.Printf("\n--- %s: %s ---\n", secretStoreRefKind, secretStoreRefName)
 	fmt.Printf("%s\n", string(secretStoreYAML))
+
+	// Print status information
+	fmt.Printf("Capabilities: %s\n", ssWrapper.Status.Capabilities)
+
+	if len(ssWrapper.Status.Conditions) > 0 {
+		fmt.Printf("Conditions: %s\n", ssWrapper.Status.Conditions[0].Message)
+	}
+
 	return nil
 }
 
@@ -207,6 +228,15 @@ func convertSecretStore(unstructuredSS *unstructured.Unstructured, version, kind
 				return nil, err
 			}
 			wrapper.Spec = &css.Spec
+			wrapper.Status.Capabilities = string(css.Status.Capabilities)
+			for _, cond := range css.Status.Conditions {
+				wrapper.Status.Conditions = append(wrapper.Status.Conditions, SecretStoreCondition{
+					Type:    string(cond.Type),
+					Status:  string(cond.Status),
+					Reason:  string(cond.Reason),
+					Message: cond.Message,
+				})
+			}
 		} else {
 			ss := &esv1.SecretStore{}
 			err := runtime.DefaultUnstructuredConverter.FromUnstructured(
@@ -217,6 +247,15 @@ func convertSecretStore(unstructuredSS *unstructured.Unstructured, version, kind
 				return nil, err
 			}
 			wrapper.Spec = &ss.Spec
+			wrapper.Status.Capabilities = string(ss.Status.Capabilities)
+			for _, cond := range ss.Status.Conditions {
+				wrapper.Status.Conditions = append(wrapper.Status.Conditions, SecretStoreCondition{
+					Type:    string(cond.Type),
+					Status:  string(cond.Status),
+					Reason:  string(cond.Reason),
+					Message: cond.Message,
+				})
+			}
 		}
 
 	case "v1beta1":
@@ -230,6 +269,15 @@ func convertSecretStore(unstructuredSS *unstructured.Unstructured, version, kind
 				return nil, err
 			}
 			wrapper.Spec = &css.Spec
+			wrapper.Status.Capabilities = string(css.Status.Capabilities)
+			for _, cond := range css.Status.Conditions {
+				wrapper.Status.Conditions = append(wrapper.Status.Conditions, SecretStoreCondition{
+					Type:    string(cond.Type),
+					Status:  string(cond.Status),
+					Reason:  string(cond.Reason),
+					Message: cond.Message,
+				})
+			}
 		} else {
 			ss := &esv1beta1.SecretStore{}
 			err := runtime.DefaultUnstructuredConverter.FromUnstructured(
@@ -240,6 +288,15 @@ func convertSecretStore(unstructuredSS *unstructured.Unstructured, version, kind
 				return nil, err
 			}
 			wrapper.Spec = &ss.Spec
+			wrapper.Status.Capabilities = string(ss.Status.Capabilities)
+			for _, cond := range ss.Status.Conditions {
+				wrapper.Status.Conditions = append(wrapper.Status.Conditions, SecretStoreCondition{
+					Type:    string(cond.Type),
+					Status:  string(cond.Status),
+					Reason:  string(cond.Reason),
+					Message: cond.Message,
+				})
+			}
 		}
 
 	default:
