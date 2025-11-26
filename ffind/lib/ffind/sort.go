@@ -9,6 +9,7 @@
 package ffind
 
 import (
+	"io/fs"
 	"os"
 	"sort"
 	"strconv"
@@ -20,7 +21,7 @@ import (
 // TODO: Add sortFnByVersion that allows to sort by a number within the name string.
 
 // SortFn - takes a slice of os.FileInfo and sorts it.
-type SortFn func(a []os.FileInfo)
+type SortFn func(a []fs.FileInfo)
 
 // byName implements a num sorted sort.Interface.
 type byNum []os.FileInfo
@@ -41,12 +42,12 @@ func (f byNum) Less(i, j int) bool {
 
 // SortFnByNum - SortFn that returns a list sorted in numerical order in case
 // the full filename is a number. Otherwise, it does string comparison.
-func SortFnByNum(a []os.FileInfo) {
+func SortFnByNum(a []fs.FileInfo) {
 	sort.Sort(byNum(a))
 }
 
 // byName implements a name sorted sort.Interface.
-type byName []os.FileInfo
+type byName []fs.FileInfo
 
 func (f byName) Len() int      { return len(f) }
 func (f byName) Swap(i, j int) { f[i], f[j] = f[j], f[i] }
@@ -55,6 +56,6 @@ func (f byName) Less(i, j int) bool {
 }
 
 // SortFnByName - SortFn that does a simple string comparison to return a sorted list.
-func SortFnByName(a []os.FileInfo) {
+func SortFnByName(a []fs.FileInfo) {
 	sort.Sort(byName(a))
 }

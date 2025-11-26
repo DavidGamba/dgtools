@@ -22,37 +22,46 @@ Maybe build a list of common extensions in the skip code to allow for groups.
 For example: '.rb' and '.erb' for ruby files.
 
 • Follow Symlinks.
-  • Is there a case where you don't want to? Allow disabling the follow anyway.
+  - Is there a case where you don't want to? Allow disabling the follow anyway.
 
 • Ignore hidden files (configurable).
 
-  • In windows?
+  - In windows?
 
-  • In Linux, ignore files starting with .
+  - In Linux, ignore files starting with .
 
 • Ignore git, svn and mercurial files (configurable).
-
 */
 package ffind
 
 import (
+	"errors"
+	"io/fs"
 	"os"
 	"path/filepath"
 )
 
 // FileError - Struct containing the File and Error information.
 type FileError struct {
-	FileInfo os.FileInfo
+	FileInfo fs.FileInfo
 	Path     string
 	Error    error
 }
 
 // NewFileError - Given a filepath returns a FileError struct.
-func NewFileError(path string) (*FileError, error) {
-	Logger.Printf("NewFileError: %s", path)
-	fInfo, err := os.Lstat(path)
+func NewFileError(fsys fs.FS, path string) (*FileError, error) {
+	Logger.Printf("NewFileError: %s\n", path)
+	ee, err := fs.ReadDir(fsys, ".")
 	if err != nil {
-		Logger.Printf("NewFileError ERROR: %s", err)
+		return nil, err
+	}
+	for _, e := range ee {
+		Logger.Printf("\tEntry: %s\n", e.Name())
+	}
+
+	fInfo, err := fs.Lstat(fsys, path)
+	if err != nil {
+		Logger.Printf("NewFileError ERROR: %s\n", err)
 		if os.IsNotExist(err) {
 			// Clean up error context
 			err = os.ErrNotExist
@@ -66,36 +75,63 @@ func (fe *FileError) IsSymlink() bool {
 	return fe.FileInfo.Mode()&os.ModeSymlink != 0
 }
 
-// ReadDirNoSort - Same as ioutil/ReadDir but doesn't sort results.
-// It also cleans up the error from the open call.
+// ReadDirNoSort - Same as fs/ReadDir but doesn't sort results.
 //
-//   Taken from https://golang.org/src/io/ioutil/ioutil.go
-//   Copyright 2009 The Go Authors. All rights reserved.
-//   Use of this source code is governed by a BSD-style
-//   license that can be found in the LICENSE file.
-func ReadDirNoSort(dirname string) ([]os.FileInfo, error) {
-	f, err := os.Open(dirname)
-	if err != nil {
-		Logger.Printf("ReadDirNoSort ERROR: %s", err)
-		if os.IsPermission(err) {
-			// Clean up error context to make the output nicer
-			err = os.ErrPermission
+//	Taken from https://golang.org/src/io/fs/readdir.go
+//	Copyright 2020 The Go Authors. All rights reserved.
+//	Use of this source code is governed by a BSD-style
+//	license that can be found in the LICENSE file.
+//
+// func ReadDirNoSort(fsys fs.FS, name string) ([]fs.DirEntry, error) {
+func ReadDirNoSort(fsys fs.FS, name string) ([]fs.FileInfo, error) {
+	if fsys, ok := fsys.(fs.ReadDirFS); ok {
+		list, err := fsys.ReadDir(name)
+		// TODO
+		if err != nil {
+			return nil, err
 		}
-		return nil, err
+		entries := []fs.FileInfo{}
+		for _, e := range list {
+			info, _ := e.Info()
+			entries = append(entries, info)
+		}
+		// TODO: Convert back to direntry
+
+		return entries, err
 	}
-	list, err := f.Readdir(-1)
-	f.Close()
+	file, err := fsys.Open(name)
 	if err != nil {
 		return nil, err
 	}
-	return list, nil
+	defer file.Close()
+
+	dir, ok := file.(fs.ReadDirFile)
+	if !ok {
+		return nil, &fs.PathError{Op: "readdir", Path: name, Err: errors.New("not implemented")}
+	}
+
+	list, err := dir.ReadDir(-1)
+	if err != nil {
+		return nil, err
+	}
+	entries := []fs.FileInfo{}
+	for _, e := range list {
+		info, _ := e.Info()
+		entries = append(entries, info)
+	}
+	// TODO: Convert back to direntry
+
+	return entries, err
 }
 
 // ListOneLevel - will return a one level list of FileError results under `path`.
 func ListOneLevel(path string, follow bool, sortFn SortFn) <-chan FileError {
+
+	fsys := os.DirFS(".")
+
 	// Error gets passed to fe.Error, OK to ignore.
-	fe, _ := NewFileError(path)
-	return listOneLevel(fe, follow, sortFn)
+	fe, _ := NewFileError(fsys, path)
+	return listOneLevel(fsys, fe, follow, sortFn)
 }
 
 // listOneLevel - will return a one level list of files under `FileError`.
@@ -104,6 +140,7 @@ func ListOneLevel(path string, follow bool, sortFn SortFn) <-chan FileError {
 // If `file` is a symlink and we are following symlinks, will return a FileError channel with the readlink file.
 // If `file` is a dir, will return a FileError channel with one level list under the dir.
 func listOneLevel(
+	fsys fs.FS,
 	fe *FileError,
 	follow bool,
 	sortFn SortFn) <-chan FileError {
@@ -132,7 +169,7 @@ func listOneLevel(
 				close(c)
 				return
 			}
-			nfe, err = NewFileError(eval)
+			nfe, err = NewFileError(fsys, eval)
 			// TODO: Figure out how to add a test for this!
 			if err != nil {
 				Logger.Printf("NewFileError error: %s", err)
@@ -145,7 +182,7 @@ func listOneLevel(
 		}
 		if nfe.FileInfo.IsDir() {
 			Logger.Printf("\tDir: %s\n", fInfo.Name())
-			fileMatches, err := ReadDirNoSort(file)
+			fileMatches, err := ReadDirNoSort(fsys, file)
 			if err != nil {
 				c <- FileError{fInfo, filepath.Join(filepath.Dir(file), fInfo.Name()), err}
 				close(c)
@@ -173,8 +210,10 @@ func listOneLevel(
 func ListRecursive(path string,
 	follow bool,
 	s FileMatcher, sortFn SortFn) <-chan FileError {
-	fe, _ := NewFileError(path)
-	return listRecursive(fe, follow, s, sortFn)
+
+	fsys := os.DirFS(".")
+	fe, _ := NewFileError(fsys, path)
+	return listRecursive(fsys, fe, follow, s, sortFn)
 }
 
 // listRecursive - will return a recursive list of files under `file`.
@@ -182,7 +221,7 @@ func ListRecursive(path string,
 // If `file` is a symlink and we are not following symlinks, will return a FileError channel with itself.
 // If `file` is a symlink and we are following symlinks, will return a FileError channel with the readlink file.
 // If `file` is a dir, will return a FileError channel with one level list under the dir.
-func listRecursive(fe *FileError, follow bool, s FileMatcher, sortFn SortFn) <-chan FileError {
+func listRecursive(fsys fs.FS, fe *FileError, follow bool, s FileMatcher, sortFn SortFn) <-chan FileError {
 	c := make(chan FileError)
 	go func() {
 		if fe.Error != nil {
@@ -192,7 +231,7 @@ func listRecursive(fe *FileError, follow bool, s FileMatcher, sortFn SortFn) <-c
 			return
 		}
 		Logger.Printf("Query: %s", fe.Path)
-		ch := listOneLevel(fe, follow, sortFn)
+		ch := listOneLevel(fsys, fe, follow, sortFn)
 		for e := range ch {
 			Logger.Printf("\tReceived: %s", e.FileInfo.Name())
 			if e.Error != nil {
@@ -216,7 +255,7 @@ func listRecursive(fe *FileError, follow bool, s FileMatcher, sortFn SortFn) <-c
 						e.Error = err
 						return
 					}
-					ne, err = NewFileError(eval)
+					ne, err = NewFileError(fsys, eval)
 					if err != nil {
 						Logger.Printf("\tNew Error received: %s", err)
 						e.Error = err
@@ -236,7 +275,7 @@ func listRecursive(fe *FileError, follow bool, s FileMatcher, sortFn SortFn) <-c
 					Logger.Printf("DIR: %s - %s", e.Path, ne.Path)
 					c <- e
 				}
-				cr := listRecursive(&e, follow, s, sortFn)
+				cr := listRecursive(fsys, &e, follow, s, sortFn)
 				for e := range cr {
 					Logger.Printf("Recurse: %s", e.Path)
 					c <- e
