@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	esv1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1"
 	esv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -13,7 +14,29 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-func ESChain(ctx context.Context, config *rest.Config, name, namespace string) error {
+// ExternalSecretWrapper provides version-agnostic access to ExternalSecret fields
+type ExternalSecretWrapper struct {
+	Name           string
+	SecretStoreRef SecretStoreRef
+	Status         StatusConditions
+	Spec           interface{}
+}
+
+type SecretStoreRef struct {
+	Name string
+	Kind string
+}
+
+type StatusConditions struct {
+	Reason string
+}
+
+// SecretStoreSpecWrapper provides version-agnostic access to SecretStore spec
+type SecretStoreSpecWrapper struct {
+	Spec interface{}
+}
+
+func ESChain(ctx context.Context, config *rest.Config, name, namespace, version string) error {
 	// Get ExternalSecret using dynamic client
 	dynamicClient, err := dynamic.NewForConfig(config)
 	if err != nil {
@@ -23,7 +46,7 @@ func ESChain(ctx context.Context, config *rest.Config, name, namespace string) e
 	// Define the GVR for ExternalSecret
 	externalSecretGVR := schema.GroupVersionResource{
 		Group:    "external-secrets.io",
-		Version:  "v1beta1",
+		Version:  version,
 		Resource: "externalsecrets",
 	}
 
@@ -35,31 +58,27 @@ func ESChain(ctx context.Context, config *rest.Config, name, namespace string) e
 		return fmt.Errorf("failed to get ExternalSecret: %w", err)
 	}
 
-	// Convert unstructured to typed ExternalSecret
-	externalSecret := &esv1beta1.ExternalSecret{}
-	err = runtime.DefaultUnstructuredConverter.FromUnstructured(
-		unstructuredES.UnstructuredContent(),
-		externalSecret,
-	)
+	// Convert to version-specific type
+	esWrapper, err := convertExternalSecret(unstructuredES, version)
 	if err != nil {
 		return fmt.Errorf("failed to convert ExternalSecret: %w", err)
 	}
 
 	// Marshal ExternalSecret to YAML
-	yamlData, err := marshalTrim(externalSecret.Spec)
+	yamlData, err := marshalTrim(esWrapper.Spec)
 	if err != nil {
 		return fmt.Errorf("failed to marshal ExternalSecret to YAML: %w", err)
 	}
 
-	fmt.Printf("\n--- ExternalSecret: %s ---\n", externalSecret.Name)
+	fmt.Printf("\n--- ExternalSecret: %s ---\n", esWrapper.Name)
 	fmt.Printf("%s\n", string(yamlData))
-	if len(externalSecret.Status.Conditions) > 0 {
-		fmt.Printf("Status: %s\n", externalSecret.Status.Conditions[0].Reason)
+	if esWrapper.Status.Reason != "" {
+		fmt.Printf("Status: %s\n", esWrapper.Status.Reason)
 	}
 
 	// Get SecretStore using externalSecret.Spec.SecretStoreRef.Name
-	secretStoreRefName := externalSecret.Spec.SecretStoreRef.Name
-	secretStoreRefKind := externalSecret.Spec.SecretStoreRef.Kind
+	secretStoreRefName := esWrapper.SecretStoreRef.Name
+	secretStoreRefKind := esWrapper.SecretStoreRef.Kind
 
 	// Determine the resource based on kind (SecretStore or ClusterSecretStore)
 	var secretStoreGVR schema.GroupVersionResource
@@ -68,7 +87,7 @@ func ESChain(ctx context.Context, config *rest.Config, name, namespace string) e
 	if secretStoreRefKind == "ClusterSecretStore" {
 		secretStoreGVR = schema.GroupVersionResource{
 			Group:    "external-secrets.io",
-			Version:  "v1beta1",
+			Version:  version,
 			Resource: "clustersecretstores",
 		}
 		secretStoreNamespace = "" // ClusterSecretStore is cluster-scoped
@@ -76,7 +95,7 @@ func ESChain(ctx context.Context, config *rest.Config, name, namespace string) e
 		// Default to SecretStore
 		secretStoreGVR = schema.GroupVersionResource{
 			Group:    "external-secrets.io",
-			Version:  "v1beta1",
+			Version:  version,
 			Resource: "secretstores",
 		}
 		secretStoreNamespace = namespace
@@ -101,33 +120,14 @@ func ESChain(ctx context.Context, config *rest.Config, name, namespace string) e
 		return fmt.Errorf("failed to get %s: %w", secretStoreRefKind, secretStoreErr)
 	}
 
-	// Convert unstructured to typed SecretStore or ClusterSecretStore to access spec
-	var secretStoreSpec *esv1beta1.SecretStoreSpec
-
-	if secretStoreRefKind == "ClusterSecretStore" {
-		clusterSecretStore := &esv1beta1.ClusterSecretStore{}
-		err = runtime.DefaultUnstructuredConverter.FromUnstructured(
-			unstructuredSS.UnstructuredContent(),
-			clusterSecretStore,
-		)
-		if err != nil {
-			return fmt.Errorf("failed to convert ClusterSecretStore: %w", err)
-		}
-		secretStoreSpec = &clusterSecretStore.Spec
-	} else {
-		secretStore := &esv1beta1.SecretStore{}
-		err = runtime.DefaultUnstructuredConverter.FromUnstructured(
-			unstructuredSS.UnstructuredContent(),
-			secretStore,
-		)
-		if err != nil {
-			return fmt.Errorf("failed to convert SecretStore: %w", err)
-		}
-		secretStoreSpec = &secretStore.Spec
+	// Convert to version-specific type
+	ssWrapper, err := convertSecretStore(unstructuredSS, version, secretStoreRefKind)
+	if err != nil {
+		return fmt.Errorf("failed to convert %s: %w", secretStoreRefKind, err)
 	}
 
 	// Marshal SecretStore spec to YAML
-	secretStoreYAML, err := marshalTrim(secretStoreSpec)
+	secretStoreYAML, err := marshalTrim(ssWrapper.Spec)
 	if err != nil {
 		return fmt.Errorf("failed to marshal %s to YAML: %w", secretStoreRefKind, err)
 	}
@@ -135,4 +135,116 @@ func ESChain(ctx context.Context, config *rest.Config, name, namespace string) e
 	fmt.Printf("\n--- %s: %s ---\n", secretStoreRefKind, secretStoreRefName)
 	fmt.Printf("%s\n", string(secretStoreYAML))
 	return nil
+}
+
+// convertExternalSecret converts unstructured ExternalSecret to version-specific wrapper
+func convertExternalSecret(unstructuredES *unstructured.Unstructured, version string) (*ExternalSecretWrapper, error) {
+	wrapper := &ExternalSecretWrapper{}
+
+	switch version {
+	case "v1":
+		es := &esv1.ExternalSecret{}
+		err := runtime.DefaultUnstructuredConverter.FromUnstructured(
+			unstructuredES.UnstructuredContent(),
+			es,
+		)
+		if err != nil {
+			return nil, err
+		}
+		wrapper.Name = es.Name
+		wrapper.SecretStoreRef = SecretStoreRef{
+			Name: es.Spec.SecretStoreRef.Name,
+			Kind: es.Spec.SecretStoreRef.Kind,
+		}
+		wrapper.Spec = es.Spec
+		if len(es.Status.Conditions) > 0 {
+			wrapper.Status = StatusConditions{
+				Reason: string(es.Status.Conditions[0].Reason),
+			}
+		}
+
+	case "v1beta1":
+		es := &esv1beta1.ExternalSecret{}
+		err := runtime.DefaultUnstructuredConverter.FromUnstructured(
+			unstructuredES.UnstructuredContent(),
+			es,
+		)
+		if err != nil {
+			return nil, err
+		}
+		wrapper.Name = es.Name
+		wrapper.SecretStoreRef = SecretStoreRef{
+			Name: es.Spec.SecretStoreRef.Name,
+			Kind: es.Spec.SecretStoreRef.Kind,
+		}
+		wrapper.Spec = es.Spec
+		if len(es.Status.Conditions) > 0 {
+			wrapper.Status = StatusConditions{
+				Reason: string(es.Status.Conditions[0].Reason),
+			}
+		}
+
+	default:
+		return nil, fmt.Errorf("unsupported version: %s", version)
+	}
+
+	return wrapper, nil
+}
+
+// convertSecretStore converts unstructured SecretStore/ClusterSecretStore to version-specific wrapper
+func convertSecretStore(unstructuredSS *unstructured.Unstructured, version, kind string) (*SecretStoreSpecWrapper, error) {
+	wrapper := &SecretStoreSpecWrapper{}
+
+	switch version {
+	case "v1":
+		if kind == "ClusterSecretStore" {
+			css := &esv1.ClusterSecretStore{}
+			err := runtime.DefaultUnstructuredConverter.FromUnstructured(
+				unstructuredSS.UnstructuredContent(),
+				css,
+			)
+			if err != nil {
+				return nil, err
+			}
+			wrapper.Spec = &css.Spec
+		} else {
+			ss := &esv1.SecretStore{}
+			err := runtime.DefaultUnstructuredConverter.FromUnstructured(
+				unstructuredSS.UnstructuredContent(),
+				ss,
+			)
+			if err != nil {
+				return nil, err
+			}
+			wrapper.Spec = &ss.Spec
+		}
+
+	case "v1beta1":
+		if kind == "ClusterSecretStore" {
+			css := &esv1beta1.ClusterSecretStore{}
+			err := runtime.DefaultUnstructuredConverter.FromUnstructured(
+				unstructuredSS.UnstructuredContent(),
+				css,
+			)
+			if err != nil {
+				return nil, err
+			}
+			wrapper.Spec = &css.Spec
+		} else {
+			ss := &esv1beta1.SecretStore{}
+			err := runtime.DefaultUnstructuredConverter.FromUnstructured(
+				unstructuredSS.UnstructuredContent(),
+				ss,
+			)
+			if err != nil {
+				return nil, err
+			}
+			wrapper.Spec = &ss.Spec
+		}
+
+	default:
+		return nil, fmt.Errorf("unsupported version: %s", version)
+	}
+
+	return wrapper, nil
 }

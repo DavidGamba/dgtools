@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/DavidGamba/go-getoptions"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -114,7 +115,10 @@ func Run(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	if len(k8sSecret.OwnerReferences) > 0 {
 		ownerRef := k8sSecret.OwnerReferences[0]
 		if ownerRef.Kind == "ExternalSecret" {
-			ESChain(ctx, config, ownerRef.Name, namespace)
+			err = ESChain(ctx, config, ownerRef.Name, namespace, strings.TrimPrefix(ownerRef.APIVersion, "external-secrets.io/"))
+			if err != nil {
+				return fmt.Errorf("failed to get ES chain: %w", err)
+			}
 		}
 	}
 
