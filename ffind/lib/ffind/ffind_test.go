@@ -10,7 +10,7 @@ package ffind
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -29,7 +29,7 @@ func goToRootDir() {
 	}
 	cwd, _ = os.Getwd()
 	log.Printf("CWD: %s", cwd)
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 }
 
 func compareTestStringSlices(t *testing.T, expected []string, received []string) {
@@ -55,7 +55,7 @@ func compareTestStringSlices(t *testing.T, expected []string, received []string)
 }
 
 func TestNewFileError(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	// log.SetOutput(os.Stderr)
 	goToRootDir()
 	file := "./test_files/test_tree"
@@ -79,7 +79,7 @@ func TestNewFileError(t *testing.T) {
 
 // Make sure filepath.EvalSymlinks behaves as expected.
 func TestEvalSymlink(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	goToRootDir()
 
 	cases := []struct {
@@ -112,7 +112,7 @@ func TestEvalSymlink(t *testing.T) {
 }
 
 func TestListOneLevel(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	// log.SetOutput(os.Stderr)
 	goToRootDir()
 	cases := []struct {
@@ -367,7 +367,7 @@ var listRecursiveCases = []struct {
 }
 
 func TestListRecursive(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	// log.SetOutput(os.Stderr)
 	goToRootDir()
 	for _, c := range listRecursiveCases {

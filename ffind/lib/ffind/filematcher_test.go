@@ -9,7 +9,7 @@
 package ffind
 
 import (
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"testing"
@@ -17,7 +17,7 @@ import (
 
 func TestBasicFileMatcher(t *testing.T) {
 	log.SetOutput(os.Stderr)
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 
 	// TODO: Windows test
 	t.Run("nameIsHidden", func(t *testing.T) {
@@ -52,7 +52,7 @@ func TestBasicFileMatcher(t *testing.T) {
 			t.Fatal("Wrong filename matched")
 		}
 	})
-	// log.SetOutput(ioutil.Discard)
+	// log.SetOutput(io.Discard)
 
 	// log.SetOutput(os.Stderr)
 	t.Run("MatchFileExtensionList", func(t *testing.T) {
@@ -69,7 +69,7 @@ func TestBasicFileMatcher(t *testing.T) {
 			t.Fatal("Wrong filename matched")
 		}
 	})
-	// log.SetOutput(ioutil.Discard)
+	// log.SetOutput(io.Discard)
 
 	// log.SetOutput(os.Stderr)
 	t.Run("IgnoreFileTypeList", func(t *testing.T) {
@@ -86,7 +86,7 @@ func TestBasicFileMatcher(t *testing.T) {
 			t.Fatal("Wrong filename matched")
 		}
 	})
-	// log.SetOutput(ioutil.Discard)
+	// log.SetOutput(io.Discard)
 
 	// log.SetOutput(os.Stderr)
 	t.Run("IgnoreFileTypeList", func(t *testing.T) {
@@ -100,5 +100,5 @@ func TestBasicFileMatcher(t *testing.T) {
 			t.Fatal("Wrong extension matched")
 		}
 	})
-	// log.SetOutput(ioutil.Discard)
+	// log.SetOutput(io.Discard)
 }

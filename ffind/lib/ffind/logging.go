@@ -9,8 +9,8 @@
 package ffind
 
 import (
-	"io/ioutil"
+	"io"
 	"log"
 )
 
-var Logger = log.New(ioutil.Discard, "", 0)
+var Logger = log.New(io.Discard, "", 0)
