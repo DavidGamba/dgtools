@@ -1,10 +1,136 @@
-= ffind(1)
-David Gamba, DavidGamba at gmail.com
-:doctype: manpage
+= ffind: Fast Regex Find, faster common Find searches using the power of Golang’s Regex engine
 
-== NAME
+ffind allows you query your filesystem in whatever way you are thinking without forcing a given order.
+This command focuses on the most common find searches.
+They are optimized for typing speed as not to interrupt your thought process.
 
-ffind - Fast Regex Find, faster common Find searches using the power of Golang’s Regex engine
+Instead of typing `find . -iname \'\*pattern*\'` or `find -regextype some_type -regex \'^.\*?pattern.*$'` you can simply type `ffind pattern`.
+
+More obscure searches are probably better suited to find, but you have to deal with that syntax so...
+
+This command is also only intended for search, not execution.
+Once you find the files you are looking for, pipe the output if you want to execute a command on them.
+
+For example, I want to find a file or directory with the word `info` in the name:
+
+----
+$ ffind info
+dir-a/info.txt
+dir-a/lab-info.txt
+other-dir-b/info.txt
+other-dir-b/lab-info.txt
+----
+
+Now I want to limit the results to only `dir-a`:
+
+----
+$ ffind info dir-a/
+dir-a/info.txt
+dir-a/lab-info.txt
+----
+
+It works the other way around too, I want to list all files under `dir-a`:
+
+----
+$ ffind dir-a/
+dir-a/another-file.txt
+dir-a/info.txt
+dir-a/lab-info.txt
+dir-a/readme.txt
+dir-a/start-here.txt
+----
+
+And now I want to filter the results to only those matching the word `info`:
+
+----
+$ ffind dir-a/ info
+dir-a/info.txt
+dir-a/lab-info.txt
+----
+
+== EXAMPLES
+
+Search for a file or directory with the word info in its name::
+ffind info
+
+Search for a file with the word info in its filename::
+ffind info -t f
+
+Search for a directory with the word info in its dirname::
+ffind info -t d
+
+Search in your home dir for a file or directory with the word info in its name::
+ffind info +'~'+
+
+== Installation
+
+[NOTE]
+====
+`zsh` will auto remove the trailing slash (`/`) out of a file path argument.
+ffind's usefulness diminishes if you manually have to input the trailing slash.
+
+Add the following to your `~/.zshrc` to remove that behaviour:
+
+[source, zsh]
+----
+setopt no_auto_remove_slash
+----
+====
+
+* Install using homebrew:
++
+----
+brew tap DavidGamba/dgtools https://github.com/DavidGamba/dgtools
+brew install DavidGamba/dgtools/ffind
+----
++
+[NOTE]
+====
+Completion is auto setup for bash.
+
+For `zsh` completions, an additional step is required, add the following to your `.zshrc`:
+
+[source, zsh]
+----
+setopt no_auto_remove_slash
+export ZSHELL="true"
+source "$(brew --prefix)/share/zsh/site-functions/dgtools.ffind.zsh"
+----
+====
++
+Upgrade with:
++
+----
+brew update
+brew upgrade ffind
+----
+
+* Install using go:
++
+Install the binary into your `~/go/bin`:
++
+----
+go install github.com/DavidGamba/dgtools/ffind@latest
+----
++
+Then setup the completion.
++
+For bash:
++
+----
+complete -o default -C ffind ffind
+----
++
+For zsh:
++
+[source, zsh]
+----
+export ZSHELL="true"
+setopt no_auto_remove_slash
+autoload -U +X compinit && compinit
+autoload -U +X bashcompinit && bashcompinit
+complete -o default -C ffind ffind
+----
 
 == SYNOPSIS
 
@@ -60,18 +186,6 @@ ffind - Fast Regex Find, faster common Find searches using the power of Golang�
 === TODO
 
 [*--color* 'never'|'auto'|'always']
-
-
-== DESCRIPTION
-
-This command focuses on the most common find searches.
-They are optimized for typing speed as not to interrupt your thought process.
-
-Instead of typing "find . -iname \'\*pattern*\'" or "find -regextype some_type -regex \'^.\*?pattern.*$'" you can simply type "ffind pattern".
-
-More obscure searches are probably better suited to find, but you have to deal with that syntax so...
-
-This command is also only intended to search for files, once you find them, pipe the output if you want to execute a command on them.
 
 == OPTIONS
 
@@ -134,21 +248,6 @@ Show short help.
 *--color* 'never'|'auto'|'always'::
 Select color use: 'never', 'auto' (default), 'always'.
 
-
-== EXAMPLES
-
-Search for a file or directory with the word info in its name::
-ffind info
-
-Search for a file with the word info in its filename::
-ffind info -t f
-
-Search for a directory with the word info in its dirname::
-ffind info -t d
-
-Search in your home dir for a file or directory with the word info in its name::
-ffind info +'~'+
-
 == ROADMAP
 
 Exclude directory::
@@ -165,14 +264,6 @@ Will not return sorted results but will speed up response.
 Version Sort::
 Only numerical sort is implemented (the whole filename is a number).
 Look into providing version sort for filenames.
-
-== VERSION
-
-0.6.2
-
-== SOURCE CODE
-
-github: https://github.com/DavidGamba/dgtools/ffind
 
 == LICENSE
 
