@@ -15,18 +15,17 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
 	"strings"
 
 	"github.com/DavidGamba/dgtools/trees"
-	"gopkg.in/yaml.v2"
+	"go.yaml.in/yaml/v4"
 )
 
 // Logger - Custom lib logger
-var Logger = log.New(ioutil.Discard, "yamlutils ", log.LstdFlags)
+var Logger = log.New(io.Discard, "yamlutils ", log.LstdFlags)
 
 // ErrInvalidParentType - The parent type is invalid.
 var ErrInvalidParentType = fmt.Errorf("invalid parent type, must be list or key/value")
@@ -36,7 +35,7 @@ var ErrInvalidChildTypeKeyValue = fmt.Errorf("invalid child type, must be 'key: 
 
 // YML object
 type YML struct {
-	Tree interface{}
+	Tree any
 }
 
 // NewFromFile returns a list of pointers to a YML object from a file.
@@ -52,7 +51,7 @@ func NewFromFile(filename string) ([]*YML, error) {
 
 	decoder := yaml.NewDecoder(fh)
 	for {
-		var tree interface{}
+		var tree any
 		err = decoder.Decode(&tree)
 		if err != nil {
 			if !errors.Is(err, io.EOF) {
@@ -73,7 +72,7 @@ func NewFromReader(reader io.Reader) ([]*YML, error) {
 	list := []*YML{}
 	decoder := yaml.NewDecoder(reader)
 	for {
-		var tree interface{}
+		var tree any
 		err := decoder.Decode(&tree)
 		if err != nil {
 			if !errors.Is(err, io.EOF) {
@@ -88,7 +87,7 @@ func NewFromReader(reader io.Reader) ([]*YML, error) {
 
 // NewFromString - returns a pointer to a YML object from a string.
 func NewFromString(str string) (*YML, error) {
-	var tree interface{}
+	var tree any
 	err := yaml.Unmarshal([]byte(str), &tree)
 	if err != nil {
 		return nil, err
@@ -152,10 +151,10 @@ func (y *YML) AddString(keys []string, input string) (string, error) {
 	return string(out), nil
 }
 
-func AddChild(m *interface{}, child string) error {
-	Logger.Printf("AddChild: %v", *m)
+func AddChild(m *any, child string) error {
+	Logger.Printf("AddChild: %v += %v", *m, child)
 	// Logger.Printf("type: %v\n", reflect.TypeOf(*m))
-	var tree interface{}
+	var tree any
 	err := yaml.Unmarshal([]byte(child), &tree)
 	if err != nil {
 		return err
@@ -164,18 +163,27 @@ func AddChild(m *interface{}, child string) error {
 		return fmt.Errorf("%w", ErrInvalidParentType)
 	}
 	switch (*m).(type) {
-	case map[interface{}]interface{}:
+	case map[any]any:
 		Logger.Printf("AddChild: map type")
-		if t, ok := tree.(map[interface{}]interface{}); ok {
+		Logger.Printf("value %v\n", tree)
+		if t, ok := tree.(map[any]any); ok {
 			for k, v := range t {
-				(*m).(map[interface{}]interface{})[k] = v
+				// not importing maps.Copy for a single line
+				(*m).(map[any]any)[k] = v
 			}
 			return nil
 		}
-		return fmt.Errorf("%w", ErrInvalidChildTypeKeyValue)
-	case []interface{}:
+		// maps.Copy can't copy map[string]any to a map[any]any
+		if t, ok := tree.(map[string]any); ok {
+			for k, v := range t {
+				(*m).(map[any]any)[k] = v
+			}
+			return nil
+		}
+		return fmt.Errorf("%w: %T", ErrInvalidChildTypeKeyValue, tree)
+	case []any:
 		Logger.Printf("AddChild: slice/array type")
-		r := append((*m).([]interface{}), tree)
+		r := append((*m).([]any), tree)
 		*m = r
 		return nil
 	default:
@@ -184,7 +192,7 @@ func AddChild(m *interface{}, child string) error {
 	}
 }
 
-func AddChildToTree(parent *interface{}, current *interface{}, p []string, child string) error {
+func AddChildToTree(parent *any, current *any, p []string, child string) error {
 	path := strings.Join(p, "/")
 	Logger.Printf("AddChildToTree: Input path: '%s'", path)
 	if len(p) <= 0 {
@@ -197,7 +205,7 @@ func AddChildToTree(parent *interface{}, current *interface{}, p []string, child
 		return nil
 	}
 	switch t := (*current).(type) {
-	case map[interface{}]interface{}:
+	case map[any]any:
 		Logger.Printf("AddChildToTree: map type")
 		e, ok := t[p[0]]
 		if !ok {
@@ -207,9 +215,9 @@ func AddChildToTree(parent *interface{}, current *interface{}, p []string, child
 		if err != nil {
 			return err
 		}
-		(*current).(map[interface{}]interface{})[p[0]] = e
+		(*current).(map[any]any)[p[0]] = e
 		return nil
-	case []interface{}:
+	case []any:
 		Logger.Printf("AddChildToTree: slice/array type")
 		index, err := strconv.Atoi(p[0])
 		if err != nil {
