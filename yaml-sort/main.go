@@ -26,8 +26,10 @@ func program(args []string) int {
 	opt.SetUnknownMode(getoptions.Pass)
 	opt.Bool("verbose", false)
 
+	opt.Bool("-", false, opt.Description("Read from STDIN"))
+	opt.Bool("array-sort", false, opt.Description("Sort Array elements (WARNING: changes data ordering)"))
 	opt.SetCommandFn(Run)
-	opt.HelpSynopsisArg("<yaml_file>", "yaml file to sort")
+	opt.HelpSynopsisArg("[<yaml_file>]", "yaml file to sort")
 
 	opt.HelpCommand("help", opt.Alias("?"))
 	remaining, err := opt.Parse(args[1:])
@@ -58,13 +60,21 @@ func program(args []string) int {
 }
 
 func Run(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
-	filename, _, err := opt.GetRequiredArg(args)
-	if err != nil {
-		return err
+	useStdIn := opt.Value("-").(bool)
+	arraySort := opt.Value("array-sort").(bool)
+
+	filename := "-"
+	var err error
+
+	if !useStdIn {
+		filename, _, err = opt.GetRequiredArg(args)
+		if err != nil {
+			return err
+		}
 	}
 
 	Logger.Printf("Sorting file %q", filename)
-	yaml, err := yamlutils.NewFromFile(filename)
+	yaml, err := yamlutils.NewFromFileOrSTDIN(useStdIn, filename)
 	if err != nil {
 		return fmt.Errorf("reading yaml file: %w", err)
 	}
@@ -72,12 +82,14 @@ func Run(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 		return fmt.Errorf("no YAML documents found in file")
 	}
 	Logger.Printf("yaml: %v", yaml[0].Tree)
-	printSortedTree(yaml[0].Tree, 0, false, false)
+	printSortedTree(yaml[0].Tree, 0, arraySort, false, false)
 
 	return nil
 }
 
-func printSortedTree(tree any, level int, arrayKey, arrayElement bool) {
+// printSortedTree - sorts map keys at any level of the tree
+// It doesn't sort array elements because that changes the meaning of the ordering of the data.
+func printSortedTree(tree any, level int, arraySort, arrayKey, arrayElement bool) {
 	spacing := level * 3
 	if arrayElement {
 		spacing = (level * 3) - 2
@@ -102,17 +114,57 @@ func printSortedTree(tree any, level int, arrayKey, arrayElement bool) {
 			}
 			switch v.(type) {
 			case string, bool, int, int64, float64, nil:
-				printSortedTree(v, 0, false, arrayElement)
+				printSortedTree(v, 0, arraySort, false, arrayElement)
 			default:
 				fmt.Println()
-				printSortedTree(v, level+1, false, arrayElement)
+				printSortedTree(v, level+1, arraySort, false, arrayElement)
 			}
 		}
 	case []any:
 		Logger.Printf("NavigateTree: slice/array type")
+		// We shouldn't always sort arrays because sorting them can actually change the underlying meaning of data
+		if arraySort {
+			keys := []string{}
+			m := map[string]struct {
+				T string
+				V any
+			}{}
+			sortable := true
+			for i, v := range tree {
+				switch v := v.(type) {
+				case string:
+					if _, ok := m[v]; !ok {
+						keys = append(keys, v)
+						m[v] = struct {
+							T string
+							V any
+						}{T: "string", V: v}
+					} else {
+						k := fmt.Sprintf("%d-%s", i, v)
+						keys = append(keys, k)
+						m[k] = struct {
+							T string
+							V any
+						}{T: "string", V: v}
+					}
+				default:
+					sortable = false
+				}
+			}
+			if sortable {
+				slices.Sort(keys)
+				for _, k := range keys {
+					fmt.Printf("%s  - ", strings.Repeat(" ", (level*3)-3))
+					v := m[k].V
+					printSortedTree(v, level+1, arraySort, true, true)
+				}
+				return
+			}
+		}
+
 		for _, v := range tree {
 			fmt.Printf("%s  - ", strings.Repeat(" ", (level*3)-3))
-			printSortedTree(v, level+1, true, true)
+			printSortedTree(v, level+1, arraySort, true, true)
 		}
 	default:
 		Logger.Printf("NavigateTree: single element type")
