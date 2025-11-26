@@ -5,6 +5,7 @@ import (
 	"io"
 	"slices"
 
+	"go.yaml.in/yaml/v4"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/cli-runtime/pkg/printers"
@@ -81,4 +82,73 @@ func SecretPrint(k8sSecret *v1.Secret, pem bool, key string) {
 			}
 		}
 	}
+}
+
+// trimData recursively removes nil and empty fields
+func trimData(value any) any {
+	switch v := value.(type) {
+	case map[string]any:
+		// Recursively trim nested maps
+		trimmed := make(map[string]any)
+		for key, value := range v {
+			trimmedValue := trimData(value)
+			if trimmedValue != nil {
+				trimmed[key] = trimmedValue
+			}
+		}
+		// Return nil if map is empty after trimming
+		if len(trimmed) == 0 {
+			return nil
+		}
+		return trimmed
+	case []any:
+		// Recursively trim array elements
+		trimmed := []any{}
+		for _, item := range v {
+			trimmedItem := trimData(item)
+			if trimmedItem != nil {
+				trimmed = append(trimmed, trimmedItem)
+			}
+		}
+		// Return nil if array is empty after trimming
+		if len(trimmed) == 0 {
+			return nil
+		}
+		return trimmed
+	case string:
+		// Return nil for empty strings
+		if v == "" {
+			return nil
+		}
+		return v
+	case nil:
+		// Skip nil values
+		return nil
+	default:
+		// Include all other values (numbers, booleans, etc.)
+		return v
+	}
+}
+
+// marshalTrim marshals an object to YAML removing nil and empty fields
+func marshalTrim(obj any) ([]byte, error) {
+	// First marshal to get the data, without this step we would have to reflect to iterate over the struct itself.
+	// This first step converts the struct into a string representation of key values.
+	data, err := yaml.Marshal(obj)
+	if err != nil {
+		return nil, err
+	}
+
+	// Unmarshal back into a Go data structure, except this time we only have to worry about maps of strings, arrays or leaf types.
+	var simpleData any
+	err = yaml.Unmarshal(data, &simpleData)
+	if err != nil {
+		return nil, err
+	}
+
+	// Trim empty fields
+	trimmed := trimData(simpleData)
+
+	// Marshal back to YAML
+	return yaml.Marshal(trimmed)
 }
