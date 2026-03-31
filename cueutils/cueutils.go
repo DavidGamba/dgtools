@@ -174,7 +174,8 @@ func BuildOverlay(configs []CueConfigFile, overlayRootDir, virtualCueModuleName 
 	}
 	if virtualCueModuleName != "" {
 		modPath := filepath.Join(overlayRootDir, "cue.mod/module.cue")
-		overlay[modPath] = load.FromString(fmt.Sprintf(`module: "%s"`, virtualCueModuleName))
+		overlay[modPath] = load.FromString(fmt.Sprintf(`module: "%s"
+language: version: "v0.16.0"`, virtualCueModuleName))
 		Logger.Printf("overlay: %s\n", modPath)
 	}
 	return overlay, packagePaths, nil
