@@ -182,4 +182,38 @@ func TestInit(t *testing.T) {
 		}
 		t.Log(buf.String())
 	})
+
+	t.Run("TestInit remove .tf.init file when init fails", func(t *testing.T) {
+		buf := setupLogging()
+		ctx := context.Background()
+		cfg := getDefaultConfig()
+		ctx = config.NewConfigContext(ctx, cfg)
+		tDir := t.TempDir()
+		initFile := filepath.Join(tDir, ".tf.init")
+		os.Create(initFile)
+		ctx = NewDirContext(ctx, tDir)
+		mock := run.CMDCtx(ctx).Mock(func(r *run.RunInfo) error {
+			if r.GetDir() != tDir {
+				return fmt.Errorf("unexpected dir: %s", r.GetDir())
+			}
+			return fmt.Errorf("failed init")
+			// return nil
+		})
+		ctx = run.ContextWithRunInfo(ctx, mock)
+		opt := getoptions.New()
+		opt.Bool("dry-run", false)
+		opt.Bool("ignore-cache", true)
+		opt.Bool("tf-in-automation", false)
+		opt.String("profile", "prod")
+		opt.String("color", "auto")
+		opt.String("ws", "")
+		err := InitRun(ctx, opt, []string{})
+		if err == nil {
+			t.Errorf("expected error, got nil")
+		}
+		if _, err := os.Stat(initFile); !os.IsNotExist(err) {
+			t.Errorf("expected no .tf.init file: %v", err)
+		}
+		t.Log(buf.String())
+	})
 }
