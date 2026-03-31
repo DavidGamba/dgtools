@@ -95,6 +95,30 @@ func NewFromString(str string) (*YML, error) {
 	return &YML{Tree: tree}, nil
 }
 
+func NewFromFileOrSTDIN(useStdIn bool, file string) ([]*YML, error) {
+	// Check if stdin is pipe p or device D
+	statStdin, _ := os.Stdin.Stat()
+	stdinIsDevice := (statStdin.Mode() & os.ModeDevice) != 0
+
+	var err error
+	var ymlList []*YML
+	if !stdinIsDevice && useStdIn {
+		Logger.Printf("Reading from STDIN\n")
+		reader := os.Stdin
+		ymlList, err = NewFromReader(reader)
+		if err != nil {
+			return ymlList, fmt.Errorf("reading yaml from STDIN: %w", err)
+		}
+	} else {
+		Logger.Printf("Reading from file: %s\n", file)
+		ymlList, err = NewFromFile(file)
+		if err != nil {
+			return ymlList, fmt.Errorf("reading yaml file: %w", err)
+		}
+	}
+	return ymlList, nil
+}
+
 // GetString returns a string designated by path.
 // Path is a string with elements separated by /.
 // Array indexes are given as a number.
