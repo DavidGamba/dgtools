@@ -63,6 +63,7 @@ func GHCommentRun(ctx context.Context, opt *getoptions.GetOpt, args []string) er
 	input := []byte(`
 <details><summary>title</summary>
 
+
 ` + "```" + `
 Content
 ` + "```" + `
