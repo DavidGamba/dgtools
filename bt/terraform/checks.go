@@ -150,11 +150,11 @@ func checksRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error
 	}
 	Logger.Printf("plan json written to: %s\n", jsonPlan)
 
-	cmd = []string{cfg.TFProfile[cfg.Profile(profile)].BinaryName, "show", planFile}
+	cmd = []string{cfg.TFProfile[cfg.Profile(profile)].BinaryName, "show", "-no-color", planFile}
 	ri = run.CMDCtx(ctx, cmd...).Stdin().Log().Env(dataDir).Dir(dir).DryRun(dryRun)
 	out, err = ri.STDOutOutput()
 	if err != nil {
-		return fmt.Errorf("failed to get plan json output: %w", err)
+		return fmt.Errorf("failed to get plan txt output: %w", err)
 	}
 
 	err = os.WriteFile(filepath.Join(dir, txtPlan), out, 0600)
