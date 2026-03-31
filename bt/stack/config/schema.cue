@@ -1,14 +1,15 @@
+@experiment(aliasv2,explicitopen,try)
 package bt_stacks
 
 #ID: string & =~"^[a-zA-Z]([a-zA-Z0-9_-]*[a-zA-Z0-9])?$"
 
 #Variable: {
-	name: string
+	name:  string
 	value: string
 }
 
 #Component: {
-	id: #ID
+	id:   #ID
 	path: string | *id
 	depends_on: [...#Component.id]
 	variables: [...#Variable]
@@ -21,6 +22,6 @@ package bt_stacks
 	components: [...#Component]
 }
 
-component: [ID=_]: #Component & {id: ID}
+component: [string]~(ID,_): #Component & {id: ID}
 
-stack: [ID=_]: #Stack & {id: ID}
+stack: [string]~(ID,_): #Stack & {id: ID}

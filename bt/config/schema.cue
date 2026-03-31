@@ -1,7 +1,8 @@
+@experiment(aliasv2,explicitopen,try)
 package bt
 
 config: #Config
-terraform_profile: [ID=_]: #TerraformProfile & {id: ID}
+terraform_profile: [_]~(ID,_): #TerraformProfile & {id: ID}
 
 #Config: {
 	default_terraform_profile: string | *"default"
@@ -18,7 +19,7 @@ terraform_profile: [ID=_]: #TerraformProfile & {id: ID}
 	}
 	workspaces?: {
 		enabled: bool
-		dir: string
+		dir:     string
 	}
 	pre_apply_checks?: {
 		enabled: bool
