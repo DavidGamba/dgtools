@@ -1,0 +1,9 @@
+= yaml-sort: sort YAML files
+
+Sort YAML files to allow for easier diffing
+
+== ROADMAP
+
+* Support multi document YAML files.
+* In place editing.
+* Sort arrays of maps by array value, not just map key.

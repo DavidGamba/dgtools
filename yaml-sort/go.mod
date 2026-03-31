@@ -1,0 +1,11 @@
+module github.com/DavidGamba/dgtools/yaml-sort
+
+go 1.26
+
+require (
+	github.com/DavidGamba/dgtools/yamlutils v0.2.0
+	github.com/DavidGamba/go-getoptions v0.33.0
+	go.yaml.in/yaml/v4 v4.0.0-rc.4
+)
+
+require github.com/DavidGamba/dgtools/trees v0.1.0 // indirect

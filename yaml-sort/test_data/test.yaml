@@ -1,0 +1,21 @@
+---
+hello: world
+array:
+  - element 1
+  - element 3
+  - element 2
+number: 123
+bool: true
+array 2:
+  - key: value1
+    data: data1
+  - data: data3
+    key: value3
+  - key: value2
+    data: data2
+array 3:
+  - c: c
+    b: b
+    a: a
+    d: d
+float: 123.123
