@@ -1,6 +1,6 @@
 // This file is part of dgtools.
 //
-// Copyright (C) 2019-2021  David Gamba Rios
+// # Copyright (C) 2019-2021  David Gamba Rios
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -87,29 +87,29 @@ func TestGetString(t *testing.T) {
 func TestAddChild(t *testing.T) {
 	tests := []struct {
 		name        string
-		structure   interface{}
+		structure   any
 		childString string
-		expected    interface{}
+		expected    any
 		err         error
 	}{
 		{"simple", nil, "hello", nil, ErrInvalidParentType},
 		{"simple", "str", "hello", "str", ErrInvalidParentType},
 		{"simple", 123, "hello", 123, ErrInvalidParentType},
-		{"array", []interface{}{1, 2, 3}, "hello", []interface{}{1, 2, 3, "hello"}, nil},
-		{"array", []interface{}{1, 2, 3}, "hello: world", []interface{}{1, 2, 3, map[interface{}]interface{}{"hello": "world"}}, nil},
-		{"array", []interface{}{1, 2, 3}, "hello: world", []interface{}{1, 2, 3, map[interface{}]interface{}{"hello": "world"}}, nil},
-		{"map",
-			map[interface{}]interface{}{"map": []string{"one"}, "another": []string{"two"}},
+		{"array", []any{1, 2, 3}, "hello", []any{1, 2, 3, "hello"}, nil},
+		{"array", []any{1, 2, 3}, "hello: world", []any{1, 2, 3, map[string]any{"hello": "world"}}, nil},
+		{"array", []any{1, 2, 3}, "hello: world", []any{1, 2, 3, map[string]any{"hello": "world"}}, nil},
+		{"map error",
+			map[any]any{"map": []string{"one"}, "another": []string{"two"}},
 			"hello",
-			map[interface{}]interface{}{"map": []string{"one"}, "another": []string{"two"}}, ErrInvalidChildTypeKeyValue},
-		{"map",
-			map[interface{}]interface{}{"map": []string{"one"}, "another": []string{"two"}},
+			map[any]any{"map": []string{"one"}, "another": []string{"two"}}, ErrInvalidChildTypeKeyValue},
+		{"map key value",
+			map[any]any{"map": []string{"one"}, "another": []string{"two"}},
 			"hello: world",
-			map[interface{}]interface{}{"map": []string{"one"}, "another": []string{"two"}, "hello": "world"}, nil},
+			map[any]any{"map": []string{"one"}, "another": []string{"two"}, "hello": "world"}, nil},
 		{"map",
-			map[interface{}]interface{}{"map": []string{"one"}, "another": []string{"two"}},
+			map[any]any{"map": []string{"one"}, "another": []string{"two"}},
 			"map: world",
-			map[interface{}]interface{}{"map": "world", "another": []string{"two"}}, nil},
+			map[any]any{"map": "world", "another": []string{"two"}}, nil},
 	}
 
 	for _, test := range tests {
@@ -133,16 +133,16 @@ func TestAddChildToTree(t *testing.T) {
 	tests := []struct {
 		name        string
 		path        []string
-		structure   interface{}
-		expected    interface{}
+		structure   any
+		expected    any
 		childString string
 		err         error
 	}{
 		{"simple", []string{}, "hola", "hola", "hello", ErrInvalidParentType},
-		{"array", []string{}, []interface{}{"hola"}, []interface{}{"hola", "hello"}, "hello", nil},
-		{"map", []string{}, map[interface{}]interface{}{"map": "hola"}, map[interface{}]interface{}{"map": "hola", "hello": "world"}, "hello: world", nil},
-		{"map", []string{"map"}, map[interface{}]interface{}{"map": []interface{}{"one", "two", "three"}},
-			map[interface{}]interface{}{"map": []interface{}{"one", "two", "three", "four"}}, "four", nil},
+		{"array", []string{}, []any{"hola"}, []any{"hola", "hello"}, "hello", nil},
+		{"map", []string{}, map[any]any{"map": "hola"}, map[any]any{"map": "hola", "hello": "world"}, "hello: world", nil},
+		{"map", []string{"map"}, map[any]any{"map": []any{"one", "two", "three"}},
+			map[any]any{"map": []any{"one", "two", "three", "four"}}, "four", nil},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
