@@ -5,8 +5,8 @@ class Yamlparse < Formula
 
   desc "#{@@tool_desc}"
   homepage "https://github.com/DavidGamba/dgtools/tree/master/#{@@tool_name}"
-  url "https://github.com/DavidGamba/dgtools/archive/refs/tags/yaml-parse/v0.3.2.tar.gz"
-  sha256 "cab242f2942f02fd403f6b8856b93cb9bc9f3c713308d0c27dbe6d523d6c8cfd"
+  url "https://github.com/DavidGamba/dgtools/archive/refs/tags/yaml-parse/v0.4.0.tar.gz"
+  sha256 "f7c0b71fb0a80a0ead287cbbac9d95d8b8c0a8ccd4e071cac91ef0c1f56da604"
 
   depends_on "go" => :build
 
