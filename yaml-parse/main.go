@@ -104,7 +104,7 @@ func Run(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	}
 	Logger.Printf("path: '%s'\n", strings.Join(xpath, ","))
 
-	ymlList, err := readInput(ctx, useStdIn, file)
+	ymlList, err := yamlutils.NewFromFileOrSTDIN(useStdIn, file)
 	if err != nil {
 		return fmt.Errorf("failed to read input: %w", err)
 	}
@@ -154,28 +154,4 @@ func Run(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	}
 	fmt.Print(str)
 	return nil
-}
-
-func readInput(ctx context.Context, useStdIn bool, file string) ([]*yamlutils.YML, error) {
-	// Check if stdin is pipe p or device D
-	statStdin, _ := os.Stdin.Stat()
-	stdinIsDevice := (statStdin.Mode() & os.ModeDevice) != 0
-
-	var err error
-	var ymlList []*yamlutils.YML
-	if !stdinIsDevice && useStdIn {
-		Logger.Printf("Reading from STDIN\n")
-		reader := os.Stdin
-		ymlList, err = yamlutils.NewFromReader(reader)
-		if err != nil {
-			return ymlList, fmt.Errorf("reading yaml from STDIN: %w", err)
-		}
-	} else {
-		Logger.Printf("Reading from file: %s\n", file)
-		ymlList, err = yamlutils.NewFromFile(file)
-		if err != nil {
-			return ymlList, fmt.Errorf("reading yaml file: %w", err)
-		}
-	}
-	return ymlList, nil
 }
