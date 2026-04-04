@@ -5,8 +5,8 @@ class Bt < Formula
 
   desc "#{@@tool_desc}"
   homepage "https://github.com/DavidGamba/dgtools/tree/master/#{@@tool_name}"
-  url "https://github.com/DavidGamba/dgtools/archive/refs/tags/bt/v0.14.2.tar.gz"
-  sha256 "2f85affa11b7c286e7544b8739a7c426d476aa95d93145b60a459c6fae4d6740"
+  url "https://github.com/DavidGamba/dgtools/archive/refs/tags/bt/v0.15.0.tar.gz"
+  sha256 "84610eacda69887503dc06b8fa60816c8a01ad11973638e7079eff0c7b794b80"
 
   depends_on "go" => :build
 
