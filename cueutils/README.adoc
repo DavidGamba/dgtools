@@ -43,4 +43,20 @@ var f embed.FS
 	if err != nil {
 		return fmt.Errorf("failed to unmarshal: %w", err)
 	}
+
+	// Print the config values
+	opts := cueutils.StringValueOpts{
+		Definitions:    true,
+		Hidden:         true,
+		Attributes:     true,
+		Optional:       true,
+		ErrorsAsValues: true,
+		Concrete:       true,
+	}
+
+	v, err := cueutils.StringValue(value, opts)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("value:\n%v\n", string(v))
 ----

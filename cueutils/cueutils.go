@@ -22,6 +22,7 @@ import (
 	"cuelang.org/go/cue/build"
 	"cuelang.org/go/cue/cuecontext"
 	cueErrors "cuelang.org/go/cue/errors"
+	"cuelang.org/go/cue/format"
 	"cuelang.org/go/cue/interpreter/embed"
 	"cuelang.org/go/cue/load"
 	"cuelang.org/go/encoding/gocode/gocodec"
@@ -214,4 +215,56 @@ func Validate(value *cue.Value) error {
 		return fmt.Errorf("%s", cueErrors.Details(err, nil))
 	}
 	return nil
+}
+
+type StringValueOpts struct {
+	Definitions    bool
+	Hidden         bool
+	Attributes     bool
+	Optional       bool
+	ErrorsAsValues bool
+	Concrete       bool
+}
+
+// StringValue - Allows to print a value including its definitions and hidden fields or just a concrete representation.
+//
+//	opts := cueutils.StringValueOpts{
+//		Definitions:    true,
+//		Hidden:         true,
+//		Attributes:     true,
+//		Optional:       true,
+//		ErrorsAsValues: true,
+//		Concrete:       true,
+//	}
+//
+//	v, err := cueutils.StringValue(value, opts)
+//	if err != nil {
+//		return err
+//	}
+//	fmt.Printf("value:\n%v\n", string(v))
+func StringValue(value *cue.Value, opts StringValueOpts) ([]byte, error) {
+	cueOpts := []cue.Option{}
+	if opts.Definitions {
+		cueOpts = append(cueOpts, cue.Definitions(true))
+	}
+	if opts.Hidden {
+		cueOpts = append(cueOpts, cue.Hidden(true))
+	}
+	if opts.Attributes {
+		cueOpts = append(cueOpts, cue.Attributes(true))
+	}
+	if opts.Optional {
+		cueOpts = append(cueOpts, cue.Optional(true))
+	}
+	if opts.ErrorsAsValues {
+		cueOpts = append(cueOpts, cue.ErrorsAsValues(true))
+	}
+	if opts.Concrete {
+		cueOpts = append(cueOpts, cue.Concrete(true))
+	}
+	n, err := format.Node(value.Syntax(cueOpts...))
+	if err != nil {
+		return n, fmt.Errorf("failed to format value: %w\n", err)
+	}
+	return n, nil
 }
