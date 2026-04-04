@@ -50,7 +50,7 @@ jobs:
         run: go test -coverprofile=coverage.txt -covermode=atomic ./...
         working-directory: ${{ matrix.tool }}
       - name: Upload
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           path: ${{ matrix.tool }}/${{ steps.build.outputs.binary }}
           name: ${{ steps.build.outputs.binary }} ${{ matrix.os }}
@@ -86,7 +86,7 @@ jobs:
         run: go test -coverprofile=coverage.txt -covermode=atomic ./...
         working-directory: ${{ matrix.tool }}
       - name: Upload
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           path: ${{ matrix.tool }}/${{ steps.build.outputs.binary }}
           name: ${{ steps.build.outputs.binary }} ${{ matrix.os }}
