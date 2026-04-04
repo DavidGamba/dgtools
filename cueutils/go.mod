@@ -1,6 +1,6 @@
 module github.com/DavidGamba/dgtools/cueutils
 
-go 1.26
+go 1.25.0
 
 require cuelang.org/go v0.16.0
 
