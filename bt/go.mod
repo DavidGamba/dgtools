@@ -5,7 +5,7 @@ go 1.26
 require (
 	cuelang.org/go v0.16.0
 	github.com/DavidGamba/dgtools/buildutils v0.6.0
-	github.com/DavidGamba/dgtools/cueutils v0.7.0
+	github.com/DavidGamba/dgtools/cueutils v0.8.0
 	github.com/DavidGamba/dgtools/fsmodtime v0.3.0
 	github.com/DavidGamba/dgtools/run v0.9.0
 	github.com/DavidGamba/go-getoptions v0.33.0

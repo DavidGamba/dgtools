@@ -57,6 +57,7 @@ func program(args []string) int {
 	opt.Bool("quiet", false, opt.GetEnv("BT_QUIET"))
 	opt.Bool("debug", false, opt.GetEnv("BT_DEBUG"))
 	opt.Bool("print-raw-config", false)
+	opt.Bool("print-concrete-config", false)
 	opt.String("color", "auto", opt.Description("show colored output"), opt.ValidValues("always", "auto", "never"))
 	opt.SetUnknownMode(getoptions.Pass)
 
@@ -85,8 +86,48 @@ func program(args []string) int {
 	}
 
 	if opt.Called("print-raw-config") {
-		fmt.Printf("config value:\n%v\n", cfgValue)
-		fmt.Printf("stack value:\n%v\n", stackValue)
+		opts := cueutils.StringValueOpts{
+			Definitions:    true,
+			Hidden:         true,
+			Attributes:     true,
+			Optional:       true,
+			ErrorsAsValues: true,
+		}
+		cv, err := cueutils.StringValue(cfgValue, opts)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
+			return 1
+		}
+		fmt.Printf("config value:\n%v\n", string(cv))
+		sv, err := cueutils.StringValue(stackValue, opts)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
+			return 1
+		}
+		fmt.Printf("stack value:\n%v\n", string(sv))
+		return 0
+	}
+	if opt.Called("print-concrete-config") {
+		opts := cueutils.StringValueOpts{
+			Definitions:    true,
+			Hidden:         true,
+			Attributes:     true,
+			Optional:       true,
+			ErrorsAsValues: true,
+			Concrete:       true,
+		}
+		cv, err := cueutils.StringValue(cfgValue, opts)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
+			return 1
+		}
+		fmt.Printf("config value:\n%v\n", string(cv))
+		sv, err := cueutils.StringValue(stackValue, opts)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
+			return 1
+		}
+		fmt.Printf("stack value:\n%v\n", string(sv))
 		return 0
 	}
 
