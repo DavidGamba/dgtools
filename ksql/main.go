@@ -196,16 +196,24 @@ func GetRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 		if err != nil {
 			return fmt.Errorf("failed to write to file: %w", err)
 		}
-		cmd = []string{"duckdb", DBNAME, "-s", fmt.Sprintf("DROP TABLE IF EXISTS %s;", rt)}
-		err = run.CMD(cmd...).Log().Run()
-		if err != nil {
-			return fmt.Errorf("failed: %w", err)
+
+		cmds := []string{
+			fmt.Sprintf("DROP TABLE IF EXISTS %s;", rt),
+			fmt.Sprintf("CREATE TABLE %s AS SELECT * FROM '%s';", rt, filename),
+			fmt.Sprintf("ALTER TABLE %s ADD COLUMN name VARCHAR;", rt),
+			fmt.Sprintf("UPDATE %s SET name = metadata.name;", rt),
+			fmt.Sprintf("ALTER TABLE %s ADD COLUMN namespace VARCHAR;", rt),
+			// Use cast to allow for null values
+			fmt.Sprintf("UPDATE %s SET namespace = CAST(metadata AS JSON)->>'namespace';", rt),
 		}
-		cmd = []string{"duckdb", DBNAME, "-s", fmt.Sprintf("CREATE TABLE %s AS SELECT * FROM '%s';", rt, filename)}
-		err = run.CMD(cmd...).Log().Run()
-		if err != nil {
-			return fmt.Errorf("failed: %w", err)
+		for _, e := range cmds {
+			cmd := []string{"duckdb", DBNAME, "-s", e}
+			err = run.CMD(cmd...).Log().Run()
+			if err != nil {
+				return fmt.Errorf("failed: %w", err)
+			}
 		}
+
 	}
 
 	cmds := []string{
