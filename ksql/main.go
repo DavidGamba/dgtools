@@ -86,8 +86,9 @@ func QueryRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	historyFile = filepath.Join(cacheDir, "history")
 
 	rl, err := readline.NewEx(&readline.Config{
-		Prompt:      "> ",
-		HistoryFile: historyFile,
+		Prompt:                 "> ",
+		HistoryFile:            historyFile,
+		DisableAutoSaveHistory: true,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to initialize readline: %w", err)
@@ -95,21 +96,31 @@ func QueryRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	defer rl.Close()
 
 	for {
-		text, err := rl.Readline()
-		if err != nil {
-			if errors.Is(err, readline.ErrInterrupt) || errors.Is(err, io.EOF) {
-				fmt.Println("")
-				return nil
+		var buf strings.Builder
+		prompt := "> "
+		for {
+			rl.SetPrompt(prompt)
+			line, err := rl.Readline()
+			if err != nil {
+				if errors.Is(err, readline.ErrInterrupt) || errors.Is(err, io.EOF) {
+					fmt.Println("")
+					return nil
+				}
+				return err
 			}
-			return err
+			buf.WriteString(line)
+			if buf.String() == "exit" {
+				break
+			}
+			buf.WriteString("\n")
+			if strings.HasSuffix(strings.TrimSpace(buf.String()), ";") {
+				break
+			}
+			prompt = "- "
 		}
-		text = strings.TrimSpace(text)
-		if text == "" {
-			continue
-		}
-		if text == "exit" {
-			break
-		}
+		text := strings.TrimSpace(buf.String())
+		historyEntry := strings.Join(strings.Fields(text), " ")
+		rl.SaveHistory(historyEntry)
 
 		rows, err := conn.QueryContext(ctx, text)
 		if err != nil {
