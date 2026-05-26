@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"context"
 	"database/sql"
 	"encoding/json"
@@ -11,9 +10,11 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/DavidGamba/dgtools/run"
 	"github.com/DavidGamba/go-getoptions"
+	"github.com/chzyer/readline"
 	_ "github.com/duckdb/duckdb-go/v2"
 )
 
@@ -75,16 +76,36 @@ func QueryRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	}
 	defer conn.Close()
 
+	historyFile := ""
+	cacheDirBase, err := os.UserCacheDir()
+	if err != nil {
+		return fmt.Errorf("failed to get user cache dir: %w", err)
+	}
+	cacheDir := filepath.Join(cacheDirBase, "ksql")
+	os.MkdirAll(cacheDir, 0755)
+	historyFile = filepath.Join(cacheDir, "history")
+
+	rl, err := readline.NewEx(&readline.Config{
+		Prompt:      "> ",
+		HistoryFile: historyFile,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to initialize readline: %w", err)
+	}
+	defer rl.Close()
+
 	for {
-		reader := bufio.NewReader(os.Stdin)
-		fmt.Print("> ")
-		text, err := reader.ReadString('\n')
+		text, err := rl.Readline()
 		if err != nil {
-			if errors.Is(err, io.EOF) {
+			if errors.Is(err, readline.ErrInterrupt) || errors.Is(err, io.EOF) {
 				fmt.Println("")
 				return nil
 			}
 			return err
+		}
+		text = strings.TrimSpace(text)
+		if text == "" {
+			continue
 		}
 		if text == "exit" {
 			break

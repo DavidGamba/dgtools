@@ -7,6 +7,7 @@ require (
 	github.com/DavidGamba/dgtools/trees v0.1.0
 	github.com/DavidGamba/dgtools/yamlutils v0.2.0
 	github.com/DavidGamba/go-getoptions v0.33.0
+	github.com/chzyer/readline v1.5.1
 	github.com/duckdb/duckdb-go/v2 v2.10503.0
 )
 
