@@ -290,9 +290,20 @@ func GetRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	cmds := []string{
 		"CREATE SCHEMA IF NOT EXISTS k8s;",
 
-		"CREATE OR REPLACE MACRO k8s.age(x) AS date_diff('days', x.metadata.creationtimestamp, today());",
+		`CREATE OR REPLACE MACRO k8s.age(x) AS
+	CASE
+		WHEN x IS NULL THEN NULL
+		WHEN date_diff('days', x, current_timestamp AT TIME ZONE 'UTC') >= 1 THEN
+			date_diff('days', x, current_timestamp AT TIME ZONE 'UTC')::VARCHAR || 'd'
+		WHEN date_diff('hours', x, current_timestamp AT TIME ZONE 'UTC') >= 1 THEN
+			date_diff('hours', x, current_timestamp AT TIME ZONE 'UTC')::VARCHAR || 'h'
+		ELSE
+			date_diff('minutes', x, current_timestamp AT TIME ZONE 'UTC')::VARCHAR || 'm'
+	END;`,
 
-		"CREATE FUNCTION IF NOT EXISTS k8s.mage(x_metadata) AS date_diff('days', x_metadata.creationtimestamp, today());",
+		"CREATE OR REPLACE MACRO k8s.agem(x) AS k8s.age(x.metadata.creationTimestamp);",
+
+		"CREATE OR REPLACE MACRO k8s.agema(x_metadata) AS k8s.age(x_metadata.creationTimestamp);",
 
 		`CREATE OR REPLACE MACRO k8s.cpu_m(cpu) AS
 	CASE
