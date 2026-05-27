@@ -64,6 +64,13 @@ func program(args []string) int {
 func QueryRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	Logger.Printf("Running")
 
+	type outputMode string
+	const (
+		outputModePretty     outputMode = "pretty"
+		outputModeSingleLine outputMode = "single_line"
+	)
+	mode := outputModePretty
+
 	db, err := sql.Open("duckdb", DBNAME)
 	if err != nil {
 		return fmt.Errorf("failed: %w", err)
@@ -108,10 +115,18 @@ func QueryRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 				}
 				return err
 			}
-			buf.WriteString(line)
-			if buf.String() == "exit" {
+
+			trimmed := strings.TrimSpace(line)
+			// Dot-commands are single-line and don't require a trailing ';'.
+			if buf.Len() == 0 && strings.HasPrefix(trimmed, ".") {
+				buf.WriteString(strings.TrimSuffix(trimmed, ";"))
 				break
 			}
+			if buf.Len() == 0 && trimmed == "exit" {
+				buf.WriteString(trimmed)
+				break
+			}
+			buf.WriteString(line)
 			buf.WriteString("\n")
 			if strings.HasSuffix(strings.TrimSpace(buf.String()), ";") {
 				break
@@ -122,14 +137,42 @@ func QueryRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 		historyEntry := strings.Join(strings.Fields(text), " ")
 		rl.SaveHistory(historyEntry)
 
+		if text == "exit" {
+			return nil
+		}
+		if strings.HasPrefix(text, ".") {
+			fields := strings.Fields(text)
+			if len(fields) >= 1 && fields[0] == ".mode" {
+				if len(fields) != 2 {
+					fmt.Println("usage: .mode pretty|single_line")
+					continue
+				}
+				switch fields[1] {
+				case string(outputModePretty):
+					mode = outputModePretty
+					fmt.Println("mode: pretty")
+				case string(outputModeSingleLine):
+					mode = outputModeSingleLine
+					fmt.Println("mode: single_line")
+				default:
+					fmt.Println("usage: .mode pretty|single_line")
+				}
+				continue
+			}
+			fmt.Println("unknown command")
+			continue
+		}
+
 		rows, err := conn.QueryContext(ctx, text)
 		if err != nil {
 			fmt.Printf("failed: %v\n", err)
 			continue
 		}
-
-		defer rows.Close()
-		cols, _ := rows.Columns()
+		cols, err := rows.Columns()
+		if err != nil {
+			_ = rows.Close()
+			return fmt.Errorf("failed: %w", err)
+		}
 
 		var results []map[string]any
 		for rows.Next() {
@@ -139,6 +182,7 @@ func QueryRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 				ptrs[i] = &values[i]
 			}
 			if err := rows.Scan(ptrs...); err != nil {
+				_ = rows.Close()
 				return fmt.Errorf("failed: %w", err)
 			}
 			row := make(map[string]any, len(cols))
@@ -151,16 +195,32 @@ func QueryRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 			}
 			results = append(results, row)
 		}
-
-		out, err := json.MarshalIndent(results, "", "  ")
-		if err != nil {
-			return fmt.Errorf("failed to marshal JSON: %w", err)
+		if err := rows.Err(); err != nil {
+			_ = rows.Close()
+			return fmt.Errorf("failed: %w", err)
 		}
-		fmt.Println(string(out))
+		_ = rows.Close()
+
+		switch mode {
+		case outputModePretty:
+			out, err := json.MarshalIndent(results, "", "  ")
+			if err != nil {
+				return fmt.Errorf("failed to marshal JSON: %w", err)
+			}
+			fmt.Println(string(out))
+		case outputModeSingleLine:
+			for _, row := range results {
+				out, err := json.Marshal(row)
+				if err != nil {
+					return fmt.Errorf("failed to marshal JSON: %w", err)
+				}
+				fmt.Println(string(out))
+			}
+		default:
+			return fmt.Errorf("unknown output mode: %q", mode)
+		}
 
 	}
-
-	return nil
 }
 
 func GetRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
