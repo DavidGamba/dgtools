@@ -19,6 +19,11 @@ Now, you can run `ksql query` or call duckdb directly on the created db `duckdb 
 
 `ksql query` will print the results as a json stream because vertical scrolling is easier than horizontal scrolling on a terminal.
 
+You can toggle the output formatting mode:
+
+* `.mode pretty` (default)
+* `.mode single_line` (one JSON object per line)
+
 To re-hidrate your data, you can run the `ksql get` command again with each of the resources you want to hidrate.
 The rest will stay in place.
 
@@ -31,6 +36,31 @@ To start over or be done, delete the `ksql.duckdb` file.
 [source, sql]
 ----
 select column_name,data_type from duckdb_columns() where table_name = 'pods';
+----
+
+* Equivalent of `kubectl get sts -A`
++
+[source, sql]
+----
+SELECT
+	name,
+	namespace,
+	age:printf('%dd',k8s.age(s)),
+	ready:printf('%d/%d',coalesce(status.readyReplicas,0),spec.replicas),
+FROM sts AS s;
+----
+
+* Equivalent of `kubectl get deploy -A`
++
+----
+SELECT
+	name,
+	namespace,
+	age:printf('%dd',k8s.age(d)),
+	ready:printf('%d/%d',coalesce(status.readyReplicas,0),spec.replicas),
+	up_to_date:coalesce(status.updatedReplicas,0),
+	available:coalesce(status.availableReplicas,0)
+FROM deploy AS d;
 ----
 
 == Helper Functions
