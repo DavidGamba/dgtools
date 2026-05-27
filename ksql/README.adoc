@@ -45,7 +45,7 @@ select column_name,data_type from duckdb_columns() where table_name = 'pods';
 SELECT
 	name,
 	namespace,
-	age:printf('%dd',k8s.age(s)),
+	age:k8s.agem(s),
 	ready:printf('%d/%d',coalesce(status.readyReplicas,0),spec.replicas),
 FROM sts AS s;
 ----
@@ -56,52 +56,54 @@ FROM sts AS s;
 SELECT
 	name,
 	namespace,
-	age:printf('%dd',k8s.age(d)),
+	age:k8s.agem(d),
 	ready:printf('%d/%d',coalesce(status.readyReplicas,0),spec.replicas),
 	up_to_date:coalesce(status.updatedReplicas,0),
 	available:coalesce(status.availableReplicas,0)
 FROM deploy AS d;
 ----
 
+* Equivalent of `kubectl get pods -A`
++
+----
+SELECT
+	name,
+	namespace,
+	age:k8s.agem(p),
+	ready:sum(cs.ready::int),
+	phase:status.phase,
+	restarts:sum(cs.restartCount),
+	restart_age:list(k8s.age(cs.state.running.startedat))
+FROM pods AS p
+CROSS JOIN unnest(status.containerstatuses) AS t(cs)
+WHERE cs.restartCount != 0
+GROUP BY name,namespace,age,phase,status
+;
+----
+
 == Helper Functions
 
 === k8s
 
-This is how the surfacing of name and metadata is done in the code:
-
-[source, go]
-----
-fmt.Sprintf("ALTER TABLE %s ADD COLUMN name VARCHAR;", rt),
-fmt.Sprintf("UPDATE %s SET name = metadata.name;", rt),
-fmt.Sprintf("ALTER TABLE %s ADD COLUMN namespace VARCHAR;", rt),
-// Use cast to allow for null values
-fmt.Sprintf("UPDATE %s SET namespace = CAST(metadata AS JSON)->>'namespace';", rt),
-----
-
-Get the age in days of a resource.
-`k8s.age(x)` will take the resource directly if you are querying a resource table.
-`k8s.mage(x_metadata)` will take the resource metadata alias if you are querying a view.
+Get the age of a resource.
+`k8s.age(x)` will take a timestamp and return a human readable string like `12d`, `3h` or `15m`.
+`k8s.agem(x)` will take the resource directly if you are querying a resource table and returns a human readable string like `12d`, `3h` or `15m`.
+`k8s.agema(x_metadata)` will take the resource metadata alias if you are querying a view.
 
 [source, sql]
 ----
 CREATE SCHEMA IF NOT EXISTS k8s;
 
-CREATE FUNCTION IF NOT EXISTS k8s.age(x) AS date_diff('days', x.metadata.creationtimestamp, today());
+CREATE OR REPLACE MACRO k8s.age(x) AS ...;
 
-CREATE FUNCTION IF NOT EXISTS k8s.mage(x_metadata) AS date_diff('days', x_metadata.creationtimestamp, today());
+CREATE OR REPLACE MACRO k8s.mage(x_metadata) AS ...;
 ----
 
 Normalize CPU to m unit so it can be used with aggregation operations:
 
 [source, sql]
 ----
-CREATE OR REPLACE MACRO k8s.cpu_m(cpu) AS
-	CASE
-		WHEN trim(cpu) LIKE '%m' THEN
-			CAST(CEILING(CAST(RTRIM(trim(cpu), 'm') AS NUMERIC)) AS BIGINT)
-		ELSE
-			CAST(CAST(trim(cpu) AS NUMERIC) * 1000 AS BIGINT)
-	END;
+CREATE OR REPLACE MACRO k8s.cpu_m(cpu) AS ...;
 ----
 
 Test:
@@ -119,37 +121,7 @@ Normalize Memory to bytes unit:
 
 [source, sql]
 ----
-CREATE OR REPLACE MACRO k8s.memory_bytes(memory) AS
-	CAST(CASE
-		WHEN trim(memory) LIKE '%Ki' THEN
-			CAST(RTRIM(trim(memory), 'Ki') AS NUMERIC) * 1024
-		WHEN trim(memory) LIKE '%Mi' THEN
-			CAST(RTRIM(trim(memory), 'Mi') AS NUMERIC) * 1048576
-		WHEN trim(memory) LIKE '%Gi' THEN
-			CAST(RTRIM(trim(memory), 'Gi') AS NUMERIC) * 1073741824
-		WHEN trim(memory) LIKE '%Ti' THEN
-			CAST(RTRIM(trim(memory), 'Ti') AS NUMERIC) * 1099511627776
-		WHEN trim(memory) LIKE '%Pi' THEN
-			CAST(RTRIM(trim(memory), 'Pi') AS NUMERIC) * 1125899906842624
-		WHEN trim(memory) LIKE '%Ei' THEN
-			CAST(RTRIM(trim(memory), 'Ei') AS NUMERIC) * 1152921504606846976
-		WHEN trim(memory) LIKE '%m' THEN
-			CEILING(CAST(RTRIM(trim(memory), 'm') AS NUMERIC) / 1000)
-		WHEN trim(memory) LIKE '%k' THEN
-			CAST(RTRIM(trim(memory), 'k') AS NUMERIC) * 1000
-		WHEN trim(memory) LIKE '%M' THEN
-			CAST(RTRIM(trim(memory), 'M') AS NUMERIC) * 1000000
-		WHEN trim(memory) LIKE '%G' THEN
-			CAST(RTRIM(trim(memory), 'G') AS NUMERIC) * 1000000000
-		WHEN trim(memory) LIKE '%T' THEN
-			CAST(RTRIM(trim(memory), 'T') AS NUMERIC) * 1000000000000
-		WHEN trim(memory) LIKE '%P' THEN
-			CAST(RTRIM(trim(memory), 'P') AS NUMERIC) * 1000000000000000
-		WHEN trim(memory) LIKE '%E' THEN
-			CAST(RTRIM(trim(memory), 'E') AS NUMERIC) * 1000000000000000000
-		ELSE
-			CAST(trim(memory) AS NUMERIC)
-	END AS BIGINT);
+CREATE OR REPLACE MACRO k8s.memory_bytes(memory) AS ...;
 ----
 
 Test:
@@ -171,16 +143,7 @@ Print the memory back in a human readable form (approximation):
 
 [source, sql]
 ----
-CREATE OR REPLACE MACRO k8s.memory_human(bytes) AS
-	CASE
-		WHEN CAST(bytes AS DOUBLE) >= (1024::DOUBLE ^ 6) THEN rtrim(printf('%.1f', CAST(bytes AS DOUBLE) / (1024::DOUBLE ^ 6)), '.') || 'Ei'
-		WHEN CAST(bytes AS DOUBLE) >= (1024::DOUBLE ^ 5) THEN rtrim(printf('%.1f', CAST(bytes AS DOUBLE) / (1024::DOUBLE ^ 5)), '.') || 'Pi'
-		WHEN CAST(bytes AS DOUBLE) >= (1024::DOUBLE ^ 4) THEN rtrim(printf('%.1f', CAST(bytes AS DOUBLE) / (1024::DOUBLE ^ 4)), '.') || 'Ti'
-		WHEN CAST(bytes AS DOUBLE) >= (1024::DOUBLE ^ 3) THEN rtrim(printf('%.1f', CAST(bytes AS DOUBLE) / (1024::DOUBLE ^ 3)), '.') || 'Gi'
-		WHEN CAST(bytes AS DOUBLE) >= (1024::DOUBLE ^ 2) THEN rtrim(printf('%.1f', CAST(bytes AS DOUBLE) / (1024::DOUBLE ^ 2)), '.') || 'Mi'
-		WHEN CAST(bytes AS DOUBLE) >= 1024               THEN rtrim(printf('%.1f', CAST(bytes AS DOUBLE) / 1024), '.') || 'Ki'
-		ELSE CAST(bytes AS VARCHAR)
-	END;
+CREATE OR REPLACE MACRO k8s.memory_human(bytes) AS ...;
 ----
 
 Test:
