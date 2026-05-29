@@ -47,8 +47,9 @@ func program(args []string) int {
 	}
 	Logger.Println(remaining)
 
-	ctx, cancel, done := getoptions.InterruptContext()
-	defer func() { cancel(); <-done }()
+	// ctx, cancel, done := getoptions.InterruptContext()
+	// defer func() { cancel(); <-done }()
+	ctx := context.Background()
 
 	err = opt.Dispatch(ctx, remaining)
 	if err != nil {
@@ -158,6 +159,11 @@ func QueryRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	cacheDir := filepath.Join(cacheDirBase, "ksql")
 	os.MkdirAll(cacheDir, 0755)
 	historyFile = filepath.Join(cacheDir, "history")
+
+	err = interactive(ctx, conn)
+	if err != nil {
+		return fmt.Errorf("%s", err)
+	}
 
 	rl, err := readline.NewEx(&readline.Config{
 		Prompt:                 "> ",
