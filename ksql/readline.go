@@ -1,10 +1,13 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"io"
 	"iter"
+	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -13,7 +16,6 @@ import (
 	"github.com/hymkor/go-multiline-ny/completion"
 	"github.com/nyaosorg/go-readline-ny"
 	"github.com/nyaosorg/go-readline-ny/keys"
-	"github.com/nyaosorg/go-readline-ny/simplehistory"
 )
 
 type OSClipboard struct{}
@@ -24,6 +26,68 @@ func (OSClipboard) Read() (string, error) {
 
 func (OSClipboard) Write(s string) error {
 	return clipboard.WriteAll(s)
+}
+
+type HistoryFile struct {
+	filename string
+}
+
+func (h *HistoryFile) At(n int) string {
+	f, err := os.Open(h.filename)
+	if err != nil {
+		return ""
+	}
+	defer f.Close()
+	scanner := bufio.NewScanner(f)
+	i := 0
+	for scanner.Scan() {
+		if i == n {
+			return scanner.Text()
+		}
+		i++
+	}
+	return ""
+}
+
+func (h *HistoryFile) Len() int {
+	f, err := os.Open(h.filename)
+	if err != nil {
+		return 0
+	}
+	defer f.Close()
+	scanner := bufio.NewScanner(f)
+	count := 0
+	for scanner.Scan() {
+		count++
+	}
+	return count
+}
+
+func (h *HistoryFile) Add(line string) error {
+	f, err := os.OpenFile(h.filename, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
+	if err != nil {
+		return fmt.Errorf("failed to open history file: %w", err)
+	}
+	defer f.Close()
+	_, err = fmt.Fprintln(f, line)
+	if err != nil {
+		return fmt.Errorf("failed to write to history file: %w", err)
+	}
+	return nil
+}
+
+// NewHistoryFile - creates a new history file in the user's Cache directory.
+// dir: the dir within the user's cache directory where to place the history file.
+// name: the name of the history file.
+func NewHistoryFile(dir, name string) (*HistoryFile, error) {
+	cacheDirBase, err := os.UserCacheDir()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user cache dir: %w", err)
+	}
+	cacheDir := filepath.Join(cacheDirBase, dir)
+	os.MkdirAll(cacheDir, 0755)
+	historyFile := filepath.Join(cacheDir, name)
+	return &HistoryFile{historyFile}, nil
 }
 
 var (
@@ -52,7 +116,7 @@ func getCompletionCandidates(fields []string) (forCompletion []string, forListin
 	return candidates, candidates
 }
 
-func interactive(ctx context.Context) iter.Seq2[[]string, error] {
+func interactive(ctx context.Context, history readline.IHistory) iter.Seq2[[]string, error] {
 	return func(yield func([]string, error) bool) {
 		fmt.Println("C-m or Enter      : Insert a linefeed")
 		fmt.Println("C-p or UP         : Move to the previous line.")
@@ -91,10 +155,8 @@ func interactive(ctx context.Context) iter.Seq2[[]string, error] {
 		ed.ResetColor = "\x1B[0m"
 		ed.DefaultColor = "\x1B[37;49;1m"
 
-		// enable history (optional)
-		history := simplehistory.New()
 		ed.SetHistory(history)
-		ed.SetHistoryCycling(true)
+		ed.SetHistoryCycling(false)
 
 		// enable completion (optional)
 		ed.BindKey(keys.CtrlI, &completion.CmdCompletionOrList{
@@ -111,7 +173,7 @@ func interactive(ctx context.Context) iter.Seq2[[]string, error] {
 		// Show newline mark (experimental)
 		ed.OnAfterRender = func(w io.Writer, availWidth int) {
 			if availWidth >= 2 {
-				io.WriteString(w, "\x1B[33;22m↓\x1B[39m")
+				io.WriteString(w, "\x1B[33;22m⏎\x1B[39m")
 			}
 		}
 
@@ -121,8 +183,6 @@ func interactive(ctx context.Context) iter.Seq2[[]string, error] {
 				yield(lines, fmt.Errorf("failed to read: %w", err))
 				return
 			}
-			L := strings.Join(lines, "\n")
-			history.Add(L)
 			if !yield(lines, nil) {
 				return
 			}

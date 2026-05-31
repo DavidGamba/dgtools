@@ -150,25 +150,25 @@ func QueryRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	}
 	defer conn.Close()
 
-	// historyFile := ""
-	// cacheDirBase, err := os.UserCacheDir()
-	// if err != nil {
-	// 	return fmt.Errorf("failed to get user cache dir: %w", err)
-	// }
-	// cacheDir := filepath.Join(cacheDirBase, "ksql")
-	// os.MkdirAll(cacheDir, 0755)
-	// historyFile = filepath.Join(cacheDir, "history")
+	history, err := NewHistoryFile("ksql", "history")
+	if err != nil {
+		return fmt.Errorf("failed to create history file: %w", err)
+	}
 
-	for lines, err := range interactive(ctx) {
+	for lines, err := range interactive(ctx, history) {
 		if err != nil {
 			return fmt.Errorf("%s", err)
 		}
-		L := strings.Join(lines, "\n")
+		query := strings.Join(lines, "\n")
 		fmt.Println("-----")
-		fmt.Println(L)
+		fmt.Println(query)
 		fmt.Println("-----")
+		err := history.Add(strings.Join(lines, " "))
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "ERROR: failed to add to history: %v\n", err)
+		}
 
-		err = runQuery(ctx, conn, mode, L)
+		err = runQuery(ctx, conn, mode, query)
 		if err != nil {
 			fmt.Printf("Error: %v\n", err)
 		}
