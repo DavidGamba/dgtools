@@ -10,11 +10,9 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/DavidGamba/dgtools/run"
 	"github.com/DavidGamba/go-getoptions"
-	"github.com/chzyer/readline"
 	_ "github.com/duckdb/duckdb-go/v2"
 )
 
@@ -143,7 +141,7 @@ const (
 func QueryRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	Logger.Printf("Running")
 
-	mode := outputModePretty
+	// mode := outputModePretty
 
 	conn, err := dbConn(ctx)
 	if err != nil {
@@ -151,96 +149,21 @@ func QueryRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	}
 	defer conn.Close()
 
-	historyFile := ""
-	cacheDirBase, err := os.UserCacheDir()
-	if err != nil {
-		return fmt.Errorf("failed to get user cache dir: %w", err)
-	}
-	cacheDir := filepath.Join(cacheDirBase, "ksql")
-	os.MkdirAll(cacheDir, 0755)
-	historyFile = filepath.Join(cacheDir, "history")
+	// historyFile := ""
+	// cacheDirBase, err := os.UserCacheDir()
+	// if err != nil {
+	// 	return fmt.Errorf("failed to get user cache dir: %w", err)
+	// }
+	// cacheDir := filepath.Join(cacheDirBase, "ksql")
+	// os.MkdirAll(cacheDir, 0755)
+	// historyFile = filepath.Join(cacheDir, "history")
 
 	err = interactive(ctx, conn)
 	if err != nil {
 		return fmt.Errorf("%s", err)
 	}
 
-	rl, err := readline.NewEx(&readline.Config{
-		Prompt:                 "> ",
-		HistoryFile:            historyFile,
-		DisableAutoSaveHistory: true,
-	})
-	if err != nil {
-		return fmt.Errorf("failed to initialize readline: %w", err)
-	}
-	defer rl.Close()
-
-	for {
-		var buf strings.Builder
-		prompt := "> "
-		for {
-			rl.SetPrompt(prompt)
-			line, err := rl.Readline()
-			if err != nil {
-				if errors.Is(err, readline.ErrInterrupt) || errors.Is(err, io.EOF) {
-					fmt.Println("")
-					return nil
-				}
-				return err
-			}
-
-			trimmed := strings.TrimSpace(line)
-			// Dot-commands are single-line and don't require a trailing ';'.
-			if buf.Len() == 0 && strings.HasPrefix(trimmed, ".") {
-				buf.WriteString(strings.TrimSuffix(trimmed, ";"))
-				break
-			}
-			if buf.Len() == 0 && trimmed == "exit" {
-				buf.WriteString(trimmed)
-				break
-			}
-			buf.WriteString(line)
-			buf.WriteString("\n")
-			if strings.HasSuffix(strings.TrimSpace(buf.String()), ";") {
-				break
-			}
-			prompt = "- "
-		}
-		text := strings.TrimSpace(buf.String())
-		historyEntry := strings.Join(strings.Fields(text), " ")
-		rl.SaveHistory(historyEntry)
-
-		if text == "exit" {
-			return nil
-		}
-		if strings.HasPrefix(text, ".") {
-			fields := strings.Fields(text)
-			if len(fields) >= 1 && fields[0] == ".mode" {
-				if len(fields) != 2 {
-					fmt.Println("usage: .mode pretty|single_line")
-					continue
-				}
-				switch fields[1] {
-				case string(outputModePretty):
-					mode = outputModePretty
-					fmt.Println("mode: pretty")
-				case string(outputModeSingleLine):
-					mode = outputModeSingleLine
-					fmt.Println("mode: single_line")
-				default:
-					fmt.Println("usage: .mode pretty|single_line")
-				}
-				continue
-			}
-			fmt.Println("unknown command")
-			continue
-		}
-
-		err = runQuery(ctx, conn, mode, text)
-		if err != nil {
-			fmt.Println(err)
-		}
-	}
+	return nil
 }
 
 func GetRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {

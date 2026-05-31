@@ -8,7 +8,6 @@ require (
 	github.com/DavidGamba/dgtools/yamlutils v0.2.0
 	github.com/DavidGamba/go-getoptions v0.33.0
 	github.com/atotto/clipboard v0.1.4
-	github.com/chzyer/readline v1.5.1
 	github.com/duckdb/duckdb-go/v2 v2.10503.0
 	github.com/hymkor/go-multiline-ny v0.23.1
 	github.com/nyaosorg/go-readline-ny v1.15.1
