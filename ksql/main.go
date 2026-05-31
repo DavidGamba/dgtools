@@ -10,6 +10,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/DavidGamba/dgtools/run"
 	"github.com/DavidGamba/go-getoptions"
@@ -141,7 +142,7 @@ const (
 func QueryRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	Logger.Printf("Running")
 
-	// mode := outputModePretty
+	mode := outputModePretty
 
 	conn, err := dbConn(ctx)
 	if err != nil {
@@ -158,9 +159,19 @@ func QueryRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	// os.MkdirAll(cacheDir, 0755)
 	// historyFile = filepath.Join(cacheDir, "history")
 
-	err = interactive(ctx, conn)
-	if err != nil {
-		return fmt.Errorf("%s", err)
+	for lines, err := range interactive(ctx) {
+		if err != nil {
+			return fmt.Errorf("%s", err)
+		}
+		L := strings.Join(lines, "\n")
+		fmt.Println("-----")
+		fmt.Println(L)
+		fmt.Println("-----")
+
+		err = runQuery(ctx, conn, mode, L)
+		if err != nil {
+			fmt.Printf("Error: %v\n", err)
+		}
 	}
 
 	return nil
