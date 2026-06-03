@@ -42,7 +42,7 @@ func (h *HistoryFile) At(n int) string {
 	i := 0
 	for scanner.Scan() {
 		if i == n {
-			return scanner.Text()
+			return strings.ReplaceAll(scanner.Text(), "⏎", "\n")
 		}
 		i++
 	}
