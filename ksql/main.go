@@ -196,12 +196,22 @@ func QueryRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 			return fmt.Errorf("%s", err)
 		}
 		query := strings.Join(lines, "\n")
-		fmt.Println("-----")
+		fmt.Println("----")
 		fmt.Println(query)
-		fmt.Println("-----")
+		fmt.Println("----")
 		err := history.Add(strings.Join(lines, "⏎"))
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "ERROR: failed to add to history: %v\n", err)
+		}
+
+		if strings.HasPrefix(lines[0], ".mode") {
+			switch {
+			case regexp.MustCompile(`(?s)(?i)\.mode\s+pretty`).MatchString(query):
+				mode = outputModePretty
+			case regexp.MustCompile(`(?s)(?i)\.mode\s+single_line`).MatchString(query):
+				mode = outputModeSingleLine
+			}
+			continue
 		}
 
 		err = runQuery(ctx, conn, mode, query)
