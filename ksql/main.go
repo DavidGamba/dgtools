@@ -188,7 +188,7 @@ func QueryRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	r.SubmitOnEnterWhenEndsOn(";")
 
 	r.Ed.Highlight = append(r.Ed.Highlight, readline.Highlight{
-		Pattern: regexp.MustCompile(`(?i)(SELECT|INSERT|FROM|WHERE|AS|GROUP BY|ORDER BY|LIMIT)`), Sequence: "\x1B[36;49;1m",
+		Pattern: regexp.MustCompile(`(?:\b|^)(?i)(SELECT|INSERT|FROM|WHERE|AS|GROUP BY|ORDER BY|LIMIT)(?:\b|$)`), Sequence: "\x1B[36;49;1m",
 	})
 
 	for lines, err := range repl.Interactive(ctx, r) {
@@ -199,7 +199,7 @@ func QueryRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 		fmt.Println("-----")
 		fmt.Println(query)
 		fmt.Println("-----")
-		err := history.Add(strings.Join(lines, " "))
+		err := history.Add(strings.Join(lines, "⏎"))
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "ERROR: failed to add to history: %v\n", err)
 		}
