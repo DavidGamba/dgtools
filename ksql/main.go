@@ -10,11 +10,14 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
+	"github.com/DavidGamba/dgtools/ksql/repl"
 	"github.com/DavidGamba/dgtools/run"
 	"github.com/DavidGamba/go-getoptions"
 	_ "github.com/duckdb/duckdb-go/v2"
+	"github.com/nyaosorg/go-readline-ny"
 )
 
 var Logger = log.New(os.Stderr, "", log.LstdFlags)
@@ -139,6 +142,32 @@ const (
 	outputModeSingleLine outputMode = "single_line"
 )
 
+var (
+	commands = []string{"select", "insert", "delete", "update"}
+	tables   = []string{"dept", "emp", "bonus", "salgrade"}
+	columns  = []string{"deptno", "dname", "loc", "empno", "ename", "job", "mgr", "hiredate", "sal", "comm", "grade", "losal", "hisal"}
+)
+
+func completionCandidates(fieldsBeforeCursor []string) (completionSet []string, listingSet []string) {
+	candidates := commands
+	for _, word := range fieldsBeforeCursor {
+		if strings.EqualFold(word, "from") {
+			candidates = append([]string{"where"}, tables...)
+		} else if strings.EqualFold(word, "set") {
+			candidates = append([]string{"where"}, columns...)
+		} else if strings.EqualFold(word, "update") {
+			candidates = append([]string{"set"}, tables...)
+		} else if strings.EqualFold(word, "delete") {
+			candidates = []string{"from"}
+		} else if strings.EqualFold(word, "select") {
+			candidates = append([]string{"from"}, columns...)
+		} else if strings.EqualFold(word, "where") {
+			candidates = append([]string{"and", "or"}, columns...)
+		}
+	}
+	return candidates, candidates
+}
+
 func QueryRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	Logger.Printf("Running")
 
@@ -150,12 +179,19 @@ func QueryRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	}
 	defer conn.Close()
 
-	history, err := NewHistoryFile("ksql", "history")
+	history, err := repl.NewHistoryFile("ksql", "history")
 	if err != nil {
 		return fmt.Errorf("failed to create history file: %w", err)
 	}
 
-	for lines, err := range interactive(ctx, history) {
+	r := repl.New(history, completionCandidates)
+	r.SubmitOnEnterWhenEndsOn(";")
+
+	r.Ed.Highlight = append(r.Ed.Highlight, readline.Highlight{
+		Pattern: regexp.MustCompile(`(?i)(SELECT|INSERT|FROM|WHERE|AS|GROUP BY|ORDER BY|LIMIT)`), Sequence: "\x1B[36;49;1m",
+	})
+
+	for lines, err := range repl.Interactive(ctx, r) {
 		if err != nil {
 			return fmt.Errorf("%s", err)
 		}
