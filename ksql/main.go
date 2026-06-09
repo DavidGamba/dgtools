@@ -142,111 +142,6 @@ const (
 	outputModeSingleLine outputMode = "single_line"
 )
 
-var (
-	commands = []string{
-
-		"ANALYZE",
-		"ALTER",
-		"CALL",
-		"CHECKPOINT",
-		"COPY",
-		"CREATE",
-		"DELETE",
-		"DESCRIBE",
-		"DROP",
-		"EXPORT",
-		"IMPORT",
-		"DATABASE",
-		"DATABASES",
-		"INSERT",
-		"LOAD",
-		"INSTALL",
-		"MERGE",
-		"INTO",
-		"PIVOT",
-		"SELECT",
-		"RESET",
-		"SET",
-		"VARIABLE",
-		"SHOW",
-		"SUMMARIZE",
-		"UNPIVOT",
-		"UPDATE",
-		"USE",
-		"VACUUM",
-
-		".mode",
-		".help",
-	}
-
-	createKeywords = []string{
-		"INDEX",
-		"MACRO",
-		"SCHEMA",
-		"SECRET",
-		"SEQUENCE",
-		"TABLE",
-		"VIEW",
-		"TYPE",
-	}
-
-	selectKeywords = []string{
-		"ALL",
-		"AND",
-		"ANY",
-		"ARRAY",
-		"AS",
-		"ASC",
-		"BINARY",
-		"BOTH",
-		"BY",
-		"CASE",
-		"CAST",
-		"COLLATE",
-		"COLUMN",
-		"COLUMNS",
-		"CROSS",
-		"CURRENT_DATE",
-		"CURRENT_TIME",
-		"CURRENT_TIMESTAMP",
-		"DATABASES",
-		"DEFAULT",
-		"DESC",
-		"DISTINCT",
-		"DO",
-		"FROM",
-		"GROUP",
-		"HAVING",
-		"INTO",
-		"JOIN",
-		"LIKE",
-		"LIMIT",
-		"MERGE",
-		"ORDER",
-		"QUALIFY",
-		"SAMPLE",
-		"USING",
-		"WHERE",
-		"WINDOW",
-	}
-)
-
-func completionCandidates(fieldsBeforeCursor []string) (completionSet []string, listingSet []string) {
-	candidates := commands
-	for _, word := range fieldsBeforeCursor {
-		if strings.EqualFold(word, ".mode") {
-			candidates = []string{"pretty", "single_line"}
-		}
-		if strings.EqualFold(word, "SELECT") {
-			candidates = append(candidates, selectKeywords...)
-		}
-		if strings.EqualFold(word, "CREATE") {
-			candidates = append(candidates, createKeywords...)
-		}
-	}
-	return candidates, candidates
-}
-
 func QueryRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	Logger.Printf("Running")
 
@@ -267,7 +162,7 @@ func QueryRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	r.SubmitOnEnterWhenEndsOn(";")
 
 	r.Ed.Highlight = append(r.Ed.Highlight, readline.Highlight{
-		Pattern: regexp.MustCompile(`(?:\b|^)(?i)(` + strings.Join(append(append(commands, selectKeywords...), createKeywords...), "|") + `)(?:\b|$)`), Sequence: "\x1B[36;49;1m",
+		Pattern: regexp.MustCompile(`(?:\b|^)(?i)(` + strings.Join(AllKeywords(), "|") + `)(?:\b|$)`), Sequence: "\x1B[36;49;1m",
 	})
 
 	for lines, err := range repl.Interactive(ctx, r) {
