@@ -21,7 +21,6 @@ import (
 	"encoding/csv"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
@@ -30,7 +29,7 @@ import (
 
 // Logger - Default *log.Logger variable.
 // Set output to os.Stderr or override.
-var Logger = log.New(ioutil.Discard, "clitable DEBUG ", log.LstdFlags)
+var Logger = log.New(io.Discard, "clitable DEBUG ", log.LstdFlags)
 
 type TablePrinter struct {
 	tableConfig tableConfig
