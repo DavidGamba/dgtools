@@ -108,7 +108,7 @@ dddd,ee,fff`)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := clitable.GetTableInfo(clitable.CSVTable{tt.args.reader})
+			got, err := clitable.GetTableInfo(clitable.CSVTable{Reader: tt.args.reader})
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetTableInfo() error = %v, wantErr %v", err, tt.wantErr)
 				return
