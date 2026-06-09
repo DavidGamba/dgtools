@@ -293,12 +293,15 @@ func GetRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 		`CREATE OR REPLACE MACRO k8s.age(x) AS
 	CASE
 		WHEN x IS NULL THEN NULL
-		WHEN date_diff('days', x, current_timestamp AT TIME ZONE 'UTC') >= 1 THEN
-			date_diff('days', x, current_timestamp AT TIME ZONE 'UTC')::VARCHAR || 'd'
-		WHEN date_diff('hours', x, current_timestamp AT TIME ZONE 'UTC') >= 1 THEN
-			date_diff('hours', x, current_timestamp AT TIME ZONE 'UTC')::VARCHAR || 'h'
+		WHEN date_diff('minutes', x, current_timestamp AT TIME ZONE 'UTC') >= (24*60) THEN
+			(date_diff('minutes', x, current_timestamp AT TIME ZONE 'UTC')//(24*60))::VARCHAR || 'd' ||
+			(date_diff('minutes', x, current_timestamp AT TIME ZONE 'UTC')%(60*24)//60)::VARCHAR || 'h'
+		WHEN date_diff('minutes', x, current_timestamp AT TIME ZONE 'UTC') >= 60 THEN
+			(date_diff('minutes', x, current_timestamp AT TIME ZONE 'UTC')%(60*24)//60)::VARCHAR || 'h' ||
+			(date_diff('minutes', x, current_timestamp AT TIME ZONE 'UTC')%60)::VARCHAR || 'm'
 		ELSE
-			date_diff('minutes', x, current_timestamp AT TIME ZONE 'UTC')::VARCHAR || 'm'
+			(date_diff('seconds', x, current_timestamp AT TIME ZONE 'UTC')//60)::VARCHAR || 'm' ||
+			(date_diff('seconds', x, current_timestamp AT TIME ZONE 'UTC')%60)::VARCHAR || 's'
 	END;`,
 
 		"CREATE OR REPLACE MACRO k8s.agem(x) AS k8s.age(x.metadata.creationTimestamp);",
