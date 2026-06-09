@@ -143,26 +143,105 @@ const (
 )
 
 var (
-	commands = []string{"select", "insert", "delete", "update"}
-	tables   = []string{"dept", "emp", "bonus", "salgrade"}
-	columns  = []string{"deptno", "dname", "loc", "empno", "ename", "job", "mgr", "hiredate", "sal", "comm", "grade", "losal", "hisal"}
+	commands = []string{
+
+		"ANALYZE",
+		"ALTER",
+		"CALL",
+		"CHECKPOINT",
+		"COPY",
+		"CREATE",
+		"DELETE",
+		"DESCRIBE",
+		"DROP",
+		"EXPORT",
+		"IMPORT",
+		"DATABASE",
+		"DATABASES",
+		"INSERT",
+		"LOAD",
+		"INSTALL",
+		"MERGE",
+		"INTO",
+		"PIVOT",
+		"SELECT",
+		"RESET",
+		"SET",
+		"VARIABLE",
+		"SHOW",
+		"SUMMARIZE",
+		"UNPIVOT",
+		"UPDATE",
+		"USE",
+		"VACUUM",
+
+		".mode",
+		".help",
+	}
+
+	createKeywords = []string{
+		"INDEX",
+		"MACRO",
+		"SCHEMA",
+		"SECRET",
+		"SEQUENCE",
+		"TABLE",
+		"VIEW",
+		"TYPE",
+	}
+
+	selectKeywords = []string{
+		"ALL",
+		"AND",
+		"ANY",
+		"ARRAY",
+		"AS",
+		"ASC",
+		"BINARY",
+		"BOTH",
+		"BY",
+		"CASE",
+		"CAST",
+		"COLLATE",
+		"COLUMN",
+		"COLUMNS",
+		"CROSS",
+		"CURRENT_DATE",
+		"CURRENT_TIME",
+		"CURRENT_TIMESTAMP",
+		"DATABASES",
+		"DEFAULT",
+		"DESC",
+		"DISTINCT",
+		"DO",
+		"FROM",
+		"GROUP",
+		"HAVING",
+		"INTO",
+		"JOIN",
+		"LIKE",
+		"LIMIT",
+		"MERGE",
+		"ORDER",
+		"QUALIFY",
+		"SAMPLE",
+		"USING",
+		"WHERE",
+		"WINDOW",
+	}
 )
 
 func completionCandidates(fieldsBeforeCursor []string) (completionSet []string, listingSet []string) {
 	candidates := commands
 	for _, word := range fieldsBeforeCursor {
-		if strings.EqualFold(word, "from") {
-			candidates = append([]string{"where"}, tables...)
-		} else if strings.EqualFold(word, "set") {
-			candidates = append([]string{"where"}, columns...)
-		} else if strings.EqualFold(word, "update") {
-			candidates = append([]string{"set"}, tables...)
-		} else if strings.EqualFold(word, "delete") {
-			candidates = []string{"from"}
-		} else if strings.EqualFold(word, "select") {
-			candidates = append([]string{"from"}, columns...)
-		} else if strings.EqualFold(word, "where") {
-			candidates = append([]string{"and", "or"}, columns...)
+		if strings.EqualFold(word, ".mode") {
+			candidates = []string{"pretty", "single_line"}
+		}
+		if strings.EqualFold(word, "SELECT") {
+			candidates = append(candidates, selectKeywords...)
+		}
+		if strings.EqualFold(word, "CREATE") {
+			candidates = append(candidates, createKeywords...)
 		}
 	}
 	return candidates, candidates
@@ -188,7 +267,7 @@ func QueryRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	r.SubmitOnEnterWhenEndsOn(";")
 
 	r.Ed.Highlight = append(r.Ed.Highlight, readline.Highlight{
-		Pattern: regexp.MustCompile(`(?:\b|^)(?i)(SELECT|INSERT|FROM|WHERE|AS|GROUP BY|ORDER BY|LIMIT)(?:\b|$)`), Sequence: "\x1B[36;49;1m",
+		Pattern: regexp.MustCompile(`(?:\b|^)(?i)(` + strings.Join(append(append(commands, selectKeywords...), createKeywords...), "|") + `)(?:\b|$)`), Sequence: "\x1B[36;49;1m",
 	})
 
 	for lines, err := range repl.Interactive(ctx, r) {
@@ -210,7 +289,18 @@ func QueryRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 				mode = outputModePretty
 			case regexp.MustCompile(`(?s)(?i)\.mode\s+single_line`).MatchString(query):
 				mode = outputModeSingleLine
+			default:
+				fmt.Printf("Valid modes: 'pretty', 'single_line'\n")
 			}
+			continue
+		}
+
+		if strings.HasPrefix(lines[0], ".help") {
+			fmt.Printf("%s\n", repl.DefaultHeader())
+			fmt.Printf(`
+.mode <pretty|single_line>    - set output mode
+.help                         - show this message
+`)
 			continue
 		}
 
