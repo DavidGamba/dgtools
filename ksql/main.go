@@ -2,16 +2,16 @@ package main
 
 import (
 	"context"
-	"database/sql"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"log"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"regexp"
 	"strings"
+	"syscall"
 
 	"github.com/DavidGamba/dgtools/ksql/repl"
 	"github.com/DavidGamba/dgtools/run"
@@ -49,9 +49,8 @@ func program(args []string) int {
 	}
 	Logger.Println(remaining)
 
-	// ctx, cancel, done := getoptions.InterruptContext()
-	// defer func() { cancel(); <-done }()
-	ctx := context.Background()
+	ctx, cancel, done := getoptions.InterruptContext()
+	defer func() { cancel(); <-done }()
 
 	err = opt.Dispatch(ctx, remaining)
 	if err != nil {
@@ -93,6 +92,10 @@ func QueryRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	r.Ed.Highlight = append(r.Ed.Highlight, readline.Highlight{
 		Pattern: regexp.MustCompile(`(?:\b|^)(?i)(` + strings.Join(AllKeywords(), "|") + `)(?:\b|$)`), Sequence: "\x1B[36;49;1m",
 	})
+
+	// Ignore Ctrl-C in SQL repl
+	r.IgnoreSIGINT = true
+	signal.Ignore(syscall.SIGINT)
 
 	for lines, err := range repl.Interactive(ctx, r) {
 		if err != nil {
