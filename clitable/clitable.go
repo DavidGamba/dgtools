@@ -259,13 +259,13 @@ func (tp *TablePrinter) fprint(w io.Writer, t Table, tableInfo *TableInfo) error
 		}
 		for i := 0; i < tableInfo.RowHeights[rowCounter]; i++ {
 			if tp.tableConfig.ColumnEdges {
-				fmt.Printf(tp.tableConfig.Column)
+				fmt.Print(tp.tableConfig.Column)
 			} else {
-				fmt.Printf("")
+				fmt.Print("")
 			}
 			for j := 0; j < tableInfo.Columns; j++ {
 				if j > 0 {
-					fmt.Printf(tp.tableConfig.Column)
+					fmt.Print(tp.tableConfig.Column)
 				}
 				if len(row.Fields) <= j {
 					fmt.Printf(" %-"+strconv.Itoa(tableInfo.ColumnWidths[j])+"s ", " ")
@@ -328,15 +328,15 @@ func printHorizontalLine(start, juncture, end, body string, columnEdges bool, ta
 	for i := 0; i < tableInfo.Columns; i++ {
 		if i == 0 {
 			if columnEdges {
-				fmt.Printf(start)
+				fmt.Print(start)
 			} else {
-				fmt.Printf("")
+				fmt.Print("")
 			}
 		} else {
-			fmt.Printf(juncture)
+			fmt.Print(juncture)
 		}
 		// Column width with space padding on each side
-		fmt.Printf(strings.Repeat(body, tableInfo.ColumnWidths[i]+2))
+		fmt.Print(strings.Repeat(body, tableInfo.ColumnWidths[i]+2))
 		if i+1 == tableInfo.Columns {
 			if columnEdges {
 				fmt.Println(end)
