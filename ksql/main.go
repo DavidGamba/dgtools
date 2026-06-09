@@ -68,6 +68,7 @@ type outputMode string
 const (
 	outputModePretty     outputMode = "pretty"
 	outputModeSingleLine outputMode = "single_line"
+	outputModeTable      outputMode = "table"
 )
 
 func QueryRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
@@ -116,8 +117,10 @@ func QueryRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 				mode = outputModePretty
 			case regexp.MustCompile(`(?s)(?i)\.mode\s+single_line`).MatchString(query):
 				mode = outputModeSingleLine
+			case regexp.MustCompile(`(?s)(?i)\.mode\s+table`).MatchString(query):
+				mode = outputModeTable
 			default:
-				fmt.Printf("Valid modes: 'pretty', 'single_line'\n")
+				fmt.Printf("Valid modes: 'pretty', 'single_line', 'table'\n")
 			}
 			continue
 		}
@@ -125,8 +128,8 @@ func QueryRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 		if strings.HasPrefix(lines[0], ".help") {
 			fmt.Printf("%s\n", repl.DefaultHeader())
 			fmt.Printf(`
-.mode <pretty|single_line>    - set output mode
-.help                         - show this message
+.mode <pretty|single_line|table>    - set output mode
+.help                               - show this message
 `)
 			continue
 		}
