@@ -104,8 +104,9 @@ func DefaultHeader() string {
 }
 
 type Repl struct {
-	Ed     *multiline.Editor
-	Header string
+	Ed           *multiline.Editor
+	Header       string
+	IgnoreSIGINT bool
 }
 
 func New(history readline.IHistory, completionCandidates func(fieldsBeforeCursor []string) (completionSet []string, listingSet []string)) *Repl {
@@ -167,6 +168,9 @@ func Interactive(ctx context.Context, r *Repl) iter.Seq2[[]string, error] {
 		for {
 			lines, err := r.Ed.Read(ctx)
 			if err != nil {
+				if r.IgnoreSIGINT && strings.Contains(err.Error(), "^C") {
+					continue
+				}
 				yield(lines, fmt.Errorf("failed to read: %w", err))
 				return
 			}
