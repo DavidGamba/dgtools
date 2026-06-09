@@ -31,6 +31,7 @@ func runQuery(ctx context.Context, conn *sql.Conn, mode outputMode, query string
 	}
 
 	var results []map[string]any
+	keys := map[string]struct{}{}
 	for rows.Next() {
 		values := make([]any, len(cols))
 		ptrs := make([]any, len(cols))
@@ -48,6 +49,7 @@ func runQuery(ctx context.Context, conn *sql.Conn, mode outputMode, query string
 				val = string(b)
 			}
 			row[col] = val
+			keys[col] = struct{}{}
 		}
 		results = append(results, row)
 	}
@@ -72,6 +74,8 @@ func runQuery(ctx context.Context, conn *sql.Conn, mode outputMode, query string
 			}
 			fmt.Println(string(out))
 		}
+	case outputModeTable:
+		fmt.Printf("%v\n", keys)
 	default:
 		return fmt.Errorf("unknown output mode: %q", mode)
 	}
