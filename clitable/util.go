@@ -1,6 +1,9 @@
 package clitable
 
-import "slices"
+import (
+	"maps"
+	"slices"
+)
 
 // Given a base slice, it allows to introduce a given prefix slice with a fixed ordering.
 // It will prefix the base slice with the entries from prefix and drop the entries from base.
@@ -21,4 +24,24 @@ func prefixSlice[T comparable](prefix, base []T) []T {
 		base = slices.Delete(base, index, index+1)
 	}
 	return append(validPrefix, base...)
+}
+
+// mapListKeys - given a list of maps it will gather all their keys into a unique slice
+func mapListKeys[T interface{ ~string }](mapList ...map[T]any) []T {
+	seen := make(map[T]struct{})
+	result := make([]T, 0)
+	collection := [][]T{}
+	for _, m := range mapList {
+		keys := slices.Sorted(maps.Keys(m))
+		collection = append(collection, keys)
+	}
+	for _, s := range collection {
+		for _, v := range s {
+			if _, ok := seen[v]; !ok {
+				seen[v] = struct{}{}
+				result = append(result, v)
+			}
+		}
+	}
+	return result
 }

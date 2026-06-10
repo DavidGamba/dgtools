@@ -44,3 +44,30 @@ func TestPrefixSlice(t *testing.T) {
 		})
 	}
 }
+
+func TestMapListKeys(t *testing.T) {
+	type args struct {
+		mapList []map[string]any
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    []string
+		wantErr bool
+	}{
+		{
+			"simple",
+			args{mapList: []map[string]any{{"a": 1, "b": 2, "c": 3}, {"b": 4, "c": 5, "d": 6}}},
+			[]string{"a", "b", "c", "d"},
+			false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := mapListKeys(tt.args.mapList...)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("mapListKeys() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
