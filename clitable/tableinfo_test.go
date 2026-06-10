@@ -170,3 +170,54 @@ func TestGetTableInfoSimpleTable(t *testing.T) {
 		})
 	}
 }
+
+func TestGetTableInfoMapTable(t *testing.T) {
+	type args struct {
+		t clitable.Table
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *clitable.TableInfo
+		wantErr bool
+	}{
+		{
+			"Basic table 1x1",
+			args{clitable.MapTable{MapList: []map[string]any{{"a": "b"}}}},
+			&clitable.TableInfo{
+				Columns:            1,
+				Rows:               2,
+				PerRowColumnWidths: [][]int{{1}, {1}},
+				PerRowRows:         [][]int{{1}, {1}},
+				ColumnWidths:       []int{1},
+				RowHeights:         []int{1, 1},
+			},
+			false,
+		},
+		{
+			"Basic table 2x2",
+			args{clitable.MapTable{MapList: []map[string]any{{"a": "b", "c": "d"}, {"a": "e", "c": "f"}}}},
+			&clitable.TableInfo{
+				Columns:            2,
+				Rows:               3,
+				PerRowColumnWidths: [][]int{{1, 1}, {1, 1}, {1, 1}},
+				PerRowRows:         [][]int{{1, 1}, {1, 1}, {1, 1}},
+				ColumnWidths:       []int{1, 1},
+				RowHeights:         []int{1, 1, 1},
+			},
+			false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := clitable.GetTableInfo(tt.args.t)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetTableInfo() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetTableInfo() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

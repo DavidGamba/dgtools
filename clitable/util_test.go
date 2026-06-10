@@ -64,7 +64,7 @@ func TestMapListKeys(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := mapListKeys(tt.args.mapList...)
+			got := mapListKeys(tt.args.mapList)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("mapListKeys() = %v, want %v", got, tt.want)
 			}

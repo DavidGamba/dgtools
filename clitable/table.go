@@ -10,6 +10,7 @@ package clitable
 
 import (
 	"encoding/csv"
+	"encoding/json"
 	"io"
 )
 
@@ -77,6 +78,53 @@ func CSVRowIterator(reader io.Reader, separator rune) <-chan Row {
 				return
 			}
 			c <- Row{Fields: record}
+		}
+		close(c)
+	}()
+	return c
+}
+
+// MapTable - Implements the table interface on a map
+// Nested map entries will be json marshalled.
+type MapTable struct {
+	MapList      []map[string]any // list of maps to traverse
+	keys         []string         // internal representation of keys
+	Keys         []string         // User Key order override, doesn't not have to be exhaustive
+	IgnoreHeader bool             // Don't include table header
+	// NestedFormat will initially just be json but could also be YAML, though that requires an extra dependency
+}
+
+func (t MapTable) RowIterator() <-chan Row {
+	c := make(chan Row)
+	go func() {
+		if len(t.MapList) <= 0 {
+			close(c)
+			return
+		}
+		t.keys = mapListKeys(t.MapList)
+		t.keys = prefixSlice(t.Keys, t.keys)
+		if !t.IgnoreHeader {
+			c <- Row{Fields: t.keys}
+		}
+		for _, m := range t.MapList {
+			row := make([]string, len(t.keys))
+			for i, k := range t.keys {
+				if v, ok := m[k]; ok {
+					switch v := v.(type) {
+					case string:
+						row[i] = v
+					default:
+						b, err := json.Marshal(v)
+						if err != nil {
+							c <- Row{Error: err}
+							close(c)
+							return
+						}
+						row[i] = string(b)
+					}
+				}
+			}
+			c <- Row{Fields: row}
 		}
 		close(c)
 	}()

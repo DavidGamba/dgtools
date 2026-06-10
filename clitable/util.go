@@ -27,7 +27,7 @@ func prefixSlice[T comparable](prefix, base []T) []T {
 }
 
 // mapListKeys - given a list of maps it will gather all their keys into a unique slice
-func mapListKeys[T interface{ ~string }](mapList ...map[T]any) []T {
+func mapListKeys[T interface{ ~string }](mapList []map[T]any) []T {
 	seen := make(map[T]struct{})
 	result := make([]T, 0)
 	collection := [][]T{}
