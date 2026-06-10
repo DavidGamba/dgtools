@@ -10,6 +10,11 @@ You can limit the output to a single key within the secret with the `--key` or `
 
 Additionally, if the secret is a PEM encoded certificate, you can pass the `--pem` flag to decode the certificate and print the details.
 
+To view the External Secrets Operator chain, you can use the `--es` flag.
+It will pull the ExternalSecret and the SecretStore details as well.
+
+Use the `-o yaml` option to print the raw YAML similar to what `kubectl get secret -o yaml <secret>` would print.
+
 == Examples
 
 .Decode a secret as a PEM certificate and pass the namespace, the cluster and filter to a single key
@@ -76,3 +81,8 @@ Ensure your Go bin is in your PATH.
 brew tap DavidGamba/dgtools https://github.com/DavidGamba/dgtools
 brew install DavidGamba/dgtools/kdecode
 ----
+
+
+== ROADMAP
+
+* Add completion for namespace and secrets
