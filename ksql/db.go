@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+
+	"github.com/DavidGamba/dgtools/clitable"
 )
 
 func dbConn(ctx context.Context) (*sql.Conn, error) {
@@ -75,7 +77,7 @@ func runQuery(ctx context.Context, conn *sql.Conn, mode outputMode, query string
 			fmt.Println(string(out))
 		}
 	case outputModeTable:
-		fmt.Printf("%v\n", keys)
+		clitable.NewTablePrinter().Print(clitable.MapTable{MapList: results})
 	default:
 		return fmt.Errorf("unknown output mode: %q", mode)
 	}
