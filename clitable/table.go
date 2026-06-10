@@ -114,7 +114,7 @@ func (t MapTable) RowIterator() <-chan Row {
 					case string:
 						row[i] = v
 					default:
-						b, err := json.Marshal(v)
+						b, err := json.MarshalIndent(v, "", "  ")
 						if err != nil {
 							c <- Row{Error: err}
 							close(c)
