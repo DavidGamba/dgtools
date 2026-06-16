@@ -196,7 +196,7 @@ func TestGetTableInfoMapTable(t *testing.T) {
 		},
 		{
 			"Basic table 2x2",
-			args{clitable.MapTable{MapList: []map[string]any{{"a": "b", "c": "d"}, {"a": "e", "c": "f"}}}},
+			args{clitable.MapTable{MapList: []map[string]any{{"a": "c", "b": "d"}, {"a": "e", "b": "f"}}}},
 			&clitable.TableInfo{
 				Columns:            2,
 				Rows:               3,

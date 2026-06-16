@@ -10,31 +10,11 @@ package clitable_test
 
 import (
 	"os"
-	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/DavidGamba/dgtools/clitable"
 )
-
-type Data struct {
-	Info []struct {
-		Name string
-		ID   int
-	}
-}
-
-func (d *Data) RowIterator() <-chan clitable.Row {
-	c := make(chan clitable.Row)
-	go func() {
-		c <- clitable.Row{Fields: []string{"", "Name", "ID"}}
-		for i, row := range d.Info {
-			c <- clitable.Row{Fields: []string{strconv.Itoa(i + 1), row.Name, strconv.Itoa(row.ID)}}
-		}
-		close(c)
-	}()
-	return c
-}
 
 func TestTableStructData(t *testing.T) {
 	data := &Data{[]struct {

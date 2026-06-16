@@ -21,21 +21,25 @@ image:https://pkg.go.dev/badge/github.com/DavidGamba/dgtools/clitable.svg[Go Ref
 import "github.com/DavidGamba/dgtools/clitable"
 ----
 
+=== String Slices
+
 For simple tables of type `[][]string`:
 
 [source, go]
 ----
 simpleData := [][]string{{"Hello", "1"}, {"World", "2"}}
-clitable.NewTablePrinter().Print(clitable.SimpleTable{simpleData})
+clitable.NewTablePrinter().Print(clitable.SimpleTable{Data: simpleData})
 ----
 
 ----
 ┌───────┬───┐
 │ Hello │ 1 │
-├───────┼───┤
+╞═══════╪═══╡
 │ World │ 2 │
 └───────┴───┘
 ----
+
+=== CSV
 
 For CSV from an `io.Reader`:
 
@@ -44,6 +48,16 @@ For CSV from an `io.Reader`:
 r := strings.NewReader("Hello,1\nWorld,2\n")
 clitable.NewTablePrinter().FprintCSVReader(os.Stdout, r)
 ----
+
+----
+┌───────┬───┐
+│ Hello │ 1 │
+╞═══════╪═══╡
+│ World │ 2 │
+└───────┴───┘
+----
+
+=== TSV
 
 For TSV from an `io.Reader`:
 
@@ -56,10 +70,59 @@ clitable.NewTablePrinter().Separator('\t').FprintCSVReader(os.Stdout, r)
 ----
 ┌───────┬───┐
 │ Hello │ 1 │
-├───────┼───┤
+╞═══════╪═══╡
 │ World │ 2 │
 └───────┴───┘
 ----
+
+=== Map Slices
+
+[source, go]
+----
+clitable.NewTablePrinter().Print(clitable.MapTable{MapList: []map[string]any{
+	{"a": "c", "b": "d"},
+	{"a": "e", "b": "f"},
+}})
+----
+
+----
+┌───┬───┐
+│ a │ b │
+╞═══╪═══╡
+│ c │ d │
+├───┼───┤
+│ e │ f │
+└───┴───┘
+----
+
+Nested data gets json Marshalled:
+
+[source, go]
+----
+mapData = []map[string]any{
+	{"a": map[string]any{"c": "g", "h": "i"}, "b": "d"},
+	{"a": "e", "b": map[string]any{"f": 123, "j": 456}},
+}
+clitable.NewTablePrinter().Print(clitable.MapTable{MapList: mapData})
+----
+
+----
+┌─────────────┬─────────────┐
+│ a           │ b           │
+╞═════════════╪═════════════╡
+│ {           │ d           │
+│   "c": "g", │             │
+│   "h": "i"  │             │
+│ }           │             │
+├─────────────┼─────────────┤
+│ e           │ {           │
+│             │   "f": 123, │
+│             │   "j": 456  │
+│             │ }           │
+└─────────────┴─────────────┘
+----
+
+=== Custom Structs
 
 For iterating over structs you need to implement the table interface by adding a `RowIterator` function:
 
@@ -107,7 +170,7 @@ clitable.NewTablePrinter().Fprint(os.Stdout, data)
 └───┴───────┴────┘
 ----
 
-Controlling style:
+=== Controlling Style
 
 [source, go]
 ----
