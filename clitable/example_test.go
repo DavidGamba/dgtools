@@ -122,3 +122,71 @@ func ExampleTable() {
 	// │ 2 │ World │ 2  │
 	// └───┴───────┴────┘
 }
+
+func ExampleTablePrinter_SetStyle_full() {
+	fmt.Println("Full")
+	simpleData := [][]string{{"", "Name", "ID"}, {"1", "Hello", "1"}, {"2", "World", "2"}}
+	clitable.NewTablePrinter().SetStyle(clitable.Full).Print(clitable.SimpleTable{Data: simpleData})
+
+	// Output: Full
+	// ┌───┬───────┬────┐
+	// │   │ Name  │ ID │
+	// ╞═══╪═══════╪════╡
+	// │ 1 │ Hello │ 1  │
+	// ├───┼───────┼────┤
+	// │ 2 │ World │ 2  │
+	// └───┴───────┴────┘
+}
+
+func ExampleTablePrinter_SetStyle_compact() {
+	fmt.Println("Compact")
+	simpleData := [][]string{{"", "Name", "ID"}, {"1", "Hello", "1"}, {"2", "World", "2"}}
+	clitable.NewTablePrinter().SetStyle(clitable.Compact).Print(clitable.SimpleTable{Data: simpleData})
+}
+
+func ExampleTablePrinter_SetStyle_ascii() {
+	fmt.Println("ASCII")
+	simpleData := [][]string{{"", "Name", "ID"}, {"1", "Hello", "1"}, {"2", "World", "2"}}
+	clitable.NewTablePrinter().SetStyle(clitable.Ascii).Print(clitable.SimpleTable{Data: simpleData})
+
+	// Output: ASCII
+	// +---+-------+----+
+	// |   | Name  | ID |
+	// +===+=======+====+
+	// | 1 | Hello | 1  |
+	// +---+-------+----+
+	// | 2 | World | 2  |
+	// +---+-------+----+
+}
+
+func ExampleTablePrinter_SetStyle_space() {
+	fmt.Println("Space")
+	simpleData := [][]string{{"", "Name", "ID"}, {"1", "Hello", "1"}, {"2", "World", "2"}}
+	clitable.NewTablePrinter().SetStyle(clitable.Space).Print(clitable.SimpleTable{Data: simpleData})
+}
+
+func ExampleTablePrinter_SetStyle_csv() {
+	fmt.Println("CSV")
+	simpleData := [][]string{{"", "Name", "ID"}, {"1", "Hello", "1"}, {"2", "World", "2"}}
+	clitable.NewTablePrinter().SetStyle(clitable.CSV).Print(clitable.SimpleTable{Data: simpleData})
+
+	// Output: CSV
+	// ,Name,ID
+	// 1,Hello,1
+	// 2,World,2
+}
+
+func ExampleTablePrinter_HasHeader() {
+	fmt.Println("No Header")
+	simpleData := [][]string{{"", "Name", "ID"}, {"1", "Hello", "1"}, {"2", "World", "2"}}
+	clitable.NewTablePrinter().SetStyle(clitable.Full).HasHeader(false).Print(clitable.SimpleTable{Data: simpleData})
+
+	// Output: No Header
+	// ┌───┬───────┬────┐
+	// │   │ Name  │ ID │
+	// ├───┼───────┼────┤
+	// │ 1 │ Hello │ 1  │
+	// ├───┼───────┼────┤
+	// │ 2 │ World │ 2  │
+	// └───┴───────┴────┘
+}
