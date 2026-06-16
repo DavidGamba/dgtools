@@ -104,19 +104,38 @@ func Test(opt *getoptions.GetOpt) getoptions.CommandFn {
 
 // tag - show tags for the current tool
 func Tag(opt *getoptions.GetOpt) getoptions.CommandFn {
+	var message string
+	opt.StringVar(&message, "message", "", opt.Description("tag message"))
 	return func(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 		wd, err := os.Getwd()
 		if err != nil {
 			return fmt.Errorf("failed to get cwd: %w", err)
 		}
 		Logger.Printf("Running tag on %s\n", wd)
-
-		tags, err := getTags(wd)
-		if err != nil {
-			return fmt.Errorf("failed to get tags: %w", err)
+		if len(args) == 0 {
+			tags, err := getTags(wd)
+			if err != nil {
+				return fmt.Errorf("failed to get tags: %w", err)
+			}
+			for _, tag := range tags {
+				fmt.Println(tag)
+			}
+			return nil
 		}
-		for _, tag := range tags {
-			fmt.Println(tag)
+
+		base := filepath.Base(wd)
+		tag := base + "/" + args[0]
+		Logger.Printf("Tagging %s: %s\n", tag, message)
+		if message == "" {
+			err = run.CMD("git", "tag", "-a", tag).Log().Run()
+			if err != nil {
+				return fmt.Errorf("failed to run git commit: %w", err)
+			}
+			return nil
+		}
+		err = run.CMD("git", "tag", "-a", tag, "-m", message).Log().Run()
+		if err != nil {
+			return fmt.Errorf("failed to run git commit: %w", err)
 		}
 		return nil
 	}
