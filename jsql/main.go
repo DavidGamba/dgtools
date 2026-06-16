@@ -74,7 +74,7 @@ const (
 func QueryRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	Logger.Printf("Running")
 
-	mode := outputModePretty
+	mode := outputModeTable
 
 	conn, err := dbConn(ctx)
 	if err != nil {
@@ -120,7 +120,12 @@ func QueryRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 			case regexp.MustCompile(`(?s)(?i)\.mode\s+table`).MatchString(query):
 				mode = outputModeTable
 			default:
-				fmt.Printf("Valid modes: 'pretty', 'single_line', 'table'\n")
+				fmt.Printf(`Valid modes:
+
+table: (default) pretty print tables and json marshal nested data
+pretty: json marshal results
+single_line: json marshal into one record per line
+`)
 			}
 			continue
 		}
