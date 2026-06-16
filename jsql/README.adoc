@@ -1,12 +1,12 @@
-= KSQL: Run SQL queries on Kubernetes
+= jsql: Run SQL queries on Kubernetes
 
 Runs SQL queries (provided by DuckDB) on Kubernetes JSON outputs.
 
 High level process occurring behind the scenes:
 
-Run: `ksql get -A pods sts deploy nodes replicasets`
+Run: `jsql get -A pods sts deploy nodes replicasets`
 
-ksql will:
+jsql will:
 
 * run: `kubectl <resource> -A -o json`
 * run `qq .items > <resource>.json` on the output to have a single list of results and save the list into the user's cache dir separated by k8s context.
@@ -15,19 +15,19 @@ ksql will:
 A node will have a `NULL` namespace, for example, but the query will still work.
 * create a few handy <<helper-functions>> and <<views>> for you to use.
 
-Now, you can run `ksql query` or call duckdb directly on the created db `duckdb ksql.duckdb`
+Now, you can run `jsql query` or call duckdb directly on the created db `duckdb jsql.duckdb`
 
-`ksql query` will print the results as a json stream because vertical scrolling is easier than horizontal scrolling on a terminal.
+`jsql query` will print the results as a json stream because vertical scrolling is easier than horizontal scrolling on a terminal.
 
 You can toggle the output formatting mode:
 
 * `.mode pretty` (default)
 * `.mode single_line` (one JSON object per line)
 
-To re-hidrate your data, you can run the `ksql get` command again with each of the resources you want to hidrate.
+To re-hidrate your data, you can run the `jsql get` command again with each of the resources you want to hidrate.
 The rest will stay in place.
 
-To start over or be done, delete the `ksql.duckdb` file.
+To start over or be done, delete the `jsql.duckdb` file.
 
 == Helpful Queries
 
@@ -85,7 +85,7 @@ GROUP BY name,namespace,age,phase,status
 
 == Helper Functions
 
-These macros/functions are automatically added by `ksql get`.
+These macros/functions are automatically added by `jsql get`.
 
 They are collected under the `k8s` schema:
 
@@ -170,7 +170,7 @@ SELECT
 
 == Views
 
-These views are automatically added by `ksql get`.
+These views are automatically added by `jsql get`.
 
 === Pod - Node: `pn`
 

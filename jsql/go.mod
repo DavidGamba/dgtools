@@ -1,4 +1,4 @@
-module github.com/DavidGamba/dgtools/ksql
+module github.com/DavidGamba/dgtools/jsql
 
 go 1.26.3
 
