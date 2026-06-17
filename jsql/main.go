@@ -13,7 +13,7 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/DavidGamba/dgtools/ksql/repl"
+	"github.com/DavidGamba/dgtools/jsql/repl"
 	"github.com/DavidGamba/dgtools/run"
 	"github.com/DavidGamba/go-getoptions"
 	_ "github.com/duckdb/duckdb-go/v2"
@@ -22,7 +22,7 @@ import (
 
 var Logger = log.New(os.Stderr, "", log.LstdFlags)
 
-var DBNAME = "ksql.duckdb"
+var DBNAME = "jsql.duckdb"
 
 func main() {
 	os.Exit(program(os.Args))
@@ -82,7 +82,7 @@ func QueryRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	}
 	defer conn.Close()
 
-	history, err := repl.NewHistoryFile("ksql", "history")
+	history, err := repl.NewHistoryFile("jsql", "history")
 	if err != nil {
 		return fmt.Errorf("failed to create history file: %w", err)
 	}
@@ -162,7 +162,7 @@ func GetRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	if err != nil {
 		return fmt.Errorf("failed to get user cache dir: %w", err)
 	}
-	cacheDir := filepath.Join(cacheDirBase, "ksql", contextName)
+	cacheDir := filepath.Join(cacheDirBase, "jsql", contextName)
 	Logger.Printf("Using cache dir: %s", cacheDir)
 	os.MkdirAll(cacheDir, 0755)
 
