@@ -23,7 +23,7 @@ import (
 	"cuelang.org/go/cue/cuecontext"
 	cueErrors "cuelang.org/go/cue/errors"
 	"cuelang.org/go/cue/format"
-	"cuelang.org/go/cue/interpreter/embed"
+	"cuelang.org/go/cue/inject/embed"
 	"cuelang.org/go/cue/load"
 	"cuelang.org/go/encoding/gocode/gocodec"
 )
@@ -93,7 +93,7 @@ func Unmarshal(configs []CueConfigFile, dir, packageName, virtualCueModuleName s
 //	data := "some data"
 //	*value = value.FillPath(cue.ParsePath("path.in.cue"), data)
 func GetValue(configs []CueConfigFile, dir, packageName, virtualCueModuleName string, value *cue.Value) error {
-	embedding := cuecontext.Interpreter(embed.New())
+	embedding := cuecontext.WithInjection(embed.New())
 	ctxOpts := []cuecontext.Option{embedding}
 	c := cuecontext.New(ctxOpts...)
 
