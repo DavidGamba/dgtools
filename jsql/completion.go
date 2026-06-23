@@ -38,8 +38,9 @@ var (
 		"USE",
 		"VACUUM",
 
-		".mode",
 		".help",
+		".mode",
+		".output",
 	}
 
 	createKeywords = []string{
@@ -81,10 +82,12 @@ var (
 		"GROUP",
 		"HAVING",
 		"INTO",
+		"IS",
 		"JOIN",
 		"LIKE",
 		"LIMIT",
 		"MERGE",
+		"NOT",
 		"ORDER",
 		"QUALIFY",
 		"SAMPLE",
@@ -106,6 +109,9 @@ func completionCandidates(fieldsBeforeCursor []string) (completionSet []string, 
 	for _, word := range fieldsBeforeCursor {
 		if strings.EqualFold(word, ".mode") {
 			candidates = []string{"pretty", "single_line"}
+		}
+		if strings.EqualFold(word, ".output") {
+			candidates = []string{"stdout", "file"}
 		}
 		if strings.EqualFold(word, "SELECT") {
 			candidates = append(candidates, selectKeywords...)

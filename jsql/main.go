@@ -98,6 +98,8 @@ func QueryRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	r.IgnoreSIGINT = true
 	signal.Ignore(syscall.SIGINT)
 
+	writer := os.Stdout
+
 	for lines, err := range repl.Interactive(ctx, r) {
 		if err != nil {
 			return fmt.Errorf("%s", err)
@@ -109,6 +111,33 @@ func QueryRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 		err := history.Add(strings.Join(lines, "⏎"))
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "ERROR: failed to add to history: %v\n", err)
+		}
+
+		if strings.HasPrefix(lines[0], ".output") {
+			fileRegex := regexp.MustCompile(`(?s)(?i)\.output\s+file\s+(.+)\s*;`)
+			switch {
+			case regexp.MustCompile(`(?s)(?i)\.output\s+(?:stdout|terminal|cli)`).MatchString(query):
+				writer = os.Stdout
+			case fileRegex.MatchString(query):
+				matches := fileRegex.FindStringSubmatch(query)
+				if len(matches) > 1 {
+					filename := matches[1]
+					fh, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+					if err != nil {
+						fmt.Fprintf(os.Stderr, "ERROR: failed to open file: %v\n", err)
+						continue
+					}
+					defer fh.Close()
+					writer = fh
+				}
+			default:
+				fmt.Printf(`Valid outputs:
+
+stdout: (default) print to stdout
+file <filename>: save to file
+`)
+			}
+			continue
 		}
 
 		if strings.HasPrefix(lines[0], ".mode") {
@@ -134,12 +163,13 @@ single_line: json marshal into one record per line
 			fmt.Printf("%s\n", repl.DefaultHeader())
 			fmt.Printf(`
 .mode <pretty|single_line|table>    - set output mode
+.output <stdout|file <filename>>    - set output target
 .help                               - show this message
 `)
 			continue
 		}
 
-		err = runQuery(ctx, conn, mode, query)
+		err = runQuery(ctx, writer, conn, mode, query)
 		if err != nil {
 			fmt.Printf("Error: %v\n", err)
 		}

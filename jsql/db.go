@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"io"
+	"os"
 
 	"github.com/DavidGamba/dgtools/clitable"
 )
@@ -21,7 +23,7 @@ func dbConn(ctx context.Context) (*sql.Conn, error) {
 	return conn, nil
 }
 
-func runQuery(ctx context.Context, conn *sql.Conn, mode outputMode, query string) error {
+func runQuery(ctx context.Context, w io.Writer, conn *sql.Conn, mode outputMode, query string) error {
 	rows, err := conn.QueryContext(ctx, query)
 	if err != nil {
 		return fmt.Errorf("failed: %v\n", err)
@@ -34,6 +36,7 @@ func runQuery(ctx context.Context, conn *sql.Conn, mode outputMode, query string
 
 	var results []map[string]any
 	keys := map[string]struct{}{}
+	rowCount := 0
 	for rows.Next() {
 		values := make([]any, len(cols))
 		ptrs := make([]any, len(cols))
@@ -54,6 +57,7 @@ func runQuery(ctx context.Context, conn *sql.Conn, mode outputMode, query string
 			keys[col] = struct{}{}
 		}
 		results = append(results, row)
+		rowCount++
 	}
 	if err := rows.Err(); err != nil {
 		_ = rows.Close()
@@ -67,19 +71,20 @@ func runQuery(ctx context.Context, conn *sql.Conn, mode outputMode, query string
 		if err != nil {
 			return fmt.Errorf("failed to marshal JSON: %w", err)
 		}
-		fmt.Println(string(out))
+		fmt.Fprintf(w, "%s\n", string(out))
 	case outputModeSingleLine:
 		for _, row := range results {
 			out, err := json.Marshal(row)
 			if err != nil {
 				return fmt.Errorf("failed to marshal JSON: %w", err)
 			}
-			fmt.Println(string(out))
+			fmt.Fprintf(w, "%s\n", string(out))
 		}
 	case outputModeTable:
-		clitable.NewTablePrinter().Print(clitable.MapTable{MapList: results})
+		clitable.NewTablePrinter().Fprint(w, clitable.MapTable{MapList: results})
 	default:
 		return fmt.Errorf("unknown output mode: %q", mode)
 	}
+	fmt.Fprintf(os.Stderr, "query rows: %d\n", rowCount)
 	return nil
 }
