@@ -1,0 +1,3 @@
+package myPackage
+
+hello: "hello"

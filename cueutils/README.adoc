@@ -30,7 +30,7 @@ var f embed.FS
 	// Filter to a given package name or set to _ for files without a package
 	packageName := "myPackage"
 
-	// Virtual module name to be used for the cue files, can be left blank if there is alreay a module in the dir
+	// Virtual module name to be used for the cue files, can be left blank if there is already a module in the dir
 	virtualCueModuleName := "my.module"
 
 	// Provide a pointer receiver for evaluated data for mostly debugging purposes

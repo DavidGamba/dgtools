@@ -122,7 +122,7 @@ func GetValue(configs []CueConfigFile, dir, packageName, virtualCueModuleName st
 		Dir:                 dir,
 		Overlay:             overlay,
 	}
-	Logger.Printf("dir: %s\nModuleRoot: %s\npackagePaths: %v\n", dir, lc.ModuleRoot, packagePaths)
+	Logger.Printf("dir: %s, ModuleRoot: %s, packagePaths: %v\n", dir, lc.ModuleRoot, packagePaths)
 	ii := load.Instances(packagePaths, lc)
 	logInstancesFiles(dir, ii)
 	insts = append(insts, ii...)
