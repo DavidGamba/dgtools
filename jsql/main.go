@@ -8,7 +8,6 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"regexp"
 	"strings"
 	"syscall"
@@ -33,7 +32,6 @@ func program(args []string) int {
 	opt.Bool("quiet", false, opt.GetEnv("QUIET"))
 	opt.SetUnknownMode(getoptions.Pass)
 	get := opt.NewCommand("get", "description").SetCommandFn(GetRun)
-	get.Bool("all-namespaces", false, opt.Alias("A"))
 	get.HelpSynopsisArg("<resource-types>...", "type of the resources to get")
 
 	opt.NewCommand("query", "description").SetCommandFn(QueryRun)
@@ -113,6 +111,16 @@ func QueryRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 			fmt.Fprintf(os.Stderr, "ERROR: failed to add to history: %v\n", err)
 		}
 
+		if strings.HasPrefix(lines[0], ".help") {
+			fmt.Printf("%s\n", repl.DefaultHeader())
+			fmt.Printf(`
+.mode <pretty|single_line|table>    - set output mode
+.output <stdout|file <filename>>    - set output target
+.help                               - show this message
+`)
+			continue
+		}
+
 		if strings.HasPrefix(lines[0], ".output") {
 			fileRegex := regexp.MustCompile(`(?s)(?i)\.output\s+file\s+(.+)\s*;`)
 			switch {
@@ -159,13 +167,45 @@ single_line: json marshal into one record per line
 			continue
 		}
 
-		if strings.HasPrefix(lines[0], ".help") {
-			fmt.Printf("%s\n", repl.DefaultHeader())
-			fmt.Printf(`
-.mode <pretty|single_line|table>    - set output mode
-.output <stdout|file <filename>>    - set output target
-.help                               - show this message
-`)
+		if strings.HasPrefix(lines[0], ".kget") {
+			resourceRegex := regexp.MustCompile(`(?s)(?i)\.kget\s+(.+)\s*;`)
+			switch {
+			case resourceRegex.MatchString(query):
+				matches := resourceRegex.FindStringSubmatch(query)
+				if len(matches) > 1 {
+					resource := matches[1]
+
+					contextName, namespace, err := GetK8sContext(ctx)
+					if err != nil {
+						return fmt.Errorf("failed to get k8s context: %w", err)
+					}
+					Logger.Printf("Current context: %s, namespace: %s", contextName, namespace)
+
+					cacheDir, err := createCacheDir(contextName)
+					if err != nil {
+						return fmt.Errorf("failed to get cache dir: %w", err)
+					}
+					Logger.Printf("Using cache dir: %s", cacheDir)
+
+					err = GetK8sResource(ctx, cacheDir, resource)
+					if err != nil {
+						return fmt.Errorf("failed: %w", err)
+					}
+
+					cmds := UpdateK8sResourceQueries(cacheDir, resource)
+
+					for _, cmd := range cmds {
+						fmt.Println(cmd)
+						err = runQuery(ctx, writer, conn, mode, cmd)
+						if err != nil {
+							fmt.Printf("Error: %v\n", err)
+						}
+					}
+
+				}
+			default:
+				fmt.Printf(`Usage: .kget <resource> `)
+			}
 			continue
 		}
 
@@ -180,7 +220,6 @@ single_line: json marshal into one record per line
 
 func GetRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	Logger.Printf("Running")
-	allNamespaces := opt.Value("all-namespaces").(bool)
 
 	contextName, namespace, err := GetK8sContext(ctx)
 	if err != nil {
@@ -188,50 +227,21 @@ func GetRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	}
 	Logger.Printf("Current context: %s, namespace: %s", contextName, namespace)
 
-	cacheDirBase, err := os.UserCacheDir()
+	cacheDir, err := createCacheDir(contextName)
 	if err != nil {
-		return fmt.Errorf("failed to get user cache dir: %w", err)
+		return fmt.Errorf("failed to get cache dir: %w", err)
 	}
-	cacheDir := filepath.Join(cacheDirBase, "jsql", contextName)
 	Logger.Printf("Using cache dir: %s", cacheDir)
-	os.MkdirAll(cacheDir, 0755)
 
 	// TODO: Don't donwload every time but use a flag to force cache invalidation, otherwise re-use cache and only invalidate after a given age.
 
-	for _, rt := range args {
-		cmd := []string{"kubectl", "get", "-o", "json", rt}
-		if allNamespaces {
-			cmd = append(cmd, "-A")
-		}
-		out, err := run.CMD(cmd...).Log().STDOutOutput()
+	for _, resource := range args {
+		err := GetK8sResource(ctx, cacheDir, resource)
 		if err != nil {
 			return fmt.Errorf("failed: %w", err)
-		}
-		cmd = []string{"qq", ".items", "-o", "json"}
-		out, err = run.CMD(cmd...).In(out).STDOutOutput()
-		if err != nil {
-			return fmt.Errorf("failed: %w", err)
-		}
-		filename := filepath.Join(cacheDir, rt+".json")
-		fh, err := os.Create(filename)
-		if err != nil {
-			return fmt.Errorf("failed to open file: %w", err)
-		}
-		defer fh.Close()
-		_, err = fh.Write(out)
-		if err != nil {
-			return fmt.Errorf("failed to write to file: %w", err)
 		}
 
-		cmds := []string{
-			fmt.Sprintf("DROP TABLE IF EXISTS %s;", rt),
-			fmt.Sprintf("CREATE TABLE %s AS SELECT * FROM '%s';", rt, filename),
-			fmt.Sprintf("ALTER TABLE %s ADD COLUMN name VARCHAR;", rt),
-			fmt.Sprintf("UPDATE %s SET name = metadata.name;", rt),
-			fmt.Sprintf("ALTER TABLE %s ADD COLUMN namespace VARCHAR;", rt),
-			// Use cast to allow for null values
-			fmt.Sprintf("UPDATE %s SET namespace = CAST(metadata AS JSON)->>'namespace';", rt),
-		}
+		cmds := UpdateK8sResourceQueries(cacheDir, resource)
 		for _, e := range cmds {
 			cmd := []string{"duckdb", DBNAME, "-s", e}
 			err = run.CMD(cmd...).Log().Run()
