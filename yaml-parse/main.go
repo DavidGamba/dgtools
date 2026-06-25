@@ -82,9 +82,14 @@ If '-' is given, read from STDIN.`)
 
 func Run(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	include := opt.Value("include").(bool)
+	addCalled := opt.Called("add")
 	add := opt.Value("add").(string)
 	keys := opt.Value("key").([]string)
 	useStdIn := opt.Value("-").(bool)
+	documentCalled := opt.Called("document")
+	document := opt.Value("document").(int)
+	silent := opt.Value("silent").(bool)
+	removeWhitespace := opt.Value("n").(bool)
 
 	if len(args) < 1 && !useStdIn {
 		fmt.Fprintf(os.Stderr, "ERROR: missing <file> or STDIN input '-'\n")
@@ -109,7 +114,7 @@ func Run(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 		return fmt.Errorf("failed to read input: %w", err)
 	}
 
-	if !opt.Called("document") && len(ymlList) > 1 {
+	if !documentCalled && len(ymlList) > 1 {
 		fmt.Fprintf(os.Stderr,
 			`WARNING: provided input contains %d YAML documents
          specify '--document <number>' to remove this warning
@@ -117,24 +122,24 @@ func Run(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	}
 
 	n := 0
-	if opt.Called("document") {
-		n = opt.Value("document").(int) - 1
+	if documentCalled {
+		n = document - 1
 	}
 	if len(ymlList) < n+1 {
 		return fmt.Errorf("wrong document number: %d", n+1)
 	}
 	yml := ymlList[n]
 
-	if opt.Called("add") {
+	if addCalled {
 		str, err := yml.AddString(xpath, add)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
-			if !opt.Called("silent") {
+			if !silent {
 				fmt.Fprintf(os.Stderr, ">\t%s\n", strings.ReplaceAll(str, "\n", "\n>\t"))
 			}
 			os.Exit(1)
 		}
-		if opt.Called("n") {
+		if removeWhitespace {
 			str = strings.TrimSpace(str)
 		}
 		fmt.Print(str)
@@ -144,12 +149,12 @@ func Run(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	str, err := yml.GetString(include, xpath)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
-		if !opt.Called("silent") {
+		if !silent {
 			fmt.Fprintf(os.Stderr, ">\t%s\n", strings.ReplaceAll(str, "\n", "\n>\t"))
 		}
 		os.Exit(1)
 	}
-	if opt.Called("n") {
+	if removeWhitespace {
 		str = strings.TrimSpace(str)
 	}
 	fmt.Print(str)
