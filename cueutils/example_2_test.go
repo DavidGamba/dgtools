@@ -1,7 +1,6 @@
 package cueutils_test
 
 import (
-	"embed"
 	"fmt"
 	"io"
 	"os"
@@ -9,45 +8,12 @@ import (
 	"github.com/DavidGamba/dgtools/cueutils"
 )
 
-//go:embed testschemas/myPackage-schema.cue
-var f embed.FS
-
-func Example() {
+func ExampleUnmarshalFS() {
 	cueutils.Logger.SetOutput(os.Stderr)
-
-	configs := []cueutils.CueConfigFile{}
 
 	// Read embedded schemas or explicit config files
 	schemaFilename := "testschemas/myPackage-schema.cue"
-	schemaFH, err := f.Open(schemaFilename)
-	if err != nil {
-		fmt.Printf("failed to open '%s': %s", schemaFilename, err)
-		return
-	}
-	defer schemaFH.Close()
-	configs = append(configs, cueutils.CueConfigFile{Data: schemaFH, Name: schemaFilename})
-
-	configFilename := "testdata/.myPackage-data-hola.cue"
-	configFH, err := os.Open(configFilename)
-	if err != nil {
-		fmt.Printf("failed to open config file: %s", err)
-		return
-	}
-	defer configFH.Close()
-	configs = append(configs, cueutils.CueConfigFile{Data: configFH, Name: configFilename})
-
-	extraFilename := "testdata/hola.txt"
-	extraFH, err := os.Open(extraFilename)
-	if err != nil {
-		fmt.Printf("failed to open config file: %s", err)
-		return
-	}
-	defer extraFH.Close()
-	configs = append(configs, cueutils.CueConfigFile{Data: extraFH, Name: extraFilename})
-
-	// Read all cue files from a given dir
-	// Doesn't read hidden files, those need to be given explicitly in the configs list.
-	dir := "testdata"
+	configFilename := ".myPackage-data-hola.cue"
 
 	// Filter to a given package name or set to _ for files without a package
 	packageName := "myPackage"
@@ -65,7 +31,12 @@ func Example() {
 	}
 	d := MyDataStructure{}
 
-	err = cueutils.Unmarshal(configs, dir, packageName, virtualCueModuleName, value, &d)
+	config := []cueutils.CueConfigFS{
+		{FS: f, Files: []string{schemaFilename}, Dir: "."},
+		{FS: os.DirFS("testdata"), Files: []string{configFilename, "."}, Dir: "."},
+	}
+
+	err := cueutils.UnmarshalFS(config, packageName, virtualCueModuleName, value, &d)
 	if err != nil {
 		fmt.Printf("failed to unmarshal: %s", err)
 		return

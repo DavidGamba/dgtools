@@ -14,9 +14,11 @@ package cueutils
 import (
 	"fmt"
 	"io"
+	"io/fs"
 	"log"
 	"path/filepath"
 	"strings"
+	"testing/fstest"
 
 	"cuelang.org/go/cue"
 	"cuelang.org/go/cue/build"
@@ -37,6 +39,94 @@ type CueConfigFile struct {
 
 func NewValue() *cue.Value {
 	return &cue.Value{}
+}
+
+type mergeFS struct {
+	layers []fs.FS // first match wins
+}
+
+func (m *mergeFS) Open(name string) (fs.File, error) {
+	for _, layer := range m.layers {
+		f, err := layer.Open(name)
+		if err == nil {
+			Logger.Printf("mergeFS: opened %s from layer %T\n", name, layer)
+			return f, nil
+		}
+	}
+	return nil, &fs.PathError{Op: "open", Path: name, Err: fs.ErrNotExist}
+}
+
+type CueConfigFS struct {
+	FS    fs.FS
+	Files []string
+	Dir   string
+}
+
+func UnmarshalFS(layers []CueConfigFS, packageName, virtualCueModuleName string, value *cue.Value, target any) error {
+	embedding := cuecontext.WithInjection(embed.New())
+	ctxOpts := []cuecontext.Option{embedding}
+	c := cuecontext.New(ctxOpts...)
+
+	insts := []*build.Instance{}
+
+	for _, e := range layers {
+		var vfs CueConfigFS
+		if virtualCueModuleName != "" {
+			virtual := fstest.MapFS{
+				"cue.mod/module.cue": &fstest.MapFile{
+					Data: []byte(fmt.Sprintf(`module: "%s"
+language: version: "v0.18.0"`, virtualCueModuleName)),
+				},
+			}
+			vfs = CueConfigFS{
+				FS:    virtual,
+				Files: []string{"cue.mod/module.cue"},
+				Dir:   ".",
+			}
+		}
+		lc := &load.Config{
+			Package:             packageName,
+			ModuleRoot:          ".",
+			AcceptLegacyModules: false,
+			Dir:                 e.Dir,
+			FS:                  &mergeFS{layers: []fs.FS{e.FS, vfs.FS}},
+		}
+		ii := load.Instances(e.Files, lc)
+		logInstancesFiles(e.Dir, ii)
+		insts = append(insts, ii...)
+
+		logInstancesFiles("building", insts)
+		vv, err := c.BuildInstances(insts)
+		if err != nil {
+			return fmt.Errorf("failed to build instances: %w", err)
+		}
+		for _, v := range vv {
+			*value = (*value).Unify(v)
+		}
+	}
+
+	if value.Err() != nil {
+		return fmt.Errorf("failed to compile: %s", cueErrors.Details(value.Err(), nil))
+	}
+
+	err := value.Validate(
+		cue.Final(),
+		cue.Concrete(true),
+		cue.Definitions(true),
+		cue.Hidden(true),
+		cue.Optional(true),
+	)
+	if err != nil {
+		return fmt.Errorf("failed config validation: %v", cueErrors.Details(err, nil))
+	}
+
+	g := gocodec.New(cuecontext.New(), nil)
+	err = g.Encode(*value, target)
+	if err != nil {
+		return fmt.Errorf("failed to encode cue values: %w", err)
+	}
+
+	return nil
 }
 
 // Given a set of cue files, it will aggregate them into a single cue config and then Unmarshal it unto the given data structure.
