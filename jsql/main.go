@@ -67,6 +67,7 @@ const (
 	outputModePretty     outputMode = "pretty"
 	outputModeSingleLine outputMode = "single_line"
 	outputModeTable      outputMode = "table"
+	outputModeCSV        outputMode = "csv"
 )
 
 func QueryRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
@@ -156,6 +157,8 @@ file <filename>: save to file
 				mode = outputModeSingleLine
 			case regexp.MustCompile(`(?s)(?i)\.mode\s+table`).MatchString(query):
 				mode = outputModeTable
+			case regexp.MustCompile(`(?s)(?i)\.mode\s+csv`).MatchString(query):
+				mode = outputModeCSV
 			default:
 				fmt.Printf(`Valid modes:
 

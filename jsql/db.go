@@ -82,6 +82,8 @@ func runQuery(ctx context.Context, w io.Writer, conn *sql.Conn, mode outputMode,
 		}
 	case outputModeTable:
 		clitable.NewTablePrinter().Fprint(w, clitable.MapTable{MapList: results})
+	case outputModeCSV:
+		clitable.NewTablePrinter().SetStyle(clitable.CSV).Fprint(w, clitable.MapTable{MapList: results})
 	default:
 		return fmt.Errorf("unknown output mode: %q", mode)
 	}
