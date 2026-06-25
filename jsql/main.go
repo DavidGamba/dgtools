@@ -70,10 +70,18 @@ const (
 	outputModeCSV        outputMode = "csv"
 )
 
+type queryOption int
+
+const (
+	queryOptionClear      queryOption = 1 << iota // No options set
+	queryOptionAutoNumber                         // set autonumber
+)
+
 func QueryRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	Logger.Printf("Running")
 
 	mode := outputModeTable
+	qo := queryOptionAutoNumber
 
 	conn, err := dbConn(ctx)
 	if err != nil {
@@ -115,9 +123,11 @@ func QueryRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 		if strings.HasPrefix(lines[0], ".help") {
 			fmt.Printf("%s\n", repl.DefaultHeader())
 			fmt.Printf(`
-.mode <pretty|single_line|table>    - set output mode
-.output <stdout|file <filename>>    - set output target
-.help                               - show this message
+.mode <pretty|single_line|table|csv>    - set output mode
+.output <stdout|file <filename>>        - set output target
+.option clear                           - clear all options
+.option autonumber                      - add a numbering column
+.help                                   - show this message
 `)
 			continue
 		}
@@ -170,6 +180,22 @@ single_line: json marshal into one record per line
 			continue
 		}
 
+		if strings.HasPrefix(lines[0], ".option") {
+			switch {
+			case regexp.MustCompile(`(?s)(?i)\.option\s+autonumber`).MatchString(query):
+				qo |= queryOptionAutoNumber
+			case regexp.MustCompile(`(?s)(?i)\.option\s+clear`).MatchString(query):
+				qo = queryOptionClear
+			default:
+				fmt.Printf(`Valid options:
+
+clear:      clear all options
+autonumber: add a numbering column
+`)
+			}
+			continue
+		}
+
 		if strings.HasPrefix(lines[0], ".kget") {
 			resourceRegex := regexp.MustCompile(`(?s)(?i)\.kget\s+(.+)\s*;`)
 			switch {
@@ -199,7 +225,7 @@ single_line: json marshal into one record per line
 
 					for _, cmd := range cmds {
 						fmt.Println(cmd)
-						err = runQuery(ctx, writer, conn, mode, cmd)
+						err = runQuery(ctx, writer, conn, mode, qo, cmd)
 						if err != nil {
 							fmt.Printf("Error: %v\n", err)
 						}
@@ -212,7 +238,7 @@ single_line: json marshal into one record per line
 			continue
 		}
 
-		err = runQuery(ctx, writer, conn, mode, query)
+		err = runQuery(ctx, writer, conn, mode, qo, query)
 		if err != nil {
 			fmt.Printf("Error: %v\n", err)
 		}

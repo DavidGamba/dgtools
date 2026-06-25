@@ -23,7 +23,7 @@ func dbConn(ctx context.Context) (*sql.Conn, error) {
 	return conn, nil
 }
 
-func runQuery(ctx context.Context, w io.Writer, conn *sql.Conn, mode outputMode, query string) error {
+func runQuery(ctx context.Context, w io.Writer, conn *sql.Conn, mode outputMode, qo queryOption, query string) error {
 	rows, err := conn.QueryContext(ctx, query)
 	if err != nil {
 		return fmt.Errorf("failed: %v\n", err)
@@ -56,8 +56,11 @@ func runQuery(ctx context.Context, w io.Writer, conn *sql.Conn, mode outputMode,
 			row[col] = val
 			keys[col] = struct{}{}
 		}
-		results = append(results, row)
 		rowCount++
+		if qo&queryOptionAutoNumber != 0 {
+			row["_idx"] = rowCount
+		}
+		results = append(results, row)
 	}
 	if err := rows.Err(); err != nil {
 		_ = rows.Close()
