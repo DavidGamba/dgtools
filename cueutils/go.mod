@@ -2,7 +2,7 @@ module github.com/DavidGamba/dgtools/cueutils
 
 go 1.26.0
 
-require cuelang.org/go v0.17.0-rc.1
+require cuelang.org/go v0.18.0-0.dev.0.20260624093008-ca436e45d2d2
 
 require (
 	cuelabs.dev/go/oci/ociregistry v0.0.0-20260601085548-328ff8e2c943 // indirect
