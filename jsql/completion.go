@@ -108,10 +108,10 @@ func completionCandidates(fieldsBeforeCursor []string) (completionSet []string, 
 	candidates := commands
 	for _, word := range fieldsBeforeCursor {
 		if strings.EqualFold(word, ".mode") {
-			candidates = []string{"pretty;", "single_line;", "table;", "csv;"}
+			candidates = []string{"pretty", "single_line", "table", "csv"}
 		}
 		if strings.EqualFold(word, ".output") {
-			candidates = []string{"stdout;", "file"}
+			candidates = []string{"stdout", "file"}
 		}
 		if strings.EqualFold(word, "SELECT") {
 			candidates = append(candidates, selectKeywords...)

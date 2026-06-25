@@ -128,6 +128,10 @@ func QueryRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 .option clear                           - clear all options
 .option autonumber                      - add a numbering column
 .help                                   - show this message
+
+Common use DuckDB syntax:
+
+Aggregate Functions: sum, count, list, string_agg
 `)
 			continue
 		}
