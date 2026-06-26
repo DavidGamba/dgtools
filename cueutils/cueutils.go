@@ -17,6 +17,7 @@ import (
 	"io/fs"
 	"log"
 	"path/filepath"
+	"sort"
 	"strings"
 	"testing/fstest"
 
@@ -41,11 +42,13 @@ func NewValue() *cue.Value {
 	return &cue.Value{}
 }
 
+// mergeFS - bundle multiple fs.FS into one.
 type mergeFS struct {
-	layers []fs.FS // first match wins
+	layers []fs.FS
 }
 
 func (m *mergeFS) Open(name string) (fs.File, error) {
+	Logger.Printf("mergeFS: opening %s\n", name)
 	for _, layer := range m.layers {
 		f, err := layer.Open(name)
 		if err == nil {
@@ -54,6 +57,28 @@ func (m *mergeFS) Open(name string) (fs.File, error) {
 		}
 	}
 	return nil, &fs.PathError{Op: "open", Path: name, Err: fs.ErrNotExist}
+}
+
+// ReadDir merges entries from all layers, later entries override earlier ones.
+func (m *mergeFS) ReadDir(name string) ([]fs.DirEntry, error) {
+	seen := map[string]fs.DirEntry{}
+
+	for _, layer := range m.layers {
+		if entries, err := fs.ReadDir(layer, name); err == nil {
+			for _, e := range entries {
+				seen[e.Name()] = e
+			}
+		}
+	}
+
+	result := make([]fs.DirEntry, 0, len(seen))
+	for _, e := range seen {
+		result = append(result, e)
+	}
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].Name() < result[j].Name()
+	})
+	return result, nil
 }
 
 type CueConfigFS struct {
@@ -69,47 +94,49 @@ func UnmarshalFS(layers []CueConfigFS, packageName, virtualCueModuleName string,
 
 	insts := []*build.Instance{}
 
-	for _, e := range layers {
-		var vfs CueConfigFS
-		if virtualCueModuleName != "" {
-			virtual := fstest.MapFS{
-				"cue.mod/module.cue": &fstest.MapFile{
-					Data: []byte(fmt.Sprintf(`module: "%s"
-language: version: "v0.18.0"`, virtualCueModuleName)),
-				},
-			}
-			vfs = CueConfigFS{
-				FS:    virtual,
-				Files: []string{"cue.mod/module.cue"},
-				Dir:   ".",
-			}
-		}
-		lc := &load.Config{
-			Package:             packageName,
-			ModuleRoot:          ".",
-			AcceptLegacyModules: false,
-			Dir:                 e.Dir,
-			FS:                  &mergeFS{layers: []fs.FS{e.FS, vfs.FS}},
-		}
-		ii := load.Instances(e.Files, lc)
-		logInstancesFiles(e.Dir, ii)
-		insts = append(insts, ii...)
+	var virtual fs.FS
 
-		logInstancesFiles("building", insts)
-		vv, err := c.BuildInstances(insts)
-		if err != nil {
-			return fmt.Errorf("failed to build instances: %w", err)
+	mfs := &mergeFS{}
+	files := []string{}
+	for _, e := range layers {
+		mfs.layers = append(mfs.layers, e.FS)
+		files = append(files, e.Files...)
+	}
+	Logger.Printf("files: %v\n", files)
+	if virtualCueModuleName != "" {
+		virtual = fstest.MapFS{
+			"cue.mod/module.cue": &fstest.MapFile{
+				Data: []byte(fmt.Sprintf(`module: "%s"
+language: version: "v0.18.0"`, virtualCueModuleName)),
+			},
 		}
-		for _, v := range vv {
-			*value = (*value).Unify(v)
-		}
+		mfs.layers = append(mfs.layers, virtual)
+	}
+	lc := &load.Config{
+		Package:             packageName,
+		ModuleRoot:          ".",
+		AcceptLegacyModules: true,
+		Dir:                 ".",
+		FS:                  mfs,
+	}
+	ii := load.Instances(files, lc)
+	logInstancesFiles(".", ii)
+	insts = append(insts, ii...)
+
+	logInstancesFiles("building", insts)
+	vv, err := c.BuildInstances(insts)
+	if err != nil {
+		return fmt.Errorf("failed to build instances: %w", err)
+	}
+	for _, v := range vv {
+		*value = (*value).Unify(v)
 	}
 
 	if value.Err() != nil {
 		return fmt.Errorf("failed to compile: %s", cueErrors.Details(value.Err(), nil))
 	}
 
-	err := value.Validate(
+	err = value.Validate(
 		cue.Final(),
 		cue.Concrete(true),
 		cue.Definitions(true),
@@ -266,16 +293,16 @@ func BuildOverlay(configs []CueConfigFile, overlayRootDir, virtualCueModuleName 
 	if virtualCueModuleName != "" {
 		modPath := filepath.Join(overlayRootDir, "cue.mod/module.cue")
 		overlay[modPath] = load.FromString(fmt.Sprintf(`module: "%s"
-language: version: "v0.16.0"`, virtualCueModuleName))
+language: version: "v0.18.0"`, virtualCueModuleName))
 		Logger.Printf("overlay: %s\n", modPath)
 	}
 	return overlay, packagePaths, nil
 }
 
 func logInstancesFiles(kind string, insts []*build.Instance) {
-	for _, inst := range insts {
-		for i, f := range inst.BuildFiles {
-			Logger.Printf("%s: , n: %d, name: %s, file %s\n", kind, i, inst.ID(), f.Filename)
+	for i, inst := range insts {
+		for j, f := range inst.BuildFiles {
+			Logger.Printf("kind: %s, n: %d/%d, name: %s, file %s\n", kind, i, j, inst.ID(), f.Filename)
 		}
 	}
 }

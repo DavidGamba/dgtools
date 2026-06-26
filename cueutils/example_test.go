@@ -13,8 +13,6 @@ import (
 var f embed.FS
 
 func Example() {
-	cueutils.Logger.SetOutput(os.Stderr)
-
 	configs := []cueutils.CueConfigFile{}
 
 	// Read embedded schemas or explicit config files

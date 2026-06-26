@@ -9,8 +9,6 @@ import (
 )
 
 func ExampleUnmarshalFS() {
-	cueutils.Logger.SetOutput(os.Stderr)
-
 	// Read embedded schemas or explicit config files
 	schemaFilename := "testschemas/myPackage-schema.cue"
 	configFilename := ".myPackage-data-hola.cue"
