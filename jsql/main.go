@@ -8,10 +8,12 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"syscall"
 
+	"github.com/DavidGamba/dgtools/cueutils"
 	"github.com/DavidGamba/dgtools/jsql/repl"
 	"github.com/DavidGamba/dgtools/run"
 	"github.com/DavidGamba/go-getoptions"
@@ -29,7 +31,7 @@ func main() {
 
 func program(args []string) int {
 	opt := getoptions.New()
-	opt.Bool("quiet", false, opt.GetEnv("QUIET"))
+	opt.Bool("quiet", false)
 	opt.SetUnknownMode(getoptions.Pass)
 	get := opt.NewCommand("get", "description").SetCommandFn(GetRun)
 	get.HelpSynopsisArg("<resource-types>...", "type of the resources to get")
@@ -44,6 +46,9 @@ func program(args []string) int {
 	}
 	if opt.Called("quiet") {
 		Logger.SetOutput(io.Discard)
+		cueutils.Logger.SetOutput(io.Discard)
+	} else {
+		// cueutils.Logger.SetOutput(os.Stderr)
 	}
 	Logger.Println(remaining)
 
@@ -79,6 +84,12 @@ const (
 
 func QueryRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	Logger.Printf("Running")
+
+	d := &Config{}
+	err := ReadConfig(d)
+	if err != nil {
+		return fmt.Errorf("failed to read config: %w", err)
+	}
 
 	mode := outputModeTable
 	qo := queryOptionAutoNumber
@@ -254,17 +265,127 @@ autonumber: add a numbering column
 func GetRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	Logger.Printf("Running")
 
+	d := &Config{}
+	err := ReadConfig(d)
+	if err != nil {
+		return fmt.Errorf("failed to read config: %w", err)
+	}
+
+	if len(args) < 1 {
+		fmt.Printf("Valid provider list: \n")
+		for k := range d.Provider {
+			fmt.Printf("%s\n", k)
+		}
+		return nil
+	}
+
+	provider, args := args[0], args[1:]
+
+	if _, ok := d.Provider[provider]; !ok {
+		return fmt.Errorf("invalid provider: %s", provider)
+	}
+
+	if len(args) < 1 {
+		fmt.Printf("Valid commands for provider %s: \n", provider)
+		for _, cmd := range d.Provider[provider].GetCommands {
+			fmt.Printf("%s\n", cmd.Name)
+		}
+		return nil
+	}
+
+	command, args := args[0], args[1:]
+
+	if _, ok := d.Provider[provider].GetCommands[command]; !ok {
+		return fmt.Errorf("invalid command: %s", command)
+	}
+
+	if len(d.Provider[provider].GetCommands[command].Args) != len(args) {
+		fmt.Fprintf(os.Stderr, "Usage:\n    %s %s", provider, command)
+		for _, arg := range d.Provider[provider].GetCommands[command].Args {
+			fmt.Fprintf(os.Stderr, " <%s>", arg.Name)
+		}
+		fmt.Fprintf(os.Stderr, "\n\nARGUMENTS:\n")
+		for _, arg := range d.Provider[provider].GetCommands[command].Args {
+			fmt.Fprintf(os.Stderr, "    %-20s %s\n", arg.Name, arg.Description)
+		}
+		return fmt.Errorf("missing args")
+	}
+
+	Logger.Printf("Provider: %s, Command: %s, Args: %v", provider, command, args)
+
+	// Create cache dir
+	cacheDir, err := createCacheDir(provider)
+	if err != nil {
+		return fmt.Errorf("failed to get cache dir: %w", err)
+	}
+	Logger.Printf("Using cache dir: %s", cacheDir)
+
+	filename := filepath.Join(cacheDir, command+".json")
+
+	// Run get command
+	commandData := d.Provider[provider].GetCommands[command]
+	commandParts := commandData.Command
+	Logger.Printf("data: %v\n", commandData)
+	for i, e := range commandParts {
+		if len(args) > 0 {
+			e = strings.ReplaceAll(e, "$arg1", args[0])
+		}
+		if len(args) > 1 {
+			e = strings.ReplaceAll(e, "$arg2", args[1])
+		}
+		e = strings.ReplaceAll(e, "$table", d.Provider[provider].GetCommands[command].Table)
+		e = strings.ReplaceAll(e, "$schemaName", d.Provider[provider].SchemaName)
+		e = strings.ReplaceAll(e, "$provider", provider)
+		e = strings.ReplaceAll(e, "$command", command)
+		e = strings.ReplaceAll(e, "$filename", filename)
+		commandParts[i] = e
+	}
+	Logger.Printf("Running command: %v\n", commandParts)
+	out, err := run.CMD(commandParts...).Log().STDOutOutput()
+	if err != nil {
+		return fmt.Errorf("failed: %w", err)
+	}
+
+	// TODO: filter goes here
+
+	// Save to file
+	fh, err := os.Create(filename)
+	if err != nil {
+		return fmt.Errorf("failed to open file: %w", err)
+	}
+	defer fh.Close()
+	_, err = fh.Write(out)
+	if err != nil {
+		return fmt.Errorf("failed to write to file: %w", err)
+	}
+
+	cmds := d.Provider[provider].GetCommands[command].Create
+	for _, e := range cmds {
+		if len(args) > 0 {
+			e = strings.ReplaceAll(e, "$arg1", args[0])
+		}
+		if len(args) > 1 {
+			e = strings.ReplaceAll(e, "$arg2", args[1])
+		}
+		e = strings.ReplaceAll(e, "$table", d.Provider[provider].GetCommands[command].Table)
+		e = strings.ReplaceAll(e, "$schemaName", d.Provider[provider].SchemaName)
+		e = strings.ReplaceAll(e, "$provider", provider)
+		e = strings.ReplaceAll(e, "$command", command)
+		e = strings.ReplaceAll(e, "$filename", filename)
+		cmd := []string{"duckdb", DBNAME, "-s", e}
+		err = run.CMD(cmd...).Log().Run()
+		if err != nil {
+			return fmt.Errorf("failed: %w", err)
+		}
+	}
+
+	return nil
+
 	contextName, namespace, err := GetK8sContext(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get k8s context: %w", err)
 	}
 	Logger.Printf("Current context: %s, namespace: %s", contextName, namespace)
-
-	cacheDir, err := createCacheDir(contextName)
-	if err != nil {
-		return fmt.Errorf("failed to get cache dir: %w", err)
-	}
-	Logger.Printf("Using cache dir: %s", cacheDir)
 
 	// TODO: Don't donwload every time but use a flag to force cache invalidation, otherwise re-use cache and only invalidate after a given age.
 
@@ -285,7 +406,7 @@ func GetRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 
 	}
 
-	cmds := []string{
+	cmds = []string{
 		"CREATE SCHEMA IF NOT EXISTS k8s;",
 
 		`CREATE OR REPLACE MACRO k8s.age(x) AS
