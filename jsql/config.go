@@ -26,12 +26,14 @@ type ConfigProvider struct {
 		Name    string
 		Table   string
 		Command []string
+		Filter  []string
 		Create  []string
 		Args    []struct {
 			Name        string
 			Description string
 		}
 	} `json:"getCommands"`
+	Macros []string
 }
 
 func ReadConfig(data *Config) error {

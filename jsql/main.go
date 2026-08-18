@@ -209,47 +209,32 @@ autonumber: add a numbering column
 			continue
 		}
 
-		if strings.HasPrefix(lines[0], ".kget") {
-			resourceRegex := regexp.MustCompile(`(?s)(?i)\.kget\s+(.+)\s*;`)
-			switch {
-			case resourceRegex.MatchString(query):
-				matches := resourceRegex.FindStringSubmatch(query)
-				if len(matches) > 1 {
-					resource := matches[1]
-
-					contextName, namespace, err := GetK8sContext(ctx)
-					if err != nil {
-						return fmt.Errorf("failed to get k8s context: %w", err)
-					}
-					Logger.Printf("Current context: %s, namespace: %s", contextName, namespace)
-
-					cacheDir, err := createCacheDir(contextName)
-					if err != nil {
-						return fmt.Errorf("failed to get cache dir: %w", err)
-					}
-					Logger.Printf("Using cache dir: %s", cacheDir)
-
-					err = GetK8sResource(ctx, cacheDir, resource)
-					if err != nil {
-						return fmt.Errorf("failed: %w", err)
-					}
-
-					cmds := UpdateK8sResourceQueries(cacheDir, resource)
-
-					for _, cmd := range cmds {
-						fmt.Println(cmd)
-						err = runQuery(ctx, writer, conn, mode, qo, cmd)
-						if err != nil {
-							fmt.Printf("Error: %v\n", err)
-						}
-					}
-
-				}
-			default:
-				fmt.Printf(`Usage: .kget <resource> `)
-			}
-			continue
-		}
+		// if strings.HasPrefix(lines[0], ".kget") {
+		// 	resourceRegex := regexp.MustCompile(`(?s)(?i)\.kget\s+(.+)\s*;`)
+		// 	switch {
+		// 	case resourceRegex.MatchString(query):
+		// 		matches := resourceRegex.FindStringSubmatch(query)
+		// 		if len(matches) > 1 {
+		// 			resource := matches[1]
+		//
+		// 			contextName, namespace, err := GetK8sContext(ctx)
+		// 			if err != nil {
+		// 				return fmt.Errorf("failed to get k8s context: %w", err)
+		// 			}
+		// 			Logger.Printf("Current context: %s, namespace: %s", contextName, namespace)
+		//
+		// 			cacheDir, err := createCacheDir(contextName)
+		// 			if err != nil {
+		// 				return fmt.Errorf("failed to get cache dir: %w", err)
+		// 			}
+		// 			Logger.Printf("Using cache dir: %s", cacheDir)
+		//
+		// 		}
+		// 	default:
+		// 		fmt.Printf(`Usage: .kget <resource> `)
+		// 	}
+		// 	continue
+		// }
 
 		err = runQuery(ctx, writer, conn, mode, qo, query)
 		if err != nil {

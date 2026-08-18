@@ -5,12 +5,14 @@ package jsql
 	name:       string
 	schemaName: string
 	getCommands: [string]: #GetCommand
+	macros: [...string]
 }
 
 #GetCommand: {
 	name:    string
 	table:   string
 	command: [...string]
+	filter:  [...string]
 	create:  [...string]
 	args:    [...#CommandArg]
 	...
