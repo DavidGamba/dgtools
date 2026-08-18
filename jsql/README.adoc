@@ -1,35 +1,207 @@
-= jsql: Run SQL queries on Kubernetes
+= jsql: Run SQL queries on JSON and CSV
 
-Runs SQL queries (provided by DuckDB) on Kubernetes JSON outputs.
+Runs SQL queries on JSON and CSV generated from Kubernetes, AWS, GitHub, etc with auto inferred schemas courtesy of DuckDB.
 
-High level process occurring behind the scenes:
+The JSON generation is done through providers.
+The providers define what command to run to generate the JSON output and how to filter it so it can be consumed as multiple rows.
+That JSON output is then passed to DuckDB so that the schema can be auto inferred.
 
-Run: `jsql get -A pods sts deploy nodes replicasets`
+Providers are meant to be easily generated on the fly while allowing you to persist your configuration for reuse.
 
-jsql will:
+The SQL input engine allows multiline queries with auto completion.
+The queries are stored in history and when recalled, they maintain their multiple lines unlike most SQL interfaces out there.
 
-* run: `kubectl <resource> -A -o json`
-* run `qq .items > <resource>.json` on the output to have a single list of results and save the list into the user's cache dir separated by k8s context.
-* run `duckdb` to import the file and auto discover the schema.
-* Since this tool focuses on k8s, it will surface the `metadata.name` as `name` and `metadata.namespace` as `namespace` for each of the resources imported.
-A node will have a `NULL` namespace, for example, but the query will still work.
-* create a few handy <<helper-functions>> and <<views>> for you to use.
+There are multiple output modes, including a nice looking table mode.
+However, the default is a pretty printed JSON stream that allows to visualize very large number of columns as rows while allowing you to leverage the scrollback to navigate all of them without depending on an ultra-wide monitor.
 
-Now, you can run `jsql query` or call duckdb directly on the created db `duckdb jsql.duckdb`
+== Installation
+
+* Install using homebrew:
++
+----
+brew tap DavidGamba/dgtools https://github.com/DavidGamba/dgtools
+brew install DavidGamba/dgtools/jsql
+----
++
+[NOTE]
+====
+Completion is auto setup for bash.
+
+For `zsh` completions, an additional step is required, add the following to your `.zshrc`:
+
+[source, zsh]
+----
+export ZSHELL="true"
+source "$(brew --prefix)/share/zsh/site-functions/dgtools.jsql.zsh"
+----
+====
++
+Upgrade with:
++
+----
+brew update
+brew upgrade jsql
+----
+
+* Install using go:
++
+Install the binary into your `~/go/bin`:
++
+----
+go install github.com/DavidGamba/dgtools/jsql@latest
+----
++
+Then setup the completion.
++
+For bash:
++
+----
+complete -o default -C jsql jsql
+----
++
+For zsh:
++
+[source, zsh]
+----
+export ZSHELL="true"
+autoload -U +X compinit && compinit
+autoload -U +X bashcompinit && bashcompinit
+complete -o default -C jsql jsql
+----
+
+=== Sample Providers
+
+To use a sample provider, copy the file over to the global config directory (`$HOME/.config/jsql/`) or place it in the current working directory.
+
+* link:./aws.cue[AWS Provider]
+* link:./github.cue[GitHub Provider]
+* link:./k8s.cue[Kubernetes Provider]
+* link:./csv.cue[CSV Provider]
+
+== Tutorial
+
+=== Provider Creation
+
+The power of jsql lies in being able to create a custom provider on the fly to analyse data while persisting that config for future reuse.
+
+Providers can be stored globally (`$HOME/.config/jsql/`) or they can live in the current working directory.
+Providers are written in link:https://cuelang.org/[CUE], so the file name must have the `.cue` extension.
+
+The first thing to define is how to retrieve the JSON formatted data.
+
+For example, the sample `aws.cue` provider defines the following:
+
+[source, cue]
+----
+package jsql
+
+provider: aws: {
+	getCommands: ebs: {
+		command: ["aws", "ec2", "describe-volumes"]
+----
+
+It defines a 'Get' command called `ebs` that calls the aws cli to describe ebs volumes.
+The output from that aws cli command wraps each result under the `.Volumes` envelope.
+
+[source, json]
+----
+{
+	"Volumes": [
+		{
+			"VolumeId": "vol-xxx",
+			...
+		},
+		{
+			"VolumeId": "vol-yyy",
+			...
+		}
+	]
+}
+----
+
+To get a stream of elements suitable to be parsed as rows, we add a filter to the provider:
+
+[source, cue]
+----
+package jsql
+
+provider: aws: {
+	getCommands: ebs: {
+		command: ["aws", "ec2", "describe-volumes"]
+		filter:  ["qq", ".Volumes", "-o", "json"]
+----
+
+Finally, all that is left is to load the data onto the DB:
+
+1. Create a wrapper schema to place multiple 'Get' command's data together.
+For example `aws`.
+This could group `aws.ebs`, `aws.s3`, `aws.ec2`, etc.
+2. Create a table under the wrapper schema.
+To avoid conflicts with existing data, we first drop the table before creation.
+For example `aws.ebs` for this 'Get' command's data.
+
+[source, cue]
+----
+package jsql
+
+provider: aws: {
+	getCommands: ebs: {
+		command: ["aws", "ec2", "describe-volumes"]
+		filter:  ["qq", ".Volumes", "-o", "json"]
+		create: [
+			"CREATE SCHEMA IF NOT EXISTS $schemaName;"
+			"DROP TABLE IF EXISTS $schemaName.$table"
+			"CREATE TABLE $schemaName.$table AS SELECT * FROM '$filename'"
+----
+
+You will notice that we introduce `$schemaName`, `$table` and `$filename`. 
+These are auto-generated based on the provider and command names but can be overridden if desired.
+
+Finally, you can add custom pieces of logic into your creation steps.
+For example, AWS doesn't have a dedicated name field for their resources but it is optionally added as a Tag with key `Name`.
+Knowing this, we can add the name column ourselves:
+
+[source, cue]
+----
+package jsql
+
+provider: aws: {
+	getCommands: ebs: {
+		command: ["aws", "ec2", "describe-volumes"]
+		filter:  ["qq", ".Volumes", "-o", "json"]
+		create: [
+			"CREATE SCHEMA IF NOT EXISTS $schemaName;"
+			"DROP TABLE IF EXISTS $schemaName.$table"
+			"CREATE TABLE $schemaName.$table AS SELECT * FROM '$filename'"
+			"ALTER TABLE $schemaName.$table ADD COLUMN name VARCHAR;"
+			"UPDATE $schemaName.$table SET name = list_filter(Tags, lambda x : x.Key = 'Name')[1].Value;"
+		]
+	}
+}
+----
+
+With the provider fully constructed, you can retrieve the data by running: `jsql get aws ebs`
+
+The command will create a `jsql.duckdb` database in the current directory.
+
+Then you can run `jsql query`.
+
+=== Querying
 
 `jsql query` will print the results as a json stream because vertical scrolling is easier than horizontal scrolling on a terminal.
 
 You can toggle the output formatting mode:
 
-* `.mode pretty` (default)
-* `.mode single_line` (one JSON object per line)
+* `.mode pretty;` (default) json marshal results
+* `.mode table;` pretty print tables and json marshal nested data
+* `.mode single_line;` json marshal into one record per line
 
 To re-hidrate your data, you can run the `jsql get` command again with each of the resources you want to hidrate.
 The rest will stay in place.
 
 To start over or be done, delete the `jsql.duckdb` file.
 
-== Helpful Queries
+=== Helpful Queries
 
 * Check schema for the columns of a table:
 +
@@ -47,7 +219,7 @@ SELECT
 	namespace,
 	age:k8s.agem(s),
 	ready:printf('%d/%d',coalesce(status.readyReplicas,0),spec.replicas),
-FROM sts AS s;
+FROM k8s.sts AS s;
 ----
 
 * Equivalent of `kubectl get deploy -A`
@@ -61,7 +233,7 @@ SELECT
 	ready:printf('%d/%d',coalesce(status.readyReplicas,0),spec.replicas),
 	up_to_date:coalesce(status.updatedReplicas,0),
 	available:coalesce(status.availableReplicas,0)
-FROM deploy AS d;
+FROM k8s.deploy AS d;
 ----
 
 * Equivalent of `kubectl get pods -A`
@@ -76,23 +248,16 @@ SELECT
 	phase:status.phase,
 	restarts:sum(cs.restartCount),
 	restart_age:list(k8s.age(cs.state.running.startedat))
-FROM pods AS p
+FROM k8s.pods AS p
 CROSS JOIN unnest(status.containerstatuses) AS t(cs)
 WHERE cs.restartCount != 0
 GROUP BY name,namespace,age,phase,status
 ;
 ----
 
-== Helper Functions
+=== Helper Functions
 
-These macros/functions are automatically added by `jsql get`.
-
-They are collected under the `k8s` schema:
-
-[source, sql]
-----
-CREATE SCHEMA IF NOT EXISTS k8s;
-----
+These macros/functions are automatically added by the `jsql get k8s` provider.
 
 === Get the age of a resource
 
