@@ -12,6 +12,7 @@ Package cueutils provides helpers to work with Cue
 package cueutils
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"io/fs"
@@ -82,9 +83,10 @@ func (m *mergeFS) ReadDir(name string) ([]fs.DirEntry, error) {
 }
 
 type CueConfigFS struct {
-	FS    fs.FS
-	Files []string
-	Dir   string
+	FS           fs.FS
+	Files        []string
+	Dir          string
+	SkipNotExist bool
 }
 
 func UnmarshalFS(layers []CueConfigFS, packageName, virtualCueModuleName string, value *cue.Value, target any) error {
@@ -99,10 +101,25 @@ func UnmarshalFS(layers []CueConfigFS, packageName, virtualCueModuleName string,
 	mfs := &mergeFS{}
 	files := []string{}
 	for _, e := range layers {
+		layerFiles := []string{}
+		for _, f := range e.Files {
+			_, err := fs.Stat(e.FS, f)
+			if err != nil {
+				if errors.Is(err, fs.ErrNotExist) && e.SkipNotExist {
+					continue
+				}
+				return fmt.Errorf("failed to stat file %s: %w", f, err)
+			}
+			layerFiles = append(layerFiles, f)
+		}
+		if len(layerFiles) == 0 {
+			continue
+		}
 		mfs.layers = append(mfs.layers, e.FS)
-		files = append(files, e.Files...)
+		files = append(files, layerFiles...)
 	}
 	Logger.Printf("files: %v\n", files)
+
 	if virtualCueModuleName != "" {
 		virtual = fstest.MapFS{
 			"cue.mod/module.cue": &fstest.MapFile{
