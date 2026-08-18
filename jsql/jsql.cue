@@ -1,32 +1,35 @@
+@experiment(aliasv2)
 package jsql
 
 import (
 	"strings"
 )
 
-// provider: k8s: {
-// 	getCommands: [
-// 		{
-// 			name:    "get"
-// 			command: ["kubectl", "get", "-o", "json", "$arg1"]
-// 			post:    ["qq", ".items", "-o", "json"]
-// 			create: [
-// 				["CREATE SCHEMA IF NOT EXISTS k8s;"],
-// 				["DROP TABLE IF EXISTS $arg1"],
-// 				["CREATE TABLE $arg1 AS SELECT * FROM '$filename'"],
-// 			]
-// 			update: [
-// 				["ALTER TABLE $arg1 ADD COLUMN name VARCHAR;"]
-// 			]
-// 		},
-// 		{
-// 			name:    "getAll"
-// 			command: ["kubectl", "get", "-o", "json", "-A", "$arg1"]
-// 			post:    ["qq", ".items", "-o", "json"]
-// 		},
-// 	]
-// }
-// 
+provider: k8s: {
+	getCommands: {
+		let X = self
+		"get": {
+			args:    [{name: "resource", description: "Kubernetes Resource"}]
+			table:   "$arg1"
+			command: ["kubectl", "get", "-o", "json", "$arg1"]
+			post:    ["qq", ".items", "-o", "json"]
+			create: [
+				"CREATE SCHEMA IF NOT EXISTS $schemaName;"
+				"DROP TABLE IF EXISTS $schemaName.$table"
+				"CREATE TABLE $schemaName.$table AS SELECT * FROM '$filename'"
+				"ALTER TABLE $schemaName.$table ADD COLUMN name VARCHAR;"
+			]
+		}
+		"getAll": {
+			command: ["kubectl", "get", "-o", "json", "-A", "$arg1"]
+			table:   X.get.table
+			args:    X.get.args
+			post:    X.get.post
+			create:  X.get.create
+		}
+	}
+}
+
 // provider: aws: {
 // 	getCommands: [
 // 		{

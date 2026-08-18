@@ -322,6 +322,16 @@ func GetRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 
 	filename := filepath.Join(cacheDir, command+".json")
 
+	table := d.Provider[provider].GetCommands[command].Table
+	table = strings.ReplaceAll(table, "$schemaName", d.Provider[provider].SchemaName)
+	table = strings.ReplaceAll(table, "$provider", provider)
+	if len(args) > 0 {
+		table = strings.ReplaceAll(table, "$arg1", args[0])
+	}
+	if len(args) > 1 {
+		table = strings.ReplaceAll(table, "$arg2", args[1])
+	}
+
 	// Run get command
 	commandData := d.Provider[provider].GetCommands[command]
 	commandParts := commandData.Command
@@ -333,7 +343,7 @@ func GetRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 		if len(args) > 1 {
 			e = strings.ReplaceAll(e, "$arg2", args[1])
 		}
-		e = strings.ReplaceAll(e, "$table", d.Provider[provider].GetCommands[command].Table)
+		e = strings.ReplaceAll(e, "$table", table)
 		e = strings.ReplaceAll(e, "$schemaName", d.Provider[provider].SchemaName)
 		e = strings.ReplaceAll(e, "$provider", provider)
 		e = strings.ReplaceAll(e, "$command", command)
@@ -367,7 +377,7 @@ func GetRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 		if len(args) > 1 {
 			e = strings.ReplaceAll(e, "$arg2", args[1])
 		}
-		e = strings.ReplaceAll(e, "$table", d.Provider[provider].GetCommands[command].Table)
+		e = strings.ReplaceAll(e, "$table", table)
 		e = strings.ReplaceAll(e, "$schemaName", d.Provider[provider].SchemaName)
 		e = strings.ReplaceAll(e, "$provider", provider)
 		e = strings.ReplaceAll(e, "$command", command)
