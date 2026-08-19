@@ -91,7 +91,7 @@ func QueryRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 		return fmt.Errorf("failed to read config: %w", err)
 	}
 
-	mode := outputModeTable
+	mode := outputModePretty
 	qo := queryOptionAutoNumber
 
 	conn, err := dbConn(ctx)
@@ -187,8 +187,8 @@ file <filename>: save to file
 			default:
 				fmt.Printf(`Valid modes:
 
-table: (default) pretty print tables and json marshal nested data
-pretty: json marshal results
+pretty: (default) json marshal results
+table: pretty print tables and json marshal nested data
 single_line: json marshal into one record per line
 `)
 			}
