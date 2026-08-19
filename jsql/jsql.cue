@@ -34,6 +34,7 @@ provider: k8s: {
 	}
 
 	macros: [
+
 		"CREATE SCHEMA IF NOT EXISTS k8s;"
 
 		"""
@@ -113,96 +114,104 @@ provider: k8s: {
 			END;
 			"""
 
-		// """
-		// 	CREATE OR REPLACE VIEW drspn AS
-		// 	SELECT
-		// 		d_kind:d.kind,
-		// 		d_apiVersion:d.apiVersion,
-		// 		d_name:d.name,
-		// 		d_namespace:d.namespace,
-		// 		d_metadata:d.metadata,
-		// 		d_spec:d.spec,
-		// 		d_status:d.status,
-		// 		rs_kind:rs.kind,
-		// 		rs_apiVersion:rs.apiVersion,
-		// 		rs_name:rs.name,
-		// 		rs_namespace:rs.namespace,
-		// 		rs_metadata:rs.metadata,
-		// 		rs_spec:rs.spec,
-		// 		rs_status:rs.status,
-		// 		p_kind:p.kind,
-		// 		p_apiVersion:p.apiVersion,
-		// 		p_name:p.name,
-		// 		p_namespace:p.namespace,
-		// 		p_metadata:p.metadata,
-		// 		p_spec:p.spec,
-		// 		p_status:p.status,
-		// 		n_kind:n.kind,
-		// 		n_apiVersion:n.apiVersion,
-		// 		n_name:n.name,
-		// 		n_namespace:n.namespace,
-		// 		n_metadata:n.metadata,
-		// 		n_spec:n.spec,
-		// 		n_status:n.status
-		// 	FROM k8s.deploy AS d
-		// 	JOIN k8s.rs ON k8s.rs.namespace = d.namespace AND k8s.rs.metadata.ownerReferences[1].uid = d.metadata.uid
-		// 	JOIN k8s.pods AS p ON p.namespace = k8s.rs.namespace AND k8s.rs.metadata.uid = p.metadata.ownerReferences[1].uid
-		// 	LEFT OUTER JOIN k8s.nodes as n ON n.name = p.spec.nodeName
-		// 	;
-		// 	"""
-		//
-		// """
-		// 	CREATE OR REPLACE VIEW spn AS
-		// 	SELECT
-		// 		s_kind:s.kind,
-		// 		s_apiVersion:s.apiVersion,
-		// 		s_name:s.name,
-		// 		s_namespace:s.namespace,
-		// 		s_metadata:s.metadata,
-		// 		s_spec:s.spec,
-		// 		s_status:s.status,
-		// 		p_kind:p.kind,
-		// 		p_apiVersion:p.apiVersion,
-		// 		p_name:p.name,
-		// 		p_namespace:p.namespace,
-		// 		p_metadata:p.metadata,
-		// 		p_spec:p.spec,
-		// 		p_status:p.status,
-		// 		n_kind:n.kind,
-		// 		n_apiVersion:n.apiVersion,
-		// 		n_name:n.name,
-		// 		n_namespace:n.namespace,
-		// 		n_metadata:n.metadata,
-		// 		n_spec:n.spec,
-		// 		n_status:n.status
-		// 	FROM k8s.sts AS s
-		// 	JOIN k8s.pods AS p ON p.namespace = s.namespace AND s.metadata.uid = p.metadata.ownerReferences[1].uid
-		// 	LEFT OUTER JOIN k8s.nodes as n ON n.name = p.spec.nodeName
-		// 	;
-		// 	"""
-		//
-		// """
-		// 	CREATE OR REPLACE VIEW pn AS
-		// 	SELECT
-		// 		p_kind:p.kind,
-		// 		p_apiVersion:p.apiVersion,
-		// 		p_name:p.name,
-		// 		p_namespace:p.namespace,
-		// 		p_metadata:p.metadata,
-		// 		p_spec:p.spec,
-		// 		p_status:p.status,
-		// 		n_kind:n.kind,
-		// 		n_apiVersion:n.apiVersion,
-		// 		n_name:n.name,
-		// 		n_namespace:n.namespace,
-		// 		n_metadata:n.metadata,
-		// 		n_spec:n.spec,
-		// 		n_status:n.status
-		// 	FROM k8s.nodes AS n
-		// 	JOIN k8s.pods as p ON n.name = p.spec.nodeName
-		// 	;
-		// 	"""
 	]
+
+	views: common: {
+		dependencies: ["pods", "rs", "deploy", "sts", "nodes"]
+		queries: [
+
+			"""
+				CREATE OR REPLACE VIEW drspn AS
+				SELECT
+					d_kind:d.kind,
+					d_apiVersion:d.apiVersion,
+					d_name:d.name,
+					d_namespace:d.namespace,
+					d_metadata:d.metadata,
+					d_spec:d.spec,
+					d_status:d.status,
+					rs_kind:rs.kind,
+					rs_apiVersion:rs.apiVersion,
+					rs_name:rs.name,
+					rs_namespace:rs.namespace,
+					rs_metadata:rs.metadata,
+					rs_spec:rs.spec,
+					rs_status:rs.status,
+					p_kind:p.kind,
+					p_apiVersion:p.apiVersion,
+					p_name:p.name,
+					p_namespace:p.namespace,
+					p_metadata:p.metadata,
+					p_spec:p.spec,
+					p_status:p.status,
+					n_kind:n.kind,
+					n_apiVersion:n.apiVersion,
+					n_name:n.name,
+					n_namespace:n.namespace,
+					n_metadata:n.metadata,
+					n_spec:n.spec,
+					n_status:n.status
+				FROM k8s.deploy AS d
+				JOIN k8s.rs ON k8s.rs.namespace = d.namespace AND k8s.rs.metadata.ownerReferences[1].uid = d.metadata.uid
+				JOIN k8s.pods AS p ON p.namespace = k8s.rs.namespace AND k8s.rs.metadata.uid = p.metadata.ownerReferences[1].uid
+				LEFT OUTER JOIN k8s.nodes as n ON n.name = p.spec.nodeName
+				;
+				"""
+
+			"""
+				CREATE OR REPLACE VIEW spn AS
+				SELECT
+					s_kind:s.kind,
+					s_apiVersion:s.apiVersion,
+					s_name:s.name,
+					s_namespace:s.namespace,
+					s_metadata:s.metadata,
+					s_spec:s.spec,
+					s_status:s.status,
+					p_kind:p.kind,
+					p_apiVersion:p.apiVersion,
+					p_name:p.name,
+					p_namespace:p.namespace,
+					p_metadata:p.metadata,
+					p_spec:p.spec,
+					p_status:p.status,
+					n_kind:n.kind,
+					n_apiVersion:n.apiVersion,
+					n_name:n.name,
+					n_namespace:n.namespace,
+					n_metadata:n.metadata,
+					n_spec:n.spec,
+					n_status:n.status
+				FROM k8s.sts AS s
+				JOIN k8s.pods AS p ON p.namespace = s.namespace AND s.metadata.uid = p.metadata.ownerReferences[1].uid
+				LEFT OUTER JOIN k8s.nodes as n ON n.name = p.spec.nodeName
+				;
+				"""
+
+			"""
+				CREATE OR REPLACE VIEW pn AS
+				SELECT
+					p_kind:p.kind,
+					p_apiVersion:p.apiVersion,
+					p_name:p.name,
+					p_namespace:p.namespace,
+					p_metadata:p.metadata,
+					p_spec:p.spec,
+					p_status:p.status,
+					n_kind:n.kind,
+					n_apiVersion:n.apiVersion,
+					n_name:n.name,
+					n_namespace:n.namespace,
+					n_metadata:n.metadata,
+					n_spec:n.spec,
+					n_status:n.status
+				FROM k8s.nodes AS n
+				JOIN k8s.pods as p ON n.name = p.spec.nodeName
+				;
+				"""
+
+		]
+	}
 }
 
 // provider: aws: {

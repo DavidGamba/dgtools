@@ -1,12 +1,15 @@
 package main
 
 import (
+	"context"
 	"embed"
 	"fmt"
 	"os"
 	"path/filepath"
 
+	"cuelang.org/go/cue"
 	"github.com/DavidGamba/dgtools/cueutils"
+	"github.com/DavidGamba/go-getoptions"
 )
 
 //go:embed schema.cue
@@ -34,15 +37,50 @@ type ConfigProvider struct {
 		}
 	} `json:"getCommands"`
 	Macros []string
+	Views  map[string]struct {
+		Dependencies []string
+		Queries      []string
+	}
 }
 
-func ReadConfig(data *Config) error {
+func ConfigRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
+	Logger.Printf("Running")
+	d := &Config{}
+	// Provide a pointer receiver for evaluated data for mostly debugging purposes
+	value := cueutils.NewValue()
+
+	err := ReadConfig(d, value)
+	if err != nil {
+		return fmt.Errorf("failed to read config: %w", err)
+	}
+
+	// Print the config values
+	opts := cueutils.StringValueOpts{
+		Definitions:    true,
+		Hidden:         true,
+		Attributes:     true,
+		Optional:       true,
+		ErrorsAsValues: true,
+		Concrete:       true,
+	}
+
+	v, err := cueutils.StringValue(value, opts)
+	if err != nil {
+		return fmt.Errorf("failed to print value: %w", err)
+	}
+	fmt.Printf("value:\n%v\n", string(v))
+	return nil
+}
+
+func ReadConfig(data *Config, value *cue.Value) error {
 	Logger.Printf("Reading Config")
 	packageName := "jsql"
 	virtualCueModuleName := "jsql.config"
 
 	// Provide a pointer receiver for evaluated data for mostly debugging purposes
-	value := cueutils.NewValue()
+	if value == nil {
+		value = cueutils.NewValue()
+	}
 
 	config := []cueutils.CueConfigFS{
 		// schema

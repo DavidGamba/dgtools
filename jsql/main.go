@@ -36,6 +36,8 @@ func program(args []string) int {
 
 	opt.NewCommand("query", "description").SetCommandFn(QueryRun)
 
+	opt.NewCommand("config", "show parsed config").SetCommandFn(ConfigRun)
+
 	opt.HelpCommand("help", opt.Alias("?"))
 	remaining, err := opt.Parse(args[1:])
 	if err != nil {
@@ -84,7 +86,7 @@ func QueryRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error 
 	Logger.Printf("Running")
 
 	d := &Config{}
-	err := ReadConfig(d)
+	err := ReadConfig(d, nil)
 	if err != nil {
 		return fmt.Errorf("failed to read config: %w", err)
 	}

@@ -6,6 +6,10 @@ package jsql
 	schemaName: string
 	getCommands: [string]: #GetCommand
 	macros: [...string]
+	views: [string]: {
+		dependencies: [...string]
+		queries:      [...string]
+	}
 }
 
 #GetCommand: {

@@ -19,7 +19,7 @@ func GetRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 func GetExec(ctx context.Context, args []string) error {
 	// Get config
 	d := &Config{}
-	err := ReadConfig(d)
+	err := ReadConfig(d, nil)
 	if err != nil {
 		return fmt.Errorf("failed to read config: %w", err)
 	}
