@@ -31,12 +31,13 @@ func program(args []string) int {
 	opt := getoptions.New()
 	opt.Bool("quiet", false)
 	opt.SetUnknownMode(getoptions.Pass)
-	get := opt.NewCommand("get", "description").SetCommandFn(GetRun)
-	get.HelpSynopsisArg("<resource-types>...", "type of the resources to get")
+	get := opt.NewCommand("get", "Run provider's Get command to retrieve data").SetCommandFn(GetRun)
+	get.HelpSynopsisArg("<provider_name>", "provider to use")
+	get.HelpSynopsisArg("<args>...", "provider arguments")
 
-	opt.NewCommand("query", "description").SetCommandFn(QueryRun)
+	opt.NewCommand("query", "Run query's on the DB present in the CWD").SetCommandFn(QueryRun)
 
-	opt.NewCommand("config", "show parsed config").SetCommandFn(ConfigRun)
+	opt.NewCommand("config", "Show parsed config").SetCommandFn(ConfigRun)
 
 	opt.HelpCommand("help", opt.Alias("?"))
 	remaining, err := opt.Parse(args[1:])
