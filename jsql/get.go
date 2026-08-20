@@ -107,10 +107,13 @@ func GetExec(ctx context.Context, args []string) error {
 		e = strings.ReplaceAll(e, "$filename", filename)
 		commandParts[i] = e
 	}
-	Logger.Printf("Running command: %v\n", commandParts)
-	out, err := run.CMD(commandParts...).Log().STDOutOutput()
-	if err != nil {
-		return fmt.Errorf("failed: %w", err)
+	var out []byte
+	if len(commandParts) > 0 {
+		Logger.Printf("Running command: %v\n", commandParts)
+		out, err = run.CMD(commandParts...).Log().STDOutOutput()
+		if err != nil {
+			return fmt.Errorf("failed: %w", err)
+		}
 	}
 
 	// Run command data filter

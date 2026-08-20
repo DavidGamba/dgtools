@@ -12,8 +12,5 @@ provider: aws: {
 			"ALTER TABLE $schemaName.$table ADD COLUMN name VARCHAR;"
 			"UPDATE $schemaName.$table SET name = list_filter(Tags, lambda x : x.Key = 'Name')[1].Value;"
 		]
-
-		// instances:list_transform(attachments, lambda x : x.InstanceId)[1]
-
 	}
 }
