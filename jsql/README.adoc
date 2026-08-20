@@ -16,6 +16,59 @@ However, the default is a pretty printed JSON stream that allows to visualize ve
 
 == Installation
 
+* Install using homebrew:
++
+----
+brew tap DavidGamba/dgtools https://github.com/DavidGamba/dgtools
+brew install DavidGamba/dgtools/jsql
+----
++
+[NOTE]
+====
+Completion is auto setup for bash.
+
+For `zsh` completions, an additional step is required, add the following to your `.zshrc`:
+
+[source, zsh]
+----
+export ZSHELL="true"
+source "$(brew --prefix)/share/zsh/site-functions/dgtools.jsql.zsh"
+----
+====
++
+Upgrade with:
++
+----
+brew update
+brew upgrade jsql
+----
+
+* Install using go:
++
+Install the binary into your `~/go/bin`:
++
+----
+go install github.com/DavidGamba/dgtools/jsql@latest
+----
++
+Then setup the completion.
++
+For bash:
++
+----
+complete -o default -C jsql jsql
+----
++
+For zsh:
++
+[source, zsh]
+----
+export ZSHELL="true"
+autoload -U +X compinit && compinit
+autoload -U +X bashcompinit && bashcompinit
+complete -o default -C jsql jsql
+----
+
 === Sample Providers
 
 To use a sample provider, copy the file over to the global config directory (`$HOME/.config/jsql/`) or place it in the current working directory.
@@ -31,12 +84,17 @@ To use a sample provider, copy the file over to the global config directory (`$H
 
 The power of jsql lies in being able to create a custom provider on the fly to analyse data while persisting that config for future reuse.
 
+Providers can be stored globally (`$HOME/.config/jsql/`) or they can live in the current working directory.
+Providers are written in link:https://cuelang.org/[CUE], so the file name must have the `.cue` extension.
+
 The first thing to define is how to retrieve the JSON formatted data.
 
-For example, the sample `aws` provider defines the following:
+For example, the sample `aws.cue` provider defines the following:
 
 [source, cue]
 ----
+package jsql
+
 provider: aws: {
 	getCommands: ebs: {
 		command: ["aws", "ec2", "describe-volumes"]
@@ -65,6 +123,8 @@ To get a stream of elements suitable to be parsed as rows, we add a filter to th
 
 [source, cue]
 ----
+package jsql
+
 provider: aws: {
 	getCommands: ebs: {
 		command: ["aws", "ec2", "describe-volumes"]
@@ -82,6 +142,8 @@ For example `aws.ebs` for this 'Get' command's data.
 
 [source, cue]
 ----
+package jsql
+
 provider: aws: {
 	getCommands: ebs: {
 		command: ["aws", "ec2", "describe-volumes"]
@@ -101,6 +163,8 @@ Knowing this, we can add the name column ourselves:
 
 [source, cue]
 ----
+package jsql
+
 provider: aws: {
 	getCommands: ebs: {
 		command: ["aws", "ec2", "describe-volumes"]
