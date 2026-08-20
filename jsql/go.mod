@@ -3,8 +3,9 @@ module github.com/DavidGamba/dgtools/jsql
 go 1.26.5
 
 require (
+	cuelang.org/go v0.18.0-alpha.1
 	github.com/DavidGamba/dgtools/clitable v0.5.1
-	github.com/DavidGamba/dgtools/cueutils v0.9.0
+	github.com/DavidGamba/dgtools/cueutils v0.10.0
 	github.com/DavidGamba/dgtools/run v0.9.0
 	github.com/DavidGamba/dgtools/trees v0.1.0
 	github.com/DavidGamba/dgtools/yamlutils v0.2.0
@@ -17,7 +18,6 @@ require (
 
 require (
 	cuelabs.dev/go/oci/ociregistry v0.0.0-20260717083115-5eb5795f322a // indirect
-	cuelang.org/go v0.18.0-alpha.1 // indirect
 	github.com/apache/arrow-go/v18 v18.6.0 // indirect
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
 	github.com/cockroachdb/apd/v3 v3.2.3 // indirect
