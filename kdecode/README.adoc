@@ -8,6 +8,8 @@ Cluster selection can be done using the `--cluster` or `-c` flag to avoid having
 
 You can limit the output to a single key within the secret with the `--key` or `-k` flag.
 
+Use the `--raw` or `-r` flag together with `--key`/`-k` to print only the value, without the leading `key=` prefix.
+
 Additionally, if the secret is a PEM encoded certificate, you can pass the `--pem` flag to decode the certificate and print the details.
 
 To view the External Secrets Operator chain, you can use the `--es` flag.

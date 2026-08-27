@@ -33,6 +33,7 @@ Source: https://github.com/DavidGamba/dgtools`)
 	opt.Bool("es", false, opt.Description("Show External Secrets Operator chain"))
 	opt.String("namespace", "")
 	opt.String("key", "", opt.Description("limit output to the given key"))
+	opt.Bool("raw", false, opt.Alias("r"), opt.Description("when used with -k/--key, print only the value without the 'key=' prefix"))
 	opt.String("cluster", "", opt.Description(`Allows targeting a different cluster from the current context.
 
 NOTE: This only works when you are not in a subshell
@@ -68,6 +69,7 @@ func Run(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	namespace := opt.Value("namespace").(string)
 	cluster := opt.Value("cluster").(string)
 	key := opt.Value("key").(string)
+	raw := opt.Value("raw").(bool)
 	pem := opt.Value("pem").(bool)
 	output := opt.Value("output").(string)
 	es := opt.Value("es").(bool)
@@ -107,7 +109,7 @@ func Run(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
 	if output != "" {
 		return resourcePrint(output, k8sSecret, os.Stdout)
 	}
-	SecretPrint(k8sSecret, pem, key)
+	SecretPrint(k8sSecret, pem, key, raw)
 
 	if !es {
 		return nil

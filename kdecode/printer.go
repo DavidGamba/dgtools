@@ -34,7 +34,8 @@ func resourcePrint(outputFormat string, obj runtime.Object, w io.Writer) error {
 
 // Takes the Data and StringData portions of a k8s secret and sorts the keys, then it tries to parse the values as a pem cert
 // Optionally limit output to a single given key
-func SecretPrint(k8sSecret *v1.Secret, pem bool, key string) {
+// When raw is true and a key is given, the leading "key=" prefix is omitted from the output
+func SecretPrint(k8sSecret *v1.Secret, pem bool, key string, raw bool) {
 	// sort output
 	dataKeys := []string{}
 	for k := range k8sSecret.Data {
@@ -50,7 +51,9 @@ func SecretPrint(k8sSecret *v1.Secret, pem bool, key string) {
 	for _, k := range dataKeys {
 		v := k8sSecret.Data[k]
 		if (key != "" && k == key) || key == "" {
-			fmt.Printf("%s=", k)
+			if !raw {
+				fmt.Printf("%s=", k)
+			}
 			if pem {
 				info, err := ParseCert(string(v))
 				if err != nil {
@@ -68,7 +71,9 @@ func SecretPrint(k8sSecret *v1.Secret, pem bool, key string) {
 	for _, k := range stringDataKeys {
 		v := k8sSecret.StringData[k]
 		if (key != "" && k == key) || key == "" {
-			fmt.Printf("%s=", k)
+			if !raw {
+				fmt.Printf("%s=", k)
+			}
 			if pem {
 				info, err := ParseCert(v)
 				if err != nil {
