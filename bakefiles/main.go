@@ -102,6 +102,48 @@ func Test(opt *getoptions.GetOpt) getoptions.CommandFn {
 	}
 }
 
+// update - update go version and dependencies
+func Update(opt *getoptions.GetOpt) getoptions.CommandFn {
+	var version string
+	opt.StringVar(&version, "version", "1.27", opt.Description("Go version"))
+	var libVersion string
+	opt.StringVar(&libVersion, "lib-version", "1.26", opt.Description("Lib Go version, keep at latest -1 to keep compatibility promise"))
+	return func(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
+		wd, err := os.Getwd()
+		if err != nil {
+			return fmt.Errorf("failed to get cwd: %w", err)
+		}
+		Logger.Printf("Running update on %s\n", wd)
+		useVersion := version
+
+		if _, err := os.Stat("main.go"); os.IsNotExist(err) {
+			useVersion = libVersion
+		}
+
+		command := []string{"go", "mod", "edit", "-go=" + useVersion}
+		cmd := run.CMD(command...)
+		err = cmd.Log().Run()
+		if err != nil {
+			return err
+		}
+
+		command = []string{"go", "get", "-u"}
+		cmd = run.CMD(command...)
+		err = cmd.Log().Run()
+		if err != nil {
+			return err
+		}
+
+		command = []string{"go", "mod", "tidy"}
+		cmd = run.CMD(command...)
+		err = cmd.Log().Run()
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+}
+
 // tag - show tags for the current tool
 func Tag(opt *getoptions.GetOpt) getoptions.CommandFn {
 	var message string
