@@ -27,7 +27,6 @@ type ParsedFile struct {
 	f    *ast.File
 }
 
-// Requires GOEXPERIMENT=rangefunc
 func parsedFiles(dir string) iter.Seq2[ParsedFile, error] {
 	return func(yield func(ParsedFile, error) bool) {
 		cfg := &packages.Config{Mode: packages.NeedFiles | packages.NeedSyntax, Dir: dir}
@@ -72,7 +71,6 @@ type FnDecl struct {
 	Type       string
 }
 
-// Requires GOEXPERIMENT=rangefunc
 func AstFns(dir string) iter.Seq2[FnDecl, error] {
 	return func(yield func(FnDecl, error) bool) {
 		for p, err := range parsedFiles(dir) {
