@@ -1,12 +1,14 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"errors"
 	"fmt"
 	"io"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/DavidGamba/dgtools/run"
 	"github.com/DavidGamba/go-getoptions"
@@ -27,6 +29,10 @@ func program(args []string) int {
 	ghmd.SetCommandFn(GHCommentRun)
 	// ghmd.Int("part", 1, opt.Description("Part number if the message is bigger than 65536 char limit"))
 	ghmd.HelpSynopsisArg("<title>", "Title")
+
+	jslf := opt.NewCommand("json-single-line-file", "Copy file contents into a single and replace any newline with \\n")
+	jslf.SetCommandFn(JSONSingleLineFileRun)
+	jslf.HelpSynopsisArg("<file>", "filename")
 
 	opt.HelpCommand("help", opt.Alias("?"))
 	remaining, err := opt.Parse(args[1:])
@@ -73,5 +79,37 @@ Content
 	if err != nil {
 		return fmt.Errorf("failed: %w", err)
 	}
+	return nil
+}
+
+func JSONSingleLineFileRun(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
+	file, _, err := opt.GetRequiredArg(args)
+	if err != nil {
+		return err
+	}
+	Logger.Printf("Copying file: %s\n", file)
+
+	fh, err := os.Open(file)
+	if err != nil {
+		return fmt.Errorf("failed to open file: %w", err)
+	}
+	defer fh.Close()
+
+	var sb strings.Builder
+	scanner := bufio.NewScanner(fh)
+	for scanner.Scan() {
+		sb.WriteString(scanner.Text())
+		sb.WriteString(`\n`) // literal backslash-n, not a real newline
+	}
+	if err := scanner.Err(); err != nil {
+		return fmt.Errorf("failed to read: %w", err)
+	}
+
+	cmd := []string{"pbcopy"}
+	err = run.CMD(cmd...).Log().In([]byte(sb.String())).Run()
+	if err != nil {
+		return fmt.Errorf("failed: %w", err)
+	}
+
 	return nil
 }
