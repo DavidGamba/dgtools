@@ -1,0 +1,169 @@
+= jwt: Generate and verify JWT tokens from the command line
+
+Generates JSON Web Tokens (JWT), either signed with an HMAC shared secret, an RSA private key, or an EC private key loaded from a PEM file.
+Tokens can then be validated and decoded with the `verify` command.
+
+== Usage
+
+----
+jwt [--help|-?] [--quiet] <command> [<args>]
+----
+
+COMMANDS:
+
+* `hmac` - Create a JWT signed with an HMAC secret (HS256).
+* `rsa` - Create a JWT signed with an RSA private key from a PEM file (RS256).
+* `ec` - Create a JWT signed with an EC (P-256) private key from a PEM file (ES256).
+* `verify` - Verify and decode a JWT.
+
+Use `jwt help <command>` for the full list of options for a given command.
+
+=== hmac
+
+----
+jwt hmac --secret|-k <string>
+          [--claim|-c <key=value>...]
+          [--expires-in|-e <string>]
+          [--issuer|-i <string>]
+          [--subject|-s <string>]
+----
+
+* `--secret|-k` (required): HMAC secret used to sign the token.
+Can also be set with the `JWT_SECRET` environment variable.
+* `--subject|-s`: Sets the `sub` claim.
+* `--issuer|-i`: Sets the `iss` claim.
+* `--expires-in|-e`: Duration from now until the token expires, sets `exp` and `iat` (default: `1h`).
+Accepts Go duration strings, for example `30m`, `1h`, `24h`.
+* `--claim|-c`: Custom claim in `key=value` form.
+Can be given multiple times to add multiple claims.
+
+.Example
+----
+$ jwt hmac -k mysecret -s user123 -c role=admin -c team=eng
+----
+
+=== rsa
+
+----
+jwt rsa --pem-file|-p <string>
+         [--claim|-c <key=value>...]
+         [--expires-in|-e <string>]
+         [--issuer|-i <string>]
+         [--subject|-s <string>]
+----
+
+* `--pem-file|-p` (required): Path to a PEM encoded RSA private key used to sign the token.
+Supports both PKCS1 (`RSA PRIVATE KEY`) and PKCS8 (`PRIVATE KEY`) formats.
+* `--subject|-s`: Sets the `sub` claim.
+* `--issuer|-i`: Sets the `iss` claim.
+* `--expires-in|-e`: Duration from now until the token expires, sets `exp` and `iat` (default: `1h`).
+* `--claim|-c`: Custom claim in `key=value` form.
+Can be given multiple times to add multiple claims.
+
+.Example
+----
+$ jwt rsa -p ./private_key.pem -s user123 -i myissuer -c role=admin
+----
+
+.Generate a test RSA key pair
+----
+openssl genrsa -out private_key.pem 2048
+openssl rsa -in private_key.pem -pubout -out public_key.pem
+----
+
+=== ec
+
+----
+jwt ec --pem-file|-p <string>
+        [--claim|-c <key=value>...]
+        [--expires-in|-e <string>]
+        [--issuer|-i <string>]
+        [--subject|-s <string>]
+----
+
+* `--pem-file|-p` (required): Path to a PEM encoded EC (P-256) private key used to sign the token.
+Supports both SEC1 (`EC PRIVATE KEY`) and PKCS8 (`PRIVATE KEY`) formats.
+* `--subject|-s`: Sets the `sub` claim.
+* `--issuer|-i`: Sets the `iss` claim.
+* `--expires-in|-e`: Duration from now until the token expires, sets `exp` and `iat` (default: `1h`).
+* `--claim|-c`: Custom claim in `key=value` form.
+Can be given multiple times to add multiple claims.
+
+.Example
+----
+$ jwt ec -p ./ec_private_key.pem -s user123 -c role=admin
+----
+
+.Generate a test EC key pair
+----
+openssl ecparam -name prime256v1 -genkey -noout -out ec_private_key.pem
+openssl ec -in ec_private_key.pem -pubout -out ec_public_key.pem
+----
+
+=== verify
+
+----
+jwt verify [--secret|-k <string>] [--pem-file|-p <string>] <token>
+----
+
+* `--secret|-k`: HMAC secret used to verify tokens signed with HS256.
+Can also be set with the `JWT_SECRET` environment variable.
+* `--pem-file|-p`: Path to an RSA/EC public key or certificate PEM file used to verify tokens signed with RS256/ES256.
+Accepts PKIX public keys (`PUBLIC KEY`), PKCS1 RSA public keys (`RSA PUBLIC KEY`), or X.509 certificates (`CERTIFICATE`).
+* `<token>` (required): The JWT to verify, given as a positional argument.
+
+The signing algorithm is read from the token header, so only the matching flag (`--secret` for HS256, `--pem-file` for RS256/ES256) needs to be provided.
+
+On success, the decoded claims are printed as JSON to stdout and a confirmation message is printed to stderr.
+On failure (bad signature, expired token, missing key, etc.) an error is printed and the command exits with a non-zero status.
+
+.Verify a token signed with HMAC
+----
+$ jwt verify -k mysecret eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+{
+  "exp": 1787759604,
+  "iat": 1787756004,
+  "role": "admin",
+  "sub": "user123",
+  "team": "eng"
+}
+token is valid
+----
+
+.Verify a token signed with RSA, using the public key
+----
+$ jwt verify -p ./public_key.pem eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+{
+  "exp": 1787759902,
+  "iss": "myissuer",
+  "role": "admin",
+  "sub": "user123"
+}
+token is valid
+----
+
+.Verify a token signed with EC, using the public key
+----
+$ jwt verify -p ./ec_public_key.pem eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9...
+{
+  "exp": 1787760459,
+  "iat": 1787756859,
+  "role": "admin",
+  "sub": "user123"
+}
+token is valid
+----
+
+== Installation
+
+* Install using go:
++
+----
+go install github.com/DavidGamba/dgtools/jwt@latest
+----
++
+Ensure your Go bin is in your PATH.
+
+== ROADMAP
+
+* Add support for additional EC curves (ES384/ES512).
