@@ -2,6 +2,19 @@
 
 Sort YAML files to allow for easier diffing
 
+Warning: Use the `--array-sort` flag to also sort arrays.
+Sorting arrays affects the meaning of the data so don't use unless you know what you are doing!
+
+== Installation
+
+* Install using go:
++
+----
+go install github.com/DavidGamba/dgtools/yaml-sort@latest
+----
++
+Ensure your Go bin is in your PATH.
+
 == ROADMAP
 
 * Support multi document YAML files.
