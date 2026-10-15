@@ -30,7 +30,7 @@ func program(args []string) int {
 	// ghmd.Int("part", 1, opt.Description("Part number if the message is bigger than 65536 char limit"))
 	ghmd.HelpSynopsisArg("<title>", "Title")
 
-	jslf := opt.NewCommand("json-single-line-file", "Copy file contents into a single and replace any newline with \\n")
+	jslf := opt.NewCommand("json-single-line-file", "Copy file contents into a single line and replace any newline with \\n")
 	jslf.SetCommandFn(JSONSingleLineFileRun)
 	jslf.HelpSynopsisArg("<file>", "filename")
 
