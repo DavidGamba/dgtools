@@ -13,6 +13,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/DavidGamba/dgtools/buildutils"
 	"github.com/DavidGamba/dgtools/run"
 	"github.com/DavidGamba/go-getoptions"
 	"golang.org/x/mod/semver"
@@ -69,6 +70,71 @@ func Install(opt *getoptions.GetOpt) getoptions.CommandFn {
 		err = cmd.Log().Run()
 		if err != nil {
 			return err
+		}
+		return nil
+	}
+}
+
+// install-all - Build and install the current binary
+func InstallAll(opt *getoptions.GetOpt) getoptions.CommandFn {
+	return func(ctx context.Context, opt *getoptions.GetOpt, args []string) error {
+		for _, app := range []string{
+			"bt",
+			"cathtml",
+			"cd-helper",
+			"chatgpt",
+			"cli-bookmarks",
+			"clip",
+			"clitable/cmd/csvtable",
+			"diffdir",
+			"eenv",
+			"ffind",
+			"grepp",
+			"joinlines",
+			"json-parse",
+			"jsql",
+			"jwt",
+			"kcherry",
+			"kdecode",
+			"kdiff",
+			"kgetcontext",
+			"mermaid",
+			"password-cache",
+			"patch-seam",
+			"reverseproxy",
+			"tz",
+			"webserve",
+			"yaml-parse",
+			"yaml-seam",
+			"yaml-sort",
+		} {
+			err := buildutils.CDGitRepoRoot()
+			if err != nil {
+				return err
+			}
+			err = os.Chdir(app)
+			if err != nil {
+				return err
+			}
+			wd, err := os.Getwd()
+			if err != nil {
+				return fmt.Errorf("failed to get cwd: %w", err)
+			}
+			Logger.Printf("Running install on %s\n", wd)
+
+			env, err := getEnv("build.env")
+			if err != nil {
+				return fmt.Errorf("failed to get env: %w", err)
+			}
+
+			cmd := run.CMD("go", "install")
+			for _, e := range env {
+				cmd.Env(e)
+			}
+			err = cmd.Log().Run()
+			if err != nil {
+				return err
+			}
 		}
 		return nil
 	}
