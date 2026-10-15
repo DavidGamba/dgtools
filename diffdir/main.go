@@ -42,7 +42,8 @@ func program(args []string) int {
 	opt.Bool("version", false, opt.Alias("V"))
 	opt.BoolVar(&showHiddenDir, "hidden-dir", false, opt.Description("Descend into hidden dirs."))
 	opt.BoolVar(&showHiddenFile, "hidden-file", false, opt.Alias("hidden"), opt.Description("Diff hidden files."))
-	opt.HelpSynopsisArgs("<dir_a> <dir_b>")
+	opt.HelpSynopsisArg("<dir_a>", "directory to diff")
+	opt.HelpSynopsisArg("<dir_b>", "directory to diff")
 	remaining, err := opt.Parse(args[1:])
 	if opt.Called("help") {
 		fmt.Println(opt.Help())
